@@ -1,0 +1,86 @@
+﻿Mainer.obj : error LNK2019: unresolved external symbol "__declspec(dllimport) public: __cdecl QApplication::QApplication(int &,char * *,int)" (__imp_??0QApplication@@QEAA@AEAHPEAPEADH@Z) referenced in function main
+Mainer.obj : error LNK2019: unresolved external symbol "__declspec(dllimport) public: virtual __cdecl QApplication::~QApplication(void)" (__imp_??1QApplication@@UEAA@XZ) referenced in function main
+Mainer.obj : error LNK2019: unresolved external symbol "__declspec(dllimport) public: static int __cdecl QApplication::exec(void)" (__imp_?exec@QApplication@@SAHXZ) referenced in function main
+Mainer.obj : error LNK2019: unresolved external symbol "__declspec(dllimport) public: void __cdecl QWidget::show(void)" (__imp_?show@QWidget@@QEAAXXZ) referenced in function main
+Mainer.obj : error LNK2019: unresolved external symbol "__declspec(dllimport) public: __cdecl QGLWidget::QGLWidget(class QWidget *,class QGLWidget const *,class QFlags<enum Qt::WindowType>)" (__imp_??0QGLWidget@@QEAA@PEAVQWidget@@PEBV0@V?$QFlags@W4WindowType@Qt@@@@@Z) referenced in function "public: __cdecl MeGLWindow::MeGLWindow(void)" (??0MeGLWindow@@QEAA@XZ)
+Mainer.obj : error LNK2019: unresolved external symbol "__declspec(dllimport) public: virtual __cdecl QGLWidget::~QGLWidget(void)" (__imp_??1QGLWidget@@UEAA@XZ) referenced in function "public: virtual __cdecl MeGLWindow::~MeGLWindow(void)" (??1MeGLWindow@@UEAA@XZ)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::actionEvent(class QActionEvent *)" (?actionEvent@QWidget@@MEAAXPEAVQActionEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::changeEvent(class QEvent *)" (?changeEvent@QWidget@@MEAAXPEAVQEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QObject::childEvent(class QChildEvent *)" (?childEvent@QObject@@MEAAXPEAVQChildEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::closeEvent(class QCloseEvent *)" (?closeEvent@QWidget@@MEAAXPEAVQCloseEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QObject::connectNotify(char const *)" (?connectNotify@QObject@@MEAAXPEBD@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::contextMenuEvent(class QContextMenuEvent *)" (?contextMenuEvent@QWidget@@MEAAXPEAVQContextMenuEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QObject::customEvent(class QEvent *)" (?customEvent@QObject@@MEAAXPEAVQEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual int __cdecl QWidget::devType(void)const " (?devType@QWidget@@UEBAHXZ)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QObject::disconnectNotify(char const *)" (?disconnectNotify@QObject@@MEAAXPEBD@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::dragEnterEvent(class QDragEnterEvent *)" (?dragEnterEvent@QWidget@@MEAAXPEAVQDragEnterEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::dragLeaveEvent(class QDragLeaveEvent *)" (?dragLeaveEvent@QWidget@@MEAAXPEAVQDragLeaveEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::dragMoveEvent(class QDragMoveEvent *)" (?dragMoveEvent@QWidget@@MEAAXPEAVQDragMoveEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::dropEvent(class QDropEvent *)" (?dropEvent@QWidget@@MEAAXPEAVQDropEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::enabledChange(bool)" (?enabledChange@QWidget@@MEAAX_N@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::enterEvent(class QEvent *)" (?enterEvent@QWidget@@MEAAXPEAVQEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual bool __cdecl QGLWidget::event(class QEvent *)" (?event@QGLWidget@@MEAA_NPEAVQEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual bool __cdecl QObject::eventFilter(class QObject *,class QEvent *)" (?eventFilter@QObject@@UEAA_NPEAV1@PEAVQEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::focusInEvent(class QFocusEvent *)" (?focusInEvent@QWidget@@MEAAXPEAVQFocusEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual bool __cdecl QWidget::focusNextPrevChild(bool)" (?focusNextPrevChild@QWidget@@MEAA_N_N@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::focusOutEvent(class QFocusEvent *)" (?focusOutEvent@QWidget@@MEAAXPEAVQFocusEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::fontChange(class QFont const &)" (?fontChange@QWidget@@MEAAXAEBVQFont@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual struct HDC__ * __cdecl QWidget::getDC(void)const " (?getDC@QWidget@@UEBAPEAUHDC__@@XZ)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QGLWidget::glDraw(void)" (?glDraw@QGLWidget@@MEAAXXZ)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QGLWidget::glInit(void)" (?glInit@QGLWidget@@MEAAXXZ)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual int __cdecl QWidget::heightForWidth(int)const " (?heightForWidth@QWidget@@UEBAHH@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::hideEvent(class QHideEvent *)" (?hideEvent@QWidget@@MEAAXPEAVQHideEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QGLWidget::initializeOverlayGL(void)" (?initializeOverlayGL@QGLWidget@@MEAAXXZ)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::inputMethodEvent(class QInputMethodEvent *)" (?inputMethodEvent@QWidget@@MEAAXPEAVQInputMethodEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual class QVariant __cdecl QWidget::inputMethodQuery(enum Qt::InputMethodQuery)const " (?inputMethodQuery@QWidget@@UEBA?AVQVariant@@W4InputMethodQuery@Qt@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::keyPressEvent(class QKeyEvent *)" (?keyPressEvent@QWidget@@MEAAXPEAVQKeyEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::keyReleaseEvent(class QKeyEvent *)" (?keyReleaseEvent@QWidget@@MEAAXPEAVQKeyEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::languageChange(void)" (?languageChange@QWidget@@MEAAXXZ)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::leaveEvent(class QEvent *)" (?leaveEvent@QWidget@@MEAAXPEAVQEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual struct QMetaObject const * __cdecl QGLWidget::metaObject(void)const " (?metaObject@QGLWidget@@UEBAPEBUQMetaObject@@XZ)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual int __cdecl QWidget::metric(enum QPaintDevice::PaintDeviceMetric)const " (?metric@QWidget@@MEBAHW4PaintDeviceMetric@QPaintDevice@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual class QSize __cdecl QWidget::minimumSizeHint(void)const " (?minimumSizeHint@QWidget@@UEBA?AVQSize@@XZ)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::mouseDoubleClickEvent(class QMouseEvent *)" (?mouseDoubleClickEvent@QWidget@@MEAAXPEAVQMouseEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::mouseMoveEvent(class QMouseEvent *)" (?mouseMoveEvent@QWidget@@MEAAXPEAVQMouseEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::mousePressEvent(class QMouseEvent *)" (?mousePressEvent@QWidget@@MEAAXPEAVQMouseEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::mouseReleaseEvent(class QMouseEvent *)" (?mouseReleaseEvent@QWidget@@MEAAXPEAVQMouseEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::moveEvent(class QMoveEvent *)" (?moveEvent@QWidget@@MEAAXPEAVQMoveEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual class QPaintEngine * __cdecl QGLWidget::paintEngine(void)const " (?paintEngine@QGLWidget@@UEBAPEAVQPaintEngine@@XZ)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QGLWidget::paintEvent(class QPaintEvent *)" (?paintEvent@QGLWidget@@MEAAXPEAVQPaintEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QGLWidget::paintOverlayGL(void)" (?paintOverlayGL@QGLWidget@@MEAAXXZ)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::paletteChange(class QPalette const &)" (?paletteChange@QWidget@@MEAAXAEBVQPalette@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual int __cdecl QGLWidget::qt_metacall(enum QMetaObject::Call,int,void * *)" (?qt_metacall@QGLWidget@@UEAAHW4Call@QMetaObject@@HPEAPEAX@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual void * __cdecl QGLWidget::qt_metacast(char const *)" (?qt_metacast@QGLWidget@@UEAAPEAXPEBD@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual void __cdecl QWidget::releaseDC(struct HDC__ *)const " (?releaseDC@QWidget@@UEBAXPEAUHDC__@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QGLWidget::resizeEvent(class QResizeEvent *)" (?resizeEvent@QGLWidget@@MEAAXPEAVQResizeEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QGLWidget::resizeGL(int,int)" (?resizeGL@QGLWidget@@MEAAXHH@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QGLWidget::resizeOverlayGL(int,int)" (?resizeOverlayGL@QGLWidget@@MEAAXHH@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual void __cdecl QWidget::setVisible(bool)" (?setVisible@QWidget@@UEAAX_N@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::showEvent(class QShowEvent *)" (?showEvent@QWidget@@MEAAXPEAVQShowEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual class QSize __cdecl QWidget::sizeHint(void)const " (?sizeHint@QWidget@@UEBA?AVQSize@@XZ)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::styleChange(class QStyle &)" (?styleChange@QWidget@@MEAAXAEAVQStyle@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::tabletEvent(class QTabletEvent *)" (?tabletEvent@QWidget@@MEAAXPEAVQTabletEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QObject::timerEvent(class QTimerEvent *)" (?timerEvent@QObject@@MEAAXPEAVQTimerEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual void __cdecl QGLWidget::updateGL(void)" (?updateGL@QGLWidget@@UEAAXXZ)
+Mainer.obj : error LNK2001: unresolved external symbol "public: virtual void __cdecl QGLWidget::updateOverlayGL(void)" (?updateOverlayGL@QGLWidget@@UEAAXXZ)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::wheelEvent(class QWheelEvent *)" (?wheelEvent@QWidget@@MEAAXPEAVQWheelEvent@@@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual bool __cdecl QWidget::winEvent(struct tagMSG *,long *)" (?winEvent@QWidget@@MEAA_NPEAUtagMSG@@PEAJ@Z)
+Mainer.obj : error LNK2001: unresolved external symbol "protected: virtual void __cdecl QWidget::windowActivationChange(bool)" (?windowActivationChange@QWidget@@MEAAX_N@Z)
+MeGlWindow.obj : error LNK2019: unresolved external symbol __imp_glDrawElements referenced in function "protected: virtual void __cdecl MeGLWindow::paintGL(void)" (?paintGL@MeGLWindow@@MEAAXXZ)
+MeGlWindow.obj : error LNK2019: unresolved external symbol __imp_glViewport referenced in function "protected: virtual void __cdecl MeGLWindow::paintGL(void)" (?paintGL@MeGLWindow@@MEAAXXZ)
+MeGlWindow.obj : error LNK2019: unresolved external symbol __imp_glewInit referenced in function "protected: virtual void __cdecl MeGLWindow::initializeGL(void)" (?initializeGL@MeGLWindow@@MEAAXXZ)
+MeGlWindow.obj : error LNK2019: unresolved external symbol "__declspec(dllimport) public: int __cdecl QWidget::width(void)const " (__imp_?width@QWidget@@QEBAHXZ) referenced in function "protected: virtual void __cdecl MeGLWindow::paintGL(void)" (?paintGL@MeGLWindow@@MEAAXXZ)
+MeGlWindow.obj : error LNK2019: unresolved external symbol "__declspec(dllimport) public: int __cdecl QWidget::height(void)const " (__imp_?height@QWidget@@QEBAHXZ) referenced in function "protected: virtual void __cdecl MeGLWindow::paintGL(void)" (?paintGL@MeGLWindow@@MEAAXXZ)
+MeGlWindow.obj : error LNK2001: unresolved external symbol __imp___glewBindBuffer
+MeGlWindow.obj : error LNK2001: unresolved external symbol __imp___glewBufferData
+MeGlWindow.obj : error LNK2001: unresolved external symbol __imp___glewGenBuffers
+MeGlWindow.obj : error LNK2001: unresolved external symbol __imp___glewAttachShader
+MeGlWindow.obj : error LNK2001: unresolved external symbol __imp___glewCompileShader
+MeGlWindow.obj : error LNK2001: unresolved external symbol __imp___glewCreateProgram
+MeGlWindow.obj : error LNK2001: unresolved external symbol __imp___glewCreateShader
+MeGlWindow.obj : error LNK2001: unresolved external symbol __imp___glewEnableVertexAttribArray
+MeGlWindow.obj : error LNK2001: unresolved external symbol __imp___glewLinkProgram
+MeGlWindow.obj : error LNK2001: unresolved external symbol __imp___glewShaderSource
+MeGlWindow.obj : error LNK2001: unresolved external symbol __imp___glewUseProgram
+MeGlWindow.obj : error LNK2001: unresolved external symbol __imp___glewVertexAttribPointer
+C:\Users\Tete\Desktop\2018 Fall\shaderDev\GraphicsPad\x64\Debug\GraphicsPad.exe : fatal error LNK1120: 85 unresolved externals
