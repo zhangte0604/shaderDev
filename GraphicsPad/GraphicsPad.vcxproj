@@ -26,6 +26,9 @@
   <ItemGroup>
     <ClInclude Include="MeGlWindow.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="VertexShaderCode.glsl" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{EF752E96-A27A-482A-8C7C-9131F2511DAF}</ProjectGuid>

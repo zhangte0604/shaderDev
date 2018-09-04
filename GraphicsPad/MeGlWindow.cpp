@@ -1,5 +1,6 @@
 #include <gl\glew.h>
 #include <iostream>
+#include <fstream>
 #include <MeGLWindow.h>
 using namespace std;
 
@@ -122,6 +123,20 @@ bool checkProgramStatus(GLuint programID)
 	return checkStatus(programID, glGetProgramiv, glGetProgramInfoLog, GL_LINK_STATUS);
 }
 
+//
+string readShaderCode(const char* fileName)
+{
+	ifstream meInput(fileName);
+	if (!meInput.good())
+	{
+		cout << "File failed to load..." << fileName;
+		exit(1);
+	}
+	return std::string(
+		std::istreambuf_iterator<char>(meInput),
+		std::istreambuf_iterator<char>());
+}
+
 
 void installShaders()
 {
@@ -130,9 +145,11 @@ void installShaders()
 
 	//define array of character pointers
 	const char* adapter[1];
-	adapter[0] = vertexShaderCode;
+	string temp = readShaderCode("VertexShaderCode.glsl");
+	adapter[0] = temp.c_str();
 	glShaderSource(vertexShaderID, 1, adapter, 0);
-	adapter[0] = fragmentShaderCode;
+	temp = readShaderCode("FragmentShaderCode.glsl");
+	adapter[0] = temp.c_str();
 	glShaderSource(fragmentShaderID, 1, adapter, 0);
 
 	glCompileShader(vertexShaderID);
