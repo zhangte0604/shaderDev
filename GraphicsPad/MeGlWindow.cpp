@@ -1,5 +1,7 @@
 #include <gl\glew.h>
+#include <iostream>
 #include <MeGLWindow.h>
+using namespace std;
 
 //#define SCREEN_WIDTH 480
 //#define SCREEN_HEIGHT 480
@@ -7,23 +9,6 @@
 extern const char* vertexShaderCode;
 extern const char* fragmentShaderCode;
 
-//void drawFilledCircle(GLfloat x, GLfloat y, GLfloat radius) {
-//	int i;
-//	int triangleAmount = 20; //# of triangles used to draw circle
-//
-//							 //GLfloat radius = 0.8f; //radius
-//	GLfloat twicePi = 2.0f * 3.14;
-//
-//	glBegin(GL_TRIANGLE_FAN);
-//	glVertex2f(x, y); // center of circle
-//	for (i = 0; i <= triangleAmount; i++) {
-//		glVertex2f(
-//			x + (radius * cos(i *  twicePi / triangleAmount)),
-//			y + (radius * sin(i * twicePi / triangleAmount))
-//		);
-//	}
-//	glEnd();
-//}
 
 void sendDataToOpenGL()
 {
@@ -100,6 +85,43 @@ void sendDataToOpenGL()
 
 }
 
+//check error !!!!!!!not finish
+bool checkStatus(
+	GLuint objectID,
+	PFNGLGETSHADERIVPROC objectPropertyGetterFunc,
+	PFNGLGETSHADERINFOLOGPROC getInfoLogFunc,
+	GLenum statusType)
+{
+	GLint status;
+	objectPropertyGetterFunc(objectID, statusType, &status);
+	if (status != GL_TRUE)
+	{
+		GLint infoLogLength;
+		objectPropertyGetterFunc(objectID, GL_INFO_LOG_LENGTH, &infoLogLength);
+		GLchar* buffer = new GLchar[infoLogLength];
+
+		GLsizei bufferSize;
+		getInfoLogFunc(objectID, infoLogLength, &bufferSize, buffer);
+		cout << buffer << endl;
+		delete[] buffer;
+		return false;
+	}
+	return true;
+}
+
+
+//check compile error function
+bool checkShaderStatus(GLuint shaderID)
+{
+	return checkStatus(shaderID, glGetShaderiv, glGetShaderInfoLog, GL_COMPILE_STATUS);
+}
+
+//check linker error function
+bool checkProgramStatus(GLuint programID)
+{
+	return checkStatus(programID, glGetProgramiv, glGetProgramInfoLog, GL_LINK_STATUS);
+}
+
 
 void installShaders()
 {
@@ -116,11 +138,20 @@ void installShaders()
 	glCompileShader(vertexShaderID);
 	glCompileShader(fragmentShaderID);
 
+	//check if compile has error
+	if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
+		return;
+
+	
 	GLuint programID = glCreateProgram();
 	glAttachShader(programID, vertexShaderID);
 	glAttachShader(programID, fragmentShaderID);
 
 	glLinkProgram(programID);
+
+	//check if linker has error
+	if (!checkProgramStatus(programID))
+		return;
 
 	glUseProgram(programID);
 }
