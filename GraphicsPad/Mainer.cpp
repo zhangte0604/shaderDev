@@ -9,6 +9,11 @@ int main(int argc, char* argv[])
 	meWindow.show();
 
 	return app.exec();
+<<<<<<< HEAD
 	
 	//test2
+=======
+
+	//test
+>>>>>>> e76f5ed... test change
 }
