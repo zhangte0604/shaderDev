@@ -4,6 +4,13 @@
 #include <MeGLWindow.h>
 using namespace std;
 
+const float X_DELTA = 0.1f;
+const uint NUM_VERTICES_PER_TRI = 3;
+const uint NUM_FLOATS_PER_VERTICE = 6;
+const uint TIANGLE_BYTE_SIZE = NUM_VERTICES_PER_TRI * NUM_FLOATS_PER_VERTICE * sizeof(float);
+const uint MAX_TRIS = 20;
+
+uint numTris = 0;
 
 //extern const char* vertexShaderCode;
 //extern const char* fragmentShaderCode;
@@ -11,29 +18,6 @@ using namespace std;
 
 void sendDataToOpenGL()
 {
-	const float RED_TRIANGLE_Z = 0.5f;
-	const float BLUE_TRIANGLE_Z = -0.5f;
-
-	GLfloat verts[] =
-	{
-		//Triangle's location
-		//and color
-		-1.0f, -1.0f, RED_TRIANGLE_Z,
-		+1.0f, +0.0f, +0.0f,
-		+0.0f, +1.0f, RED_TRIANGLE_Z,
-		+1.0f, +0.0f, +0.0f,
-		+1.0f, -1.0f, RED_TRIANGLE_Z,
-		+1.0f, +0.0f, +0.0f,
-
-		-1.0f, +1.0f, BLUE_TRIANGLE_Z,
-		+0.0f, +0.0f, +1.0f,
-		+0.0f, -1.0f, BLUE_TRIANGLE_Z,
-		+0.0f, +0.0f, +1.0f,
-		+1.0f, +1.0f, BLUE_TRIANGLE_Z,
-		+0.0f, +0.0f, +1.0f,
-
-	};
-
 	GLuint vertexBufferID;
 	//put data on the graphics card
 	//create buffer
@@ -41,8 +25,7 @@ void sendDataToOpenGL()
 	//bind the buffer to the binding point 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
 	//send the data down to the openGL
-	glBufferData(GL_ARRAY_BUFFER, sizeof(verts),
-		verts, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, MAX_TRIS * TIANGLE_BYTE_SIZE, NULL, GL_STATIC_DRAW);
 
 	//enable the vertex attribute (position)
 	glEnableVertexAttribArray(0);
@@ -54,13 +37,34 @@ void sendDataToOpenGL()
 	//describe color data to openGL
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
 
-	//how the vertices connected
-	GLushort indices[] = { 3,4,5, 0,1,2 };
-	GLuint indexBufferID;
-	glGenBuffers(1, &indexBufferID);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices),
-		indices, GL_STATIC_DRAW);
+}
+
+void sendAnotherTiToOpenGL()
+{
+	//if number of tris reach max number of triss, do nothing
+	if (numTris == MAX_TRIS)
+		return;
+
+	//initial tri x
+	const GLfloat THIS_TRI_X = -1 + numTris * X_DELTA;
+
+	GLfloat thisTri[] =
+	{
+		THIS_TRI_X, 1.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+
+		THIS_TRI_X + X_DELTA, 1.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+
+		THIS_TRI_X, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+
+	};
+
+	//send data to a sub buffer, not entire buffer
+	glBufferSubData(GL_ARRAY_BUFFER,
+		numTris * TIANGLE_BYTE_SIZE, TIANGLE_BYTE_SIZE, thisTri);
+	numTris++;
 
 }
 
@@ -70,17 +74,15 @@ void MeGLWindow::paintGL()
 	//make screen red
 	//glClearColor(1, 0, 0, 1);
 
-	//sert the depth buffer to 1
-	glClear(GL_DEPTH_BUFFER_BIT);
-
+	//set the depth buffer to 1 & clear the previous tri
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 	//render the triangle on the full screen
 	glViewport(0, 0, width(), height());
-	//draw a triangle using the verts
 
-	//glDrawArrays(GL_TRIANGLES, 0, 3);
-	//using dices to draw TWO triangles
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+	sendAnotherTiToOpenGL();
+	//draw tris
+	glDrawArrays(GL_TRIANGLES, (numTris-1) * NUM_VERTICES_PER_TRI,  NUM_VERTICES_PER_TRI);
 
 }
 
