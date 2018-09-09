@@ -5,13 +5,16 @@
 using namespace std;
 
 const float X_DELTA = 0.1f;
+const float Y_DELTA = 0.2f;
 const uint NUM_VERTICES_PER_TRI = 3;
 const uint NUM_FLOATS_PER_VERTICE = 6;
 const uint TIANGLE_BYTE_SIZE = NUM_VERTICES_PER_TRI * NUM_FLOATS_PER_VERTICE * sizeof(float);
-const uint MAX_TRIS = 20;
-
+const uint MAX_TRIS = 200;
+const uint MAX_X_SHIFT = 2 / X_DELTA - 1;
+const uint MAX_Y_SHIFT = 2 / Y_DELTA - 1;
 uint numTris = 0;
-
+uint xShift = 0;
+uint yShift = 0;
 //extern const char* vertexShaderCode;
 //extern const char* fragmentShaderCode;
 
@@ -39,24 +42,45 @@ void sendDataToOpenGL()
 
 }
 
-void sendAnotherTiToOpenGL()
+void sendAnotherTriToOpenGL()
 {
-	//if number of tris reach max number of triss, do nothing
-	if (numTris == MAX_TRIS)
-		return;
-
+	if (GetKeyState('D') & 0x8000/*check if high-order bit is set (1 << 15)*/)
+	{
+		// do stuff
+		if (xShift < MAX_X_SHIFT) {
+			xShift++;
+		}
+		//numTris * Y_DELTA
+		//printf("this is a test");
+	}
+	else if (GetKeyState('A') & 0x8000) {
+		if (xShift > 0) {
+			xShift--;
+		}
+	}
+	else if (GetKeyState('W') & 0x8000) {
+		if (yShift > 0) {
+			yShift--;
+		}
+	}
+	else if (GetKeyState('S') & 0x8000) {
+		if (yShift < MAX_Y_SHIFT) {
+			yShift++;
+		}
+	}
 	//initial tri x
-	const GLfloat THIS_TRI_X = -1 + numTris * X_DELTA;
+	GLfloat THIS_TRI_X = -1 + xShift * X_DELTA;
+	GLfloat THIS_TRI_Y = 1 - yShift * Y_DELTA;
 
 	GLfloat thisTri[] =
 	{
-		THIS_TRI_X, 1.0f, 0.0f,
+		THIS_TRI_X, THIS_TRI_Y, 0.0f,
 		1.0f, 0.0f, 0.0f,
 
-		THIS_TRI_X + X_DELTA, 1.0f, 0.0f,
+		THIS_TRI_X + X_DELTA, THIS_TRI_Y, 0.0f,
 		1.0f, 0.0f, 0.0f,
 
-		THIS_TRI_X, 0.0f, 0.0f,
+		THIS_TRI_X, THIS_TRI_Y - Y_DELTA, 0.0f,
 		1.0f, 0.0f, 0.0f,
 
 	};
@@ -65,7 +89,6 @@ void sendAnotherTiToOpenGL()
 	glBufferSubData(GL_ARRAY_BUFFER,
 		numTris * TIANGLE_BYTE_SIZE, TIANGLE_BYTE_SIZE, thisTri);
 	numTris++;
-
 }
 
 //run everytime you call
@@ -77,10 +100,11 @@ void MeGLWindow::paintGL()
 	//set the depth buffer to 1 & clear the previous tri
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
+
 	//render the triangle on the full screen
 	glViewport(0, 0, width(), height());
-
-	sendAnotherTiToOpenGL();
+	
+	sendAnotherTriToOpenGL();
 	//draw tris
 	glDrawArrays(GL_TRIANGLES, (numTris-1) * NUM_VERTICES_PER_TRI,  NUM_VERTICES_PER_TRI);
 
