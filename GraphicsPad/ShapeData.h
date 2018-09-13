@@ -4,7 +4,7 @@
 
 class Vertex;
 
-struct shapeData
+struct ShapeData
 {
 	Vertex* vertices;
 	GLuint numVertices;
