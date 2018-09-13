@@ -2,6 +2,9 @@
 #include <iostream>
 #include <fstream>
 #include <MeGLWindow.h>
+#include <glm/glm.hpp>
+#include <Vertex.h>
+
 using namespace std;
 
 const float X_DELTA = 0.1f;
@@ -120,9 +123,11 @@ void keyboardControl()
 		}
 	}
 }
+
+
+
 void sendAnotherTriToOpenGL()
 {
-
 	keyboardControl();
 
 	//initial tri position
@@ -132,32 +137,29 @@ void sendAnotherTriToOpenGL()
 	GLfloat SECOND_TRI_X = secXShift * X_DELTA;
 	GLfloat SECOND_TRI_Y = 1 - secYShift * Y_DELTA;
 
-	
-
-	GLfloat thisTri[] =
+	Vertex thisTri[] =
 	{
-		FIRST_TRI_X, FIRST_TRI_Y, 0.0f,
-		1.0f, 0.0f, 0.0f,
+		//first tri
+		glm::vec3(FIRST_TRI_X, FIRST_TRI_Y, 0.0f),
+		glm::vec3(1.0f, 0.0f, 0.0f),
 
-		FIRST_TRI_X + X_DELTA, FIRST_TRI_Y, 0.0f,
-		1.0f, 0.0f, 0.0f,
+		glm::vec3(FIRST_TRI_X + X_DELTA, FIRST_TRI_Y, 0.0f),
+		glm::vec3(1.0f, 0.0f, 0.0f),
 
-		FIRST_TRI_X, FIRST_TRI_Y - Y_DELTA, 0.0f,
-		1.0f, 0.0f, 0.0f,
+		glm::vec3(FIRST_TRI_X, FIRST_TRI_Y - Y_DELTA, 0.0f),
+		glm::vec3(1.0f, 0.0f, 0.0f),
 
+		//second tri
+		glm::vec3(SECOND_TRI_X, SECOND_TRI_Y, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
 
-		SECOND_TRI_X, SECOND_TRI_Y, 0.0f,
-		0.0f, 1.0f, 0.0f,
+		glm::vec3(SECOND_TRI_X + X_DELTA, SECOND_TRI_Y, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
 
-		SECOND_TRI_X + X_DELTA, SECOND_TRI_Y, 0.0f,
-		0.0f, 1.0f, 0.0f,
-
-		SECOND_TRI_X, SECOND_TRI_Y - Y_DELTA, 0.0f,
-		0.0f, 1.0f, 0.0f,
-
+		glm::vec3(SECOND_TRI_X, SECOND_TRI_Y - Y_DELTA, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
 	};
 
-	
 	//send data to a sub buffer, not entire buffer
 	glBufferSubData(GL_ARRAY_BUFFER,
 		numTris * TIANGLE_BYTE_SIZE, TIANGLE_BYTE_SIZE * 2, thisTri);
