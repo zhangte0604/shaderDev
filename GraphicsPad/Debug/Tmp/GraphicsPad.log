@@ -1,5 +1,3 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(376,5): warning MSB8004: Intermediate Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Intermediate Directory.
-  ShapeGenerator.cpp
-c:\users\tete\desktop\2018 fall\shaderdev\graphicspad\vertex.h(3): warning C4099: 'Vertex': type name first seen using 'class' now seen using 'struct'
-  c:\users\tete\desktop\2018 fall\shaderdev\graphicspad\vertex.h(2): note: see declaration of 'Vertex'
+  MeGlWindow.cpp
   GraphicsPad.vcxproj -> C:\Users\Tete\Desktop\2018 Fall\shaderDev\GraphicsPad\Debug\GraphicsPad.exe

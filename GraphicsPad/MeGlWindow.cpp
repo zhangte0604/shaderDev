@@ -33,28 +33,7 @@ int secYShift = 0;
 //extern const char* fragmentShaderCode;
 
 
-void sendDataToOpenGL()
-{
-	GLuint vertexBufferID;
-	//put data on the graphics card
-	//create buffer
-	glGenBuffers(1, &vertexBufferID);
-	//bind the buffer to the binding point 
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-	//send the data down to the openGL
-	glBufferData(GL_ARRAY_BUFFER, MAX_TRIS * TIANGLE_BYTE_SIZE, NULL, GL_STATIC_DRAW);
 
-	//enable the vertex attribute (position)
-	glEnableVertexAttribArray(0);
-	//describe position data to openGL
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
-
-	//enable the vertex attribute (color)
-	glEnableVertexAttribArray(1);
-	//describe color data to openGL
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
-
-}
 
 void keyboardControl()
 {
@@ -141,29 +120,59 @@ void sendAnotherTriToOpenGL()
 	{
 		//first tri
 		glm::vec3(FIRST_TRI_X, FIRST_TRI_Y, 0.0f),
-		glm::vec3(1.0f, 0.0f, 0.0f),
+		//glm::vec3(1.0f, 0.0f, 0.0f),
 
 		glm::vec3(FIRST_TRI_X + X_DELTA, FIRST_TRI_Y, 0.0f),
-		glm::vec3(1.0f, 0.0f, 0.0f),
+		//glm::vec3(1.0f, 0.0f, 0.0f),
 
 		glm::vec3(FIRST_TRI_X, FIRST_TRI_Y - Y_DELTA, 0.0f),
-		glm::vec3(1.0f, 0.0f, 0.0f),
+		//glm::vec3(1.0f, 0.0f, 0.0f),
 
 		//second tri
 		glm::vec3(SECOND_TRI_X, SECOND_TRI_Y, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f),
+		//glm::vec3(0.0f, 1.0f, 0.0f),
 
 		glm::vec3(SECOND_TRI_X + X_DELTA, SECOND_TRI_Y, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f),
+		//glm::vec3(0.0f, 1.0f, 0.0f),
 
 		glm::vec3(SECOND_TRI_X, SECOND_TRI_Y - Y_DELTA, 0.0f),
-		glm::vec3(0.0f, 1.0f, 0.0f),
+		//glm::vec3(0.0f, 1.0f, 0.0f),
 	};
+
+	Vertex boundaryVerts[] =
+	{	
+		glm::vec3(+0.0f, +1.0f, +0.0f),
+		glm::vec3(-1.0f, +0.0f, +0.0f),
+		glm::vec3(+0.0f, -1.0f, +0.0f),
+		glm::vec3(+1.0f, +0.0f, +0.0f),
+	};
+
+	const unsigned int NUM_BOUNDARY_VERTS = sizeof(boundaryVerts) / sizeof(*boundaryVerts);
 
 	//send data to a sub buffer, not entire buffer
 	glBufferSubData(GL_ARRAY_BUFFER,
 		numTris * TIANGLE_BYTE_SIZE, TIANGLE_BYTE_SIZE * 2, thisTri);
 	numTris+=2;
+}
+
+void sendDataToOpenGL()
+{
+	GLuint vertexBufferID;
+	GLuint boundaryVertexBufferID;
+	//put data on the graphics card
+	
+	//create buffer
+	glGenBuffers(1, &vertexBufferID);
+	//bind the buffer to the binding point 
+	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+	//send the data down to the openGL
+	glBufferData(GL_ARRAY_BUFFER, MAX_TRIS * TIANGLE_BYTE_SIZE, NULL, GL_STATIC_DRAW);
+
+
+	glGenBuffers(1, &boundaryVertexBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, boundaryVertexBufferID);
+	glBufferData(GL_ARRAY_BUFFER, 10000, NULL, GL_STATIC_DRAW);
+
 }
 
 //run everytime you call
@@ -181,8 +190,21 @@ void MeGLWindow::paintGL()
 	
 	sendAnotherTriToOpenGL();
 	
+
+	//enable the vertex attribute (position)
+	glEnableVertexAttribArray(0);
+
+	//describe position data to openGL
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
+
+	//enable the vertex attribute (color)
+	glEnableVertexAttribArray(1);
+	//describe color data to openGL
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
+
 	//draw tris
 	glDrawArrays(GL_TRIANGLES, (numTris-2) * NUM_VERTICES_PER_TRI,  NUM_VERTICES_PER_TRI*2);
+	glDrawArrays(GL_LINES, 0, 8);
 
 }
 
