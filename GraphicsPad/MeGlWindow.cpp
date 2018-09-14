@@ -27,13 +27,8 @@ uint firstYShift = 0;
 int secXShift = 0;
 int secYShift = 0;
 
-
-
-//extern const char* vertexShaderCode;
-//extern const char* fragmentShaderCode;
-
-
-
+GLuint TriVertexBufferID;
+GLuint boundaryVertexBufferID;
 
 void keyboardControl()
 {
@@ -103,109 +98,88 @@ void keyboardControl()
 	}
 }
 
-
-
-void sendAnotherTriToOpenGL()
+void sendTriAndDiamondToOpenGL()
 {
-	keyboardControl();
+	
+}
 
-	//initial tri position
-	GLfloat FIRST_TRI_X = -1 + firstXShift * X_DELTA;
-	GLfloat FIRST_TRI_Y = 1 - firstYShift * Y_DELTA;
 
-	GLfloat SECOND_TRI_X = secXShift * X_DELTA;
-	GLfloat SECOND_TRI_Y = 1 - secYShift * Y_DELTA;
+
+
+void sendTriToOpenGL()
+{
 
 	Vertex thisTri[] =
 	{
-		//first tri
-		glm::vec3(FIRST_TRI_X, FIRST_TRI_Y, 0.0f),
-		//glm::vec3(1.0f, 0.0f, 0.0f),
-
-		glm::vec3(FIRST_TRI_X + X_DELTA, FIRST_TRI_Y, 0.0f),
-		//glm::vec3(1.0f, 0.0f, 0.0f),
-
-		glm::vec3(FIRST_TRI_X, FIRST_TRI_Y - Y_DELTA, 0.0f),
-		//glm::vec3(1.0f, 0.0f, 0.0f),
-
-		//second tri
-		glm::vec3(SECOND_TRI_X, SECOND_TRI_Y, 0.0f),
-		//glm::vec3(0.0f, 1.0f, 0.0f),
-
-		glm::vec3(SECOND_TRI_X + X_DELTA, SECOND_TRI_Y, 0.0f),
-		//glm::vec3(0.0f, 1.0f, 0.0f),
-
-		glm::vec3(SECOND_TRI_X, SECOND_TRI_Y - Y_DELTA, 0.0f),
-		//glm::vec3(0.0f, 1.0f, 0.0f),
-	};
-
-	Vertex boundaryVerts[] =
-	{	
 		glm::vec3(+0.0f, +1.0f, +0.0f),
-		glm::vec3(-1.0f, +0.0f, +0.0f),
-		glm::vec3(+0.0f, -1.0f, +0.0f),
-		glm::vec3(+1.0f, +0.0f, +0.0f),
+		glm::vec3(-0.0f, -1.0f, +0.0f),
+		glm::vec3(+1.0f, -1.0f, +0.0f),
 	};
 
-	const unsigned int NUM_BOUNDARY_VERTS = sizeof(boundaryVerts) / sizeof(*boundaryVerts);
-
-	//send data to a sub buffer, not entire buffer
-	glBufferSubData(GL_ARRAY_BUFFER,
-		numTris * TIANGLE_BYTE_SIZE, TIANGLE_BYTE_SIZE * 2, thisTri);
-	numTris+=2;
-}
-
-void sendDataToOpenGL()
-{
-	GLuint vertexBufferID;
-	GLuint boundaryVertexBufferID;
-	//put data on the graphics card
 	
-	//create buffer
-	glGenBuffers(1, &vertexBufferID);
-	//bind the buffer to the binding point 
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
-	//send the data down to the openGL
-	glBufferData(GL_ARRAY_BUFFER, MAX_TRIS * TIANGLE_BYTE_SIZE, NULL, GL_STATIC_DRAW);
 
-
-	glGenBuffers(1, &boundaryVertexBufferID);
-	glBindBuffer(GL_ARRAY_BUFFER, boundaryVertexBufferID);
-	glBufferData(GL_ARRAY_BUFFER, 10000, NULL, GL_STATIC_DRAW);
-
-}
-
-//run everytime you call
-void MeGLWindow::paintGL()
-{
-	//make screen red
-	//glClearColor(1, 0, 0, 1);
-
-	//set the depth buffer to 1 & clear the previous tri
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-
-	//render the triangle on the full screen
-	glViewport(0, 0, width(), height());
+	//give the buffer a name
 	
-	sendAnotherTriToOpenGL();
+	//generate the buffer, give me an inter
+	glGenBuffers(1, &TriVertexBufferID);
+	//bind my bufferID, bind the buffer to the binding point 
+	glBindBuffer(GL_ARRAY_BUFFER, TriVertexBufferID);
+	//send the data(vertices info) down to the openGL
+	//give me some memory on graphics card
+	glBufferData(GL_ARRAY_BUFFER, sizeof(thisTri),
+		thisTri, GL_STATIC_DRAW);
 	
 
 	//enable the vertex attribute (position)
-	glEnableVertexAttribArray(0);
 
 	//describe position data to openGL
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
+	
+	
 
-	//enable the vertex attribute (color)
-	glEnableVertexAttribArray(1);
-	//describe color data to openGL
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
+}
 
-	//draw tris
-	glDrawArrays(GL_TRIANGLES, (numTris-2) * NUM_VERTICES_PER_TRI,  NUM_VERTICES_PER_TRI*2);
+void sendDiamondToOpenGL()
+{
+	Vertex boundaryVerts[] =
+	{
+		glm::vec3(+0.0f, +1.0f, +0.0f),
+		glm::vec3(-1.0f, +0.0f, +0.0f),
+		glm::vec3(-1.0f, +0.0f, +0.0f),
+		glm::vec3(+0.0f, -1.0f, +0.0f),
+		glm::vec3(+0.0f, -1.0f, +0.0f),
+		glm::vec3(+1.0f, +0.0f, +0.0f),
+		glm::vec3(+1.0f, +0.0f, +0.0f),
+		glm::vec3(+0.0f, +1.0f, +0.0f),
+
+
+	};
+
+	
+	glGenBuffers(1, &boundaryVertexBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, boundaryVertexBufferID);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(boundaryVerts),
+		boundaryVerts, GL_STATIC_DRAW);
+}
+
+//run everytime you draw
+void MeGLWindow::paintGL()
+{
+	//set the depth buffer to 1 & clear the previous tri
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+	//render the triangle on the full screen
+	glViewport(0, 0, width(), height());
+
+	// draw the tri
+	glBindBuffer(GL_ARRAY_BUFFER, TriVertexBufferID);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	
+	
+	glBindBuffer(GL_ARRAY_BUFFER, boundaryVertexBufferID);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glDrawArrays(GL_LINES, 0, 8);
-
+	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 }
 
 
@@ -296,13 +270,16 @@ void installShaders()
 	glUseProgram(programID);
 }
 
+//only runs once
 void MeGLWindow::initializeGL()
 {
 	glewInit();
 	//enable the buffer
 	glEnable(GL_DEPTH_TEST);
-	sendDataToOpenGL();
+	//shapes data
+	sendDiamondToOpenGL();
+	sendTriToOpenGL();
 	installShaders();
-
+	glEnableVertexAttribArray(0);
 }
 
