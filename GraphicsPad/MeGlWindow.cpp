@@ -1,4 +1,5 @@
 #include <gl\glew.h>
+#include <Qt\qdebug.h>
 #include <fstream>
 #include "MeGLWindow.h"
 #include <glm/glm.hpp>
@@ -6,8 +7,8 @@ using glm::vec3;
 #include <Vertex.h>
 #include <cassert>
 
-#include <Vector2D.h>
-using Math::Vector2D;
+#include <Vector3D.h>
+using Math::Vector3D;
 
 #include <iostream>
 using std::cout;
@@ -36,9 +37,46 @@ uint firstYShift = 0;
 int secXShift = 0;
 int secYShift = 0;
 
+GLuint programID;
 GLuint TriVertexBufferID;
 GLuint boundaryVertexBufferID;
-GLuint programID;
+GLuint boudaryIndexBufferID;
+
+namespace
+{
+	//tri data
+	Vector3D shipVerts[] =
+	{
+		Vector3D(+0.0f, +0.1f, 0.0f),
+		Vector3D(-0.1f, -0.1f, 0.0f),
+		Vector3D(+0.1f, -0.1f, 0.0f),
+
+		/*glm::vec3(+0.0f, +0.1f, +0.0f),
+		glm::vec3(-0.1f, -0.1f, +0.0f),
+		glm::vec3(+0.1f, -0.1f, +0.0f),*/
+	};
+	
+	//set tri pos
+	Vector3D shipPosition(0.0f, 0.0f, 0.0f);
+
+	//diamond data
+	Vector3D boundaryVerts[] =
+	{
+		Vector3D(+0.0f, +1.0f, +0.0f),
+		Vector3D(-1.0f, +0.0f, +0.0f),
+		Vector3D(-1.0f, +0.0f, +0.0f),
+		Vector3D(+0.0f, -1.0f, +0.0f),
+		Vector3D(+0.0f, -1.0f, +0.0f),
+		Vector3D(+1.0f, +0.0f, +0.0f),
+		Vector3D(+1.0f, +0.0f, +0.0f),
+		Vector3D(+0.0f, +1.0f, +0.0f),
+	};
+
+	GLushort boundaryIndices[] = { 0, 1, 1, 2, 2, 3, 3, 0 };
+
+	const unsigned int NUM_SHIP_VERTS = sizeof(shipVerts) / sizeof(*shipVerts);
+	const unsigned int NUM_BOUNDARY_VERTS = sizeof(boundaryVerts) / sizeof(*boundaryVerts);
+}
 
 void keyboardControl()
 {
@@ -108,32 +146,17 @@ void keyboardControl()
 	}
 }
 
-void sendTriAndDiamondToOpenGL()
-{
-	
-}
-
-
-
 
 void sendTriToOpenGL()
 {
-
-	Vertex thisTri[] =
-	{
-		glm::vec3(+0.0f, +0.1f, +0.0f),
-		glm::vec3(-0.1f, -0.1f, +0.0f),
-		glm::vec3(+0.1f, -0.1f, +0.0f),
-	};
-
 	//generate the buffer, give me an inter
 	glGenBuffers(1, &TriVertexBufferID);
 	//bind my bufferID, bind the buffer to the binding point 
 	glBindBuffer(GL_ARRAY_BUFFER, TriVertexBufferID);
 	//send the data(vertices info) down to the openGL
 	//declare me some memory on graphics card
-	glBufferData(GL_ARRAY_BUFFER, sizeof(thisTri),
-		thisTri, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(shipVerts),
+		NULL, GL_DYNAMIC_DRAW);
 	
 	//describe position data to openGL
 
@@ -141,22 +164,17 @@ void sendTriToOpenGL()
 
 void sendDiamondToOpenGL()
 {
-	Vertex boundaryVerts[] =
-	{
-		glm::vec3(+0.0f, +1.0f, +0.0f),
-		glm::vec3(-1.0f, +0.0f, +0.0f),
-		glm::vec3(-1.0f, +0.0f, +0.0f),
-		glm::vec3(+0.0f, -1.0f, +0.0f),
-		glm::vec3(+0.0f, -1.0f, +0.0f),
-		glm::vec3(+1.0f, +0.0f, +0.0f),
-		glm::vec3(+1.0f, +0.0f, +0.0f),
-		glm::vec3(+0.0f, +1.0f, +0.0f),
-	};
+	
 
 	glGenBuffers(1, &boundaryVertexBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, boundaryVertexBufferID);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(boundaryVerts),
 		boundaryVerts, GL_STATIC_DRAW);
+
+	/*glGenBuffers(1, &boudaryIndexBufferID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, boundaryVertexBufferID);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(boundaryIndices),
+		boundaryIndices, GL_STATIC_DRAW);*/
 }
 
 //run everytime you draw
@@ -168,25 +186,45 @@ void MeGLWindow::paintGL()
 	//render the triangle on the full screen
 	glViewport(0, 0, width(), height());
 
+	//enable the vertex attribute (position)
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
 	vec3 dominatingColor(0.0f, 1.0f, 0.4f);
 	GLint dominatingColorUniformLocation = glGetUniformLocation(programID, "dominatingColor");
 	
 
-	// draw the tri
+	// draw the tri(using uniform)
+	Vector3D translatedVerts[NUM_SHIP_VERTS]; //NUM_VERTS
+	for (unsigned int i = 0; i < NUM_SHIP_VERTS; i++) //3 is NUM_VERTS
+	{
+		translatedVerts[i] = shipVerts[i] + shipPosition;
+	}
+
 	glUniform3fv(dominatingColorUniformLocation, 1, &dominatingColor[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, TriVertexBufferID);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	//glBindBuffer(GL_ARRAY_BUFFER, TriVertexBufferID);
+	
+	glBufferSubData(
+		GL_ARRAY_BUFFER, 0, 
+		sizeof(translatedVerts),
+		translatedVerts);
+
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	
-	//draw diamond
+	//draw diamond(using uniform)
 	dominatingColor.r = 1;
 	dominatingColor.g = 0;
 	dominatingColor.b = 0;
 	glUniform3fv(dominatingColorUniformLocation, 1, &dominatingColor[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, boundaryVertexBufferID);
+	//glBindBuffer(GL_ARRAY_BUFFER, boundaryVertexBufferID);
+	glBufferSubData(
+		GL_ARRAY_BUFFER, 0,
+		sizeof(boundaryVerts),
+		boundaryVerts);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
 	glDrawArrays(GL_LINES, 0, 8);
-	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+	//glDrawElements(GL_LINES, 8, GL_UNSIGNED_SHORT, 0);
 }
 
 
@@ -207,7 +245,7 @@ bool checkStatus(
 
 		GLsizei bufferSize;
 		getInfoLogFunc(objectID, infoLogLength, &bufferSize, buffer);
-		cout << buffer << endl;
+		//cout << buffer << endl;
 		delete[] buffer;
 		return false;
 	}
@@ -284,23 +322,53 @@ void MeGLWindow::initializeGL()
 	//enable the buffer
 	glEnable(GL_DEPTH_TEST);
 	//shapes data
-	sendDiamondToOpenGL();
 	sendTriToOpenGL();
+	sendDiamondToOpenGL();
+
 	installShaders();
-	//enable the vertex attribute (position)
-	glEnableVertexAttribArray(0);
+
 
 	connect(&myTimer, SIGNAL(timeout()),
 		this, SLOT(myUpdate()));
 	myTimer.start(0);
 }
 
-//int debugCount = 0;
 
+
+void MeGLWindow::handleBoundaries()
+{/*
+	if (shipPosition.x < -1 || shipPosition.x > 1)
+		shipPosition.x *= -1;
+	if (shipPosition.y < -1 || shipPosition.y > 1)
+		shipPosition.y *= -1;*/
+
+	bool anyCollisions = false;
+	for (uint i = 0; i < NUM_BOUNDARY_VERTS; i++)
+	{
+		const Vector3D& first = boundaryVerts[i];
+		const Vector3D& second = boundaryVerts[(i + 1) % NUM_BOUNDARY_VERTS];
+
+		Vector3D wall = second - first;
+		Vector3D normal = wall.perpCcwXy();
+		Vector3D respectiveShipPosition = shipPosition - first;
+		float dotResult = normal.dot(respectiveShipPosition);
+		anyCollisions |= (dotResult < 0);
+	}
+	qDebug() << anyCollisions;
+}
+
+//int debugCount = 0;
 void MeGLWindow::myUpdate()
 {
 	/*++debugCount;
 	if(debugCount % 10000 == 0)
 		cout << "frame!" << debugCount << endl;*/
+
+	handleBoundaries();
+	Vector3D velocity(0.01f, 0.01f, 0);
+	shipPosition = shipPosition + velocity;
+	repaint();
 }
+
+
 

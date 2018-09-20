@@ -16,7 +16,7 @@ protected:
 
 private slots:
 	void myUpdate();
-
+	void handleBoundaries();
 };
 
 #endif
