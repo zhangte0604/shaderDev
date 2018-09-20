@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Mainer.cpp" />
     <ClCompile Include="MeGlWindow.cpp" />
+    <ClCompile Include="MeGlWindow_moc.cpp" />
     <ClCompile Include="MeShaderCode.cpp" />
     <ClCompile Include="ShapeGenerator.cpp" />
   </ItemGroup>
@@ -108,7 +109,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\Middleware\glew\include;$(ProjectDir)..\Middleware\Qt\include;$(ProjectDir)..\Middleware\glm</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(ProjectDir)..\Middleware\glew\include;$(ProjectDir)..\Middleware\Qt\include;$(ProjectDir)..\Middleware\glm;$(ProjectDir)..\Engine</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

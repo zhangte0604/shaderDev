@@ -5,6 +5,7 @@
     <ClCompile Include="MeGlWindow.cpp" />
     <ClCompile Include="MeShaderCode.cpp" />
     <ClCompile Include="ShapeGenerator.cpp" />
+    <ClCompile Include="MeGlWindow_moc.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MeGlWindow.h" />

@@ -1,11 +1,20 @@
 #include <gl\glew.h>
-#include <iostream>
 #include <fstream>
-#include <MeGLWindow.h>
+#include "MeGLWindow.h"
 #include <glm/glm.hpp>
+using glm::vec3;
 #include <Vertex.h>
+#include <cassert>
+
+#include <Vector2D.h>
+using Math::Vector2D;
+
+#include <iostream>
+using std::cout;
+using std::endl;
 
 using namespace std;
+
 
 const float X_DELTA = 0.1f;
 const float Y_DELTA = 0.2f;
@@ -29,6 +38,7 @@ int secYShift = 0;
 
 GLuint TriVertexBufferID;
 GLuint boundaryVertexBufferID;
+GLuint programID;
 
 void keyboardControl()
 {
@@ -111,30 +121,21 @@ void sendTriToOpenGL()
 
 	Vertex thisTri[] =
 	{
-		glm::vec3(+0.0f, +1.0f, +0.0f),
-		glm::vec3(-0.0f, -1.0f, +0.0f),
-		glm::vec3(+1.0f, -1.0f, +0.0f),
+		glm::vec3(+0.0f, +0.1f, +0.0f),
+		glm::vec3(-0.1f, -0.1f, +0.0f),
+		glm::vec3(+0.1f, -0.1f, +0.0f),
 	};
 
-	
-
-	//give the buffer a name
-	
 	//generate the buffer, give me an inter
 	glGenBuffers(1, &TriVertexBufferID);
 	//bind my bufferID, bind the buffer to the binding point 
 	glBindBuffer(GL_ARRAY_BUFFER, TriVertexBufferID);
 	//send the data(vertices info) down to the openGL
-	//give me some memory on graphics card
+	//declare me some memory on graphics card
 	glBufferData(GL_ARRAY_BUFFER, sizeof(thisTri),
 		thisTri, GL_STATIC_DRAW);
 	
-
-	//enable the vertex attribute (position)
-
 	//describe position data to openGL
-	
-	
 
 }
 
@@ -150,11 +151,8 @@ void sendDiamondToOpenGL()
 		glm::vec3(+1.0f, +0.0f, +0.0f),
 		glm::vec3(+1.0f, +0.0f, +0.0f),
 		glm::vec3(+0.0f, +1.0f, +0.0f),
-
-
 	};
 
-	
 	glGenBuffers(1, &boundaryVertexBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, boundaryVertexBufferID);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(boundaryVerts),
@@ -170,12 +168,21 @@ void MeGLWindow::paintGL()
 	//render the triangle on the full screen
 	glViewport(0, 0, width(), height());
 
+	vec3 dominatingColor(0.0f, 1.0f, 0.4f);
+	GLint dominatingColorUniformLocation = glGetUniformLocation(programID, "dominatingColor");
+	
+
 	// draw the tri
+	glUniform3fv(dominatingColorUniformLocation, 1, &dominatingColor[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, TriVertexBufferID);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	
-	
+	//draw diamond
+	dominatingColor.r = 1;
+	dominatingColor.g = 0;
+	dominatingColor.b = 0;
+	glUniform3fv(dominatingColorUniformLocation, 1, &dominatingColor[0]);
 	glBindBuffer(GL_ARRAY_BUFFER, boundaryVertexBufferID);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glDrawArrays(GL_LINES, 0, 8);
@@ -257,7 +264,7 @@ void installShaders()
 		return;
 
 	
-	GLuint programID = glCreateProgram();
+	programID = glCreateProgram();
 	glAttachShader(programID, vertexShaderID);
 	glAttachShader(programID, fragmentShaderID);
 
@@ -280,6 +287,20 @@ void MeGLWindow::initializeGL()
 	sendDiamondToOpenGL();
 	sendTriToOpenGL();
 	installShaders();
+	//enable the vertex attribute (position)
 	glEnableVertexAttribArray(0);
+
+	connect(&myTimer, SIGNAL(timeout()),
+		this, SLOT(myUpdate()));
+	myTimer.start(0);
+}
+
+//int debugCount = 0;
+
+void MeGLWindow::myUpdate()
+{
+	/*++debugCount;
+	if(debugCount % 10000 == 0)
+		cout << "frame!" << debugCount << endl;*/
 }
 
