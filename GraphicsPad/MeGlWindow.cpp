@@ -336,12 +336,14 @@ void MeGLWindow::initializeGL()
 
 
 void MeGLWindow::handleBoundaries()
-{/*
+{
+	//tri goes back when it bounce the screen boundary
 	if (shipPosition.x < -1 || shipPosition.x > 1)
 		shipPosition.x *= -1;
 	if (shipPosition.y < -1 || shipPosition.y > 1)
-		shipPosition.y *= -1;*/
+		shipPosition.y *= -1;
 
+	//check if the tri is out of screen
 	bool anyCollisions = false;
 	for (uint i = 0; i < NUM_BOUNDARY_VERTS; i++)
 	{
@@ -349,10 +351,17 @@ void MeGLWindow::handleBoundaries()
 		const Vector3D& second = boundaryVerts[(i + 1) % NUM_BOUNDARY_VERTS];
 
 		Vector3D wall = second - first;
-		Vector3D normal = wall.perpCcwXy();
+		Vector3D normal = wall.perpCcwXy().normalized();
 		Vector3D respectiveShipPosition = shipPosition - first;
 		float dotResult = normal.dot(respectiveShipPosition);
 		anyCollisions |= (dotResult < 0);
+
+		if (dotResult < 0)
+		{
+
+			shipPosition = shipPosition - 2 * shipPosition.dot(normal) * normal;
+			cout << "test!" << endl;
+		}
 	}
 	qDebug() << anyCollisions;
 }
