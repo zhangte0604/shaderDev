@@ -41,7 +41,7 @@ GLuint programID;
 GLuint TriVertexBufferID;
 GLuint boundaryVertexBufferID;
 GLuint boudaryIndexBufferID;
-
+Vector3D velocity(-0.02f, -0.01f, 0);
 namespace
 {
 	//tri data
@@ -247,6 +247,8 @@ bool checkStatus(
 		getInfoLogFunc(objectID, infoLogLength, &bufferSize, buffer);
 		//cout << buffer << endl;
 		delete[] buffer;
+
+		
 		return false;
 	}
 	return true;
@@ -337,30 +339,32 @@ void MeGLWindow::initializeGL()
 
 void MeGLWindow::handleBoundaries()
 {
-	//tri goes back when it bounce the screen boundary
-	if (shipPosition.x < -1 || shipPosition.x > 1)
-		shipPosition.x *= -1;
-	if (shipPosition.y < -1 || shipPosition.y > 1)
-		shipPosition.y *= -1;
+	////tri goes back when it bounce the screen boundary
+	//if (shipPosition.x < -1 || shipPosition.x > 1)
+	//	velocity.x *= -1;
+	//if (shipPosition.y < -1 || shipPosition.y > 1)
+	//	velocity.y *= -1;
 
 	//check if the tri is out of screen
 	bool anyCollisions = false;
-	for (uint i = 0; i < NUM_BOUNDARY_VERTS; i++)
+	for (uint i = 0; i < NUM_BOUNDARY_VERTS; i+=2)
 	{
 		const Vector3D& first = boundaryVerts[i];
-		const Vector3D& second = boundaryVerts[(i + 1) % NUM_BOUNDARY_VERTS];
+		const Vector3D& second = boundaryVerts[(i + 1)];
 
 		Vector3D wall = second - first;
-		Vector3D normal = wall.perpCcwXy().normalized();
+		Vector3D normal = wall.perpCcwXy().normalized(); //normal is perpendicular to the wall, normalize's magnitude is 1, same direction as normal
 		Vector3D respectiveShipPosition = shipPosition - first;
 		float dotResult = normal.dot(respectiveShipPosition);
 		anyCollisions |= (dotResult < 0);
 
+		
+
 		if (dotResult < 0)
 		{
 
-			shipPosition = shipPosition - 2 * shipPosition.dot(normal) * normal;
-			cout << "test!" << endl;
+			velocity = velocity - 2 * velocity.dot(normal) * normal;
+			
 		}
 	}
 	qDebug() << anyCollisions;
@@ -374,7 +378,7 @@ void MeGLWindow::myUpdate()
 		cout << "frame!" << debugCount << endl;*/
 
 	handleBoundaries();
-	Vector3D velocity(0.01f, 0.01f, 0);
+	//Vector3D velocity(0.01f, 0.01f, 0);
 	shipPosition = shipPosition + velocity;
 	repaint();
 }
