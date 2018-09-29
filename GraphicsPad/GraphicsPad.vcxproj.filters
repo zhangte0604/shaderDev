@@ -4,7 +4,9 @@
     <ClCompile Include="Mainer.cpp" />
     <ClCompile Include="MeGlWindow.cpp" />
     <ClCompile Include="MeShaderCode.cpp" />
-    <ClCompile Include="ShapeGenerator.cpp" />
+    <ClCompile Include="ShapeGenerator.cpp">
+      <Filter>Primitives</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MeGlWindow.h" />
@@ -14,7 +16,9 @@
     <ClInclude Include="ShapeData.h">
       <Filter>Primitives</Filter>
     </ClInclude>
-    <ClInclude Include="ShapeGenerator.h" />
+    <ClInclude Include="ShapeGenerator.h">
+      <Filter>Primitives</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="VertexShaderCode.glsl" />
