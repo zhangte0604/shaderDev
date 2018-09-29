@@ -3,20 +3,23 @@
 #include <fstream>
 #include <MeGLWindow.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <Vertex.h>
 #include <ShapeGenerator.h>
 
 using namespace std;
 using glm::vec3;
+using glm::mat4;
 
 const uint NUM_VERTICES_PER_TRI = 3;
 const uint NUM_FLOATS_PER_VERTICE = 6;
 const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 GLuint programID;
+GLuint numIndices;
 
 void sendDataToOpenGL()
 {
-	ShapeData tri = ShapeGenerator::makeTriangle();
+	ShapeData shape = ShapeGenerator::makeCube();
 
 	GLuint vertexBufferID;
 	//put data on the graphics card
@@ -25,7 +28,7 @@ void sendDataToOpenGL()
 	//bind the buffer to the binding point 
 	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
 	//send the data down to the openGL
-	glBufferData(GL_ARRAY_BUFFER, tri.vertexBufferSize(), tri.vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, shape.vertexBufferSize(), shape.vertices, GL_STATIC_DRAW);
 
 	//enable the vertex attribute (position)
 	glEnableVertexAttribArray(0);
@@ -40,9 +43,10 @@ void sendDataToOpenGL()
 	GLuint indexArrayBufferID;
 	glGenBuffers(1, &indexArrayBufferID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexArrayBufferID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, tri.indexBufferSize(), tri.indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, shape.indexBufferSize(), shape.indices, GL_STATIC_DRAW);
 
-	tri.cleanup();
+	numIndices = shape.numIndices;
+	shape.cleanup();
 }
 
 //run everytime you call
@@ -53,18 +57,25 @@ void MeGLWindow::paintGL()
 
 	//set the depth buffer to 1 & clear the previous tri
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-	//send uniform data down to openGL
-	vec3 dominatingColor(1.0f, 0.0f, 0.0f);
-	GLint dominatingColorUniformLocation = glGetUniformLocation(programID, "dominatingColor");
-	glUniform3fv(dominatingColorUniformLocation, 1, &dominatingColor[0]);
-
 	//render the triangle on the full screen
 	glViewport(0, 0, width(), height());
 	
-	
+
+	//send uniform data down to openGL
+	mat4 translationMatrix = glm::translate(mat4(), vec3(0.0f, 0.0f, -3.0f));
+	mat4 rotationMatrix = glm::rotate(mat4(), 54.0f, vec3(1.0f, 0.0f, 0.0f));
+	mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
+
+	mat4 fullTransformMatrix = projectionMatrix * translationMatrix * rotationMatrix; //the order is important
+
+	GLint fullTransformMatrixUniformLocation =
+		glGetUniformLocation(programID, "fullTransformMatrix");
+	glUniformMatrix4fv(fullTransformMatrixUniformLocation, 1,
+		GL_FALSE, &fullTransformMatrix[0][0]);
+
+
 	//draw tris
-	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
 
 }
 
