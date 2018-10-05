@@ -4,26 +4,12 @@
     <ClCompile Include="Mainer.cpp" />
     <ClCompile Include="MeGlWindow.cpp" />
     <ClCompile Include="MeShaderCode.cpp" />
-    <ClCompile Include="ShapeGenerator.cpp" />
-    <ClCompile Include="MeGlWindow_moc.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MeGlWindow.h" />
-    <ClInclude Include="Vertex.h">
-      <Filter>Primitives</Filter>
-    </ClInclude>
-    <ClInclude Include="ShapeData.h">
-      <Filter>Primitives</Filter>
-    </ClInclude>
-    <ClInclude Include="ShapeGenerator.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="VertexShaderCode.glsl" />
     <None Include="FragmentShaderCode.glsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="Primitives">
-      <UniqueIdentifier>{f4f1b5cc-4191-4625-9d80-f40c196a4a4e}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
 </Project>

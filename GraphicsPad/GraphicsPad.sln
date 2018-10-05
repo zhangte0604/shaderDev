@@ -4,11 +4,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.27703.2035
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GraphicsPad", "GraphicsPad.vcxproj", "{EF752E96-A27A-482A-8C7C-9131F2511DAF}"
-	ProjectSection(ProjectDependencies) = postProject
-		{55BF72A9-83AD-4986-8339-DBED75B0A484} = {55BF72A9-83AD-4986-8339-DBED75B0A484}
-	EndProjectSection
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Engine", "..\Engine\Engine.vcxproj", "{55BF72A9-83AD-4986-8339-DBED75B0A484}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -26,14 +21,6 @@ Global
 		{EF752E96-A27A-482A-8C7C-9131F2511DAF}.Release|x64.Build.0 = Release|x64
 		{EF752E96-A27A-482A-8C7C-9131F2511DAF}.Release|x86.ActiveCfg = Release|Win32
 		{EF752E96-A27A-482A-8C7C-9131F2511DAF}.Release|x86.Build.0 = Release|Win32
-		{55BF72A9-83AD-4986-8339-DBED75B0A484}.Debug|x64.ActiveCfg = Debug|x64
-		{55BF72A9-83AD-4986-8339-DBED75B0A484}.Debug|x64.Build.0 = Debug|x64
-		{55BF72A9-83AD-4986-8339-DBED75B0A484}.Debug|x86.ActiveCfg = Debug|Win32
-		{55BF72A9-83AD-4986-8339-DBED75B0A484}.Debug|x86.Build.0 = Debug|Win32
-		{55BF72A9-83AD-4986-8339-DBED75B0A484}.Release|x64.ActiveCfg = Release|x64
-		{55BF72A9-83AD-4986-8339-DBED75B0A484}.Release|x64.Build.0 = Release|x64
-		{55BF72A9-83AD-4986-8339-DBED75B0A484}.Release|x86.ActiveCfg = Release|Win32
-		{55BF72A9-83AD-4986-8339-DBED75B0A484}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
