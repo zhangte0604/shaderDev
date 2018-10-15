@@ -4,6 +4,7 @@
 #include <MeGLWindow.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
 #include <Vertex.h>
 #include <ShapeGenerator.h>
 
@@ -47,6 +48,10 @@ void sendDataToOpenGL()
 
 	numIndices = shape.numIndices;
 	shape.cleanup();
+
+	
+
+
 }
 
 //run everytime you call
@@ -59,20 +64,44 @@ void MeGLWindow::paintGL()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	//render the triangle on the full screen
 	glViewport(0, 0, width(), height());
-	
 
-	//send uniform data down to openGL
-	mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
-	mat4 projectionTranslationMatrix = glm::translate(projectionMatrix, vec3(0.0f, 0.0f, -3.0f));
-	mat4 fullTransformMatrix = glm::rotate(projectionTranslationMatrix, 54.0f, vec3(1.0f, 0.0f, 0.0f));
+
+	/*OoenGL Instancing: 
+	render the same geometry twice,
+	didn't have to send down the graphic cards twice,
+	by using different full transform matrix*/
 
 	GLint fullTransformMatrixUniformLocation =
 		glGetUniformLocation(programID, "fullTransformMatrix");
+	 
+	mat4 fullTransformMatrix;
+	
+	//send uniform data down to openGL
+	//different cubes using the same projection matrix
+	mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
+	
+	//Cube 1:
+	mat4 TranslationMatrix = glm::translate(vec3(-1.0f, 0.0f, -3.0f));
+	mat4 RotationMatrix = glm::rotate(36.0f, vec3(1.0f, 0.0f, 0.0f));
+
+	fullTransformMatrix = projectionMatrix * TranslationMatrix * RotationMatrix;
+
 	glUniformMatrix4fv(fullTransformMatrixUniformLocation, 1,
 		GL_FALSE, &fullTransformMatrix[0][0]);
 
+	//draw the cube
+	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
 
-	//draw tris
+	//Cube 2:
+	TranslationMatrix = glm::translate(vec3(1.0f, 0.0f, -3.75f));
+	RotationMatrix = glm::rotate(126.0f, vec3(0.0f, 1.0f, 0.0f));
+
+	fullTransformMatrix = projectionMatrix * TranslationMatrix * RotationMatrix;
+
+	glUniformMatrix4fv(fullTransformMatrixUniformLocation, 1,
+		GL_FALSE, &fullTransformMatrix[0][0]);
+
+	//draw the cube
 	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
 
 }
@@ -162,6 +191,10 @@ void installShaders()
 	if (!checkProgramStatus(programID))
 		return;
 
+	//delete shader
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
+
 	glUseProgram(programID);
 }
 
@@ -173,5 +206,11 @@ void MeGLWindow::initializeGL()
 	sendDataToOpenGL();
 	installShaders();
 
+}
+
+MeGLWindow::~MeGLWindow()
+{
+	glUseProgram(0);
+	glDeleteProgram(programID);
 }
 
