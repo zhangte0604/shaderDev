@@ -18,7 +18,7 @@ const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 GLuint programID;
 GLuint numIndices;
 
-void sendDataToOpenGL()
+void MeGLWindow::sendDataToOpenGL()
 {
 	ShapeData shape = ShapeGenerator::makeCube();
 
@@ -49,7 +49,47 @@ void sendDataToOpenGL()
 	numIndices = shape.numIndices;
 	shape.cleanup();
 
+	GLuint transformationMatrixBufferID;
+	glGenBuffers(1, &transformationMatrixBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, transformationMatrixBufferID);
+
+	//different cubes using the same projection matrix
+	mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
+
+	mat4 fullTransforms[]=
+	{
+		/*OoenGL Instancing:
+		render the same geometry twice,
+		didn't have to send down the graphic cards twice,
+		by using different full transform matrix*/
 	
+		/*
+		//Cube 1:
+		mat4 TranslationMatrix = glm::translate(vec3(-1.0f, 0.0f, -3.0f));
+		mat4 RotationMatrix = glm::rotate(36.0f, vec3(1.0f, 0.0f, 0.0f));
+
+		//Cube 2:
+		TranslationMatrix = glm::translate(vec3(1.0f, 0.0f, -3.75f));
+		RotationMatrix = glm::rotate(126.0f, vec3(0.0f, 1.0f, 0.0f));
+		*/
+		
+
+		projectionMatrix * glm::translate(vec3(-1.0f, 0.0f, -3.0f)) * glm::rotate(36.0f, vec3(1.0f, 0.0f, 0.0f)),
+		projectionMatrix * glm::translate(vec3(1.0f, 0.0f, -3.75f)) * glm::rotate(126.0f, vec3(0.0f, 1.0f, 0.0f))
+	};
+	glBufferData(GL_ARRAY_BUFFER, sizeof(fullTransforms), fullTransforms, GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 0));
+	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 4));
+	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 8));
+	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 12));
+	glEnableVertexAttribArray(2);
+	glEnableVertexAttribArray(3);
+	glEnableVertexAttribArray(4);
+	glEnableVertexAttribArray(5);
+	glVertexAttribDivisor(2, 1);
+	glVertexAttribDivisor(3, 1);
+	glVertexAttribDivisor(4, 1);
+	glVertexAttribDivisor(5, 1);
 
 
 }
@@ -64,51 +104,15 @@ void MeGLWindow::paintGL()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	//render the triangle on the full screen
 	glViewport(0, 0, width(), height());
-
-
-	/*OoenGL Instancing: 
-	render the same geometry twice,
-	didn't have to send down the graphic cards twice,
-	by using different full transform matrix*/
-
-	GLint fullTransformMatrixUniformLocation =
-		glGetUniformLocation(programID, "fullTransformMatrix");
-	 
-	mat4 fullTransformMatrix;
 	
-	//send uniform data down to openGL
-	//different cubes using the same projection matrix
-	mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
-	
-	//Cube 1:
-	mat4 TranslationMatrix = glm::translate(vec3(-1.0f, 0.0f, -3.0f));
-	mat4 RotationMatrix = glm::rotate(36.0f, vec3(1.0f, 0.0f, 0.0f));
-
-	fullTransformMatrix = projectionMatrix * TranslationMatrix * RotationMatrix;
-
-	glUniformMatrix4fv(fullTransformMatrixUniformLocation, 1,
-		GL_FALSE, &fullTransformMatrix[0][0]);
-
 	//draw the cube
-	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
-
-	//Cube 2:
-	TranslationMatrix = glm::translate(vec3(1.0f, 0.0f, -3.75f));
-	RotationMatrix = glm::rotate(126.0f, vec3(0.0f, 1.0f, 0.0f));
-
-	fullTransformMatrix = projectionMatrix * TranslationMatrix * RotationMatrix;
-
-	glUniformMatrix4fv(fullTransformMatrixUniformLocation, 1,
-		GL_FALSE, &fullTransformMatrix[0][0]);
-
-	//draw the cube
-	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
-
+	//draw multiple instances of a set of elements
+	glDrawElementsInstanced(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0, 2);
 }
 
 
 //check error !!!!!!!not finish
-bool checkStatus(
+bool MeGLWindow::checkStatus(
 	GLuint objectID,
 	PFNGLGETSHADERIVPROC objectPropertyGetterFunc,
 	PFNGLGETSHADERINFOLOGPROC getInfoLogFunc,
@@ -133,19 +137,19 @@ bool checkStatus(
 
 
 //check compile error function
-bool checkShaderStatus(GLuint shaderID)
+bool MeGLWindow::checkShaderStatus(GLuint shaderID)
 {
 	return checkStatus(shaderID, glGetShaderiv, glGetShaderInfoLog, GL_COMPILE_STATUS);
 }
 
 //check linker error function
-bool checkProgramStatus(GLuint programID)
+bool MeGLWindow::checkProgramStatus(GLuint programID)
 {
 	return checkStatus(programID, glGetProgramiv, glGetProgramInfoLog, GL_LINK_STATUS);
 }
 
 //
-string readShaderCode(const char* fileName)
+string MeGLWindow::readShaderCode(const char* fileName)
 {
 	ifstream meInput(fileName);
 	if (!meInput.good())
@@ -159,7 +163,7 @@ string readShaderCode(const char* fileName)
 }
 
 
-void installShaders()
+void MeGLWindow::installShaders()
 {
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
