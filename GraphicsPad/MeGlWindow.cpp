@@ -38,6 +38,8 @@ void MeGLWindow::sendDataToOpenGL()
 
 	//enable the vertex attribute (color)
 	glEnableVertexAttribArray(1);
+	//solid blue color
+	//glVertexAttrib3f(1, 0, 0, 1);
 	//describe color data to openGL
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
 
@@ -82,6 +84,7 @@ void MeGLWindow::sendDataToOpenGL()
 	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 4));
 	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 8));
 	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 12));
+	//enable the vertex attribute (TransformMatrix)
 	glEnableVertexAttribArray(2);
 	glEnableVertexAttribArray(3);
 	glEnableVertexAttribArray(4);
@@ -188,12 +191,22 @@ void MeGLWindow::installShaders()
 	programID = glCreateProgram();
 	glAttachShader(programID, vertexShaderID);
 	glAttachShader(programID, fragmentShaderID);
-
+	
+	
+	//Linker decideds where the attributes are
 	glLinkProgram(programID);
 
 	//check if linker has error
 	if (!checkProgramStatus(programID))
 		return;
+
+	/*
+	//Where are these attributes automatically
+	GLint positionLocation = glGetAttribLocation(programID, "position");
+	GLint colorLocation = glGetAttribLocation(programID, "vertexColor");
+	GLint transformLocation = glGetAttribLocation(programID, "fullTransformMatrix");
+	*/
+	
 
 	//delete shader
 	glDeleteShader(vertexShaderID);
