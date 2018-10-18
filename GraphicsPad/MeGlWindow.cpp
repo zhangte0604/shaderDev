@@ -1,12 +1,15 @@
 #include <gl\glew.h>
 #include <iostream>
 #include <fstream>
+#include <QtGui/qmouseevent>
+#include <QtGui/qkeyevent>
 #include <MeGLWindow.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 #include <Vertex.h>
 #include <ShapeGenerator.h>
+#include "Camera.h"
 
 using namespace std;
 using glm::vec3;
@@ -17,6 +20,7 @@ const uint NUM_FLOATS_PER_VERTICE = 6;
 const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 GLuint programID;
 GLuint numIndices;
+Camera camera;
 
 void MeGLWindow::sendDataToOpenGL()
 {
@@ -55,31 +59,7 @@ void MeGLWindow::sendDataToOpenGL()
 	glGenBuffers(1, &transformationMatrixBufferID);
 	glBindBuffer(GL_ARRAY_BUFFER, transformationMatrixBufferID);
 
-	//different cubes using the same projection matrix
-	mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
-
-	mat4 fullTransforms[]=
-	{
-		/*OoenGL Instancing:
-		render the same geometry twice,
-		didn't have to send down the graphic cards twice,
-		by using different full transform matrix*/
-	
-		/*
-		//Cube 1:
-		mat4 TranslationMatrix = glm::translate(vec3(-1.0f, 0.0f, -3.0f));
-		mat4 RotationMatrix = glm::rotate(36.0f, vec3(1.0f, 0.0f, 0.0f));
-
-		//Cube 2:
-		TranslationMatrix = glm::translate(vec3(1.0f, 0.0f, -3.75f));
-		RotationMatrix = glm::rotate(126.0f, vec3(0.0f, 1.0f, 0.0f));
-		*/
-		
-
-		projectionMatrix * glm::translate(vec3(-1.0f, 0.0f, -3.0f)) * glm::rotate(36.0f, vec3(1.0f, 0.0f, 0.0f)),
-		projectionMatrix * glm::translate(vec3(1.0f, 0.0f, -3.75f)) * glm::rotate(126.0f, vec3(0.0f, 1.0f, 0.0f))
-	};
-	glBufferData(GL_ARRAY_BUFFER, sizeof(fullTransforms), fullTransforms, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(mat4) * 2, 0, GL_DYNAMIC_DRAW);
 	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 0));
 	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 4));
 	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 8));
@@ -97,11 +77,65 @@ void MeGLWindow::sendDataToOpenGL()
 
 }
 
+void MeGLWindow::mouseMoveEvent(QMouseEvent* e)
+{
+	camera.mouseUpdate(glm::vec2(e->x(), e->y()));
+	repaint();
+}
+
+void  MeGLWindow::keyPressEvent(QKeyEvent* e)
+{
+	switch (e->key())
+	{
+	case Qt::Key::Key_W:
+		camera.moveForward();
+		break;
+	case Qt::Key::Key_S:
+		camera.moveBackward();
+		break;
+	case Qt::Key::Key_A:
+		camera.strafeLeft();
+		break;
+	case Qt::Key::Key_D:
+		camera.strafeRight();
+		break;
+	case Qt::Key::Key_R:
+		camera.moveUp();
+		break;
+	case Qt::Key::Key_F:
+		camera.moveDown();
+		break;
+	}
+	repaint();
+}
+
+
 //run everytime you call
 void MeGLWindow::paintGL()
 {
-	//make screen red
-	//glClearColor(1, 0, 0, 1);
+	mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
+	mat4 fullTransforms[] =
+	{
+		/*OoenGL Instancing:
+		render the same geometry twice,
+		didn't have to send down the graphic cards twice,
+		by using different full transform matrix*/
+
+		/*
+		//Cube 1:
+		mat4 TranslationMatrix = glm::translate(vec3(-1.0f, 0.0f, -3.0f));
+		mat4 RotationMatrix = glm::rotate(36.0f, vec3(1.0f, 0.0f, 0.0f));
+
+		//Cube 2:
+		TranslationMatrix = glm::translate(vec3(1.0f, 0.0f, -3.75f));
+		RotationMatrix = glm::rotate(126.0f, vec3(0.0f, 1.0f, 0.0f));
+		*/
+
+		//view to projection matrix * model to world matrix
+		projectionMatrix * camera.getWorldToViewMatrix() * glm::translate(vec3(-1.0f, 0.0f, -3.0f)) * glm::rotate(36.0f, vec3(1.0f, 0.0f, 0.0f)),
+		projectionMatrix * camera.getWorldToViewMatrix() * glm::translate(vec3(1.0f, 0.0f, -3.75f)) * glm::rotate(126.0f, vec3(0.0f, 1.0f, 0.0f))
+	};
+	glBufferData(GL_ARRAY_BUFFER, sizeof(fullTransforms), fullTransforms, GL_DYNAMIC_DRAW);
 
 	//set the depth buffer to 1 & clear the previous tri
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -217,6 +251,7 @@ void MeGLWindow::installShaders()
 
 void MeGLWindow::initializeGL()
 {
+	setMouseTracking(true);
 	glewInit();
 	//enable the buffer
 	glEnable(GL_DEPTH_TEST);
