@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClCompile Include="Mainer.cpp" />
     <ClCompile Include="MeGlWindow.cpp" />
+    <ClCompile Include="MeGlWindow_moc.cpp" />
     <ClCompile Include="MeShaderCode.cpp" />
     <ClCompile Include="ShapeGenerator.cpp" />
   </ItemGroup>

@@ -16,6 +16,7 @@ const uint NUM_FLOATS_PER_VERTICE = 6;
 const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 GLuint programID;
 GLuint numIndices;
+GLfloat rotateDegree = 54.0f;
 
 void sendDataToOpenGL()
 {
@@ -64,7 +65,7 @@ void MeGLWindow::paintGL()
 	//send uniform data down to openGL
 	mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
 	mat4 projectionTranslationMatrix = glm::translate(projectionMatrix, vec3(0.0f, 0.0f, -3.0f));
-	mat4 fullTransformMatrix = glm::rotate(projectionTranslationMatrix, 54.0f, vec3(1.0f, 0.0f, 0.0f));
+	mat4 fullTransformMatrix = glm::rotate(projectionTranslationMatrix, rotateDegree, vec3(1.0f, 0.0f, 0.0f));
 
 	GLint fullTransformMatrixUniformLocation =
 		glGetUniformLocation(programID, "fullTransformMatrix");
@@ -74,8 +75,10 @@ void MeGLWindow::paintGL()
 
 	//draw tris
 	glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0);
-
+	
 }
+
+
 
 
 //check error !!!!!!!not finish
@@ -173,5 +176,16 @@ void MeGLWindow::initializeGL()
 	sendDataToOpenGL();
 	installShaders();
 
+	connect(&myTimer, SIGNAL(timeout()),
+		this, SLOT(myUpdate()));
+	myTimer.start(100);
+
 }
+
+void MeGLWindow::myUpdate()
+{
+	rotateDegree += 20.0f;
+	repaint();
+}
+
 

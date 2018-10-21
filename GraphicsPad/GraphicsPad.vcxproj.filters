@@ -7,6 +7,7 @@
     <ClCompile Include="ShapeGenerator.cpp">
       <Filter>Primitives</Filter>
     </ClCompile>
+    <ClCompile Include="MeGlWindow_moc.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MeGlWindow.h" />
