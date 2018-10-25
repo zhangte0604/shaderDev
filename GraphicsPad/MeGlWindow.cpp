@@ -19,41 +19,62 @@ const uint NUM_VERTICES_PER_TRI = 3;
 const uint NUM_FLOATS_PER_VERTICE = 6;
 const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 GLuint programID;
-GLuint numIndices;
+GLuint cubeNumIndices;
+GLuint arrowNumIndices;
 Camera camera;
+GLuint fullTransformationUniformLocation;
+GLuint cubeVertexBufferID;
+GLuint cubeIndexBufferID;
+GLuint arrowVertexBufferID;
+GLuint arrowIndexBufferID;
 
 void MeGLWindow::sendDataToOpenGL()
 {
+	//Cube
 	ShapeData shape = ShapeGenerator::makeCube();
 
-	GLuint vertexBufferID;
+	
 	//put data on the graphics card
 	//create buffer
-	glGenBuffers(1, &vertexBufferID);
+	glGenBuffers(1, &cubeVertexBufferID);
 	//bind the buffer to the binding point 
-	glBindBuffer(GL_ARRAY_BUFFER, vertexBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVertexBufferID);
 	//send the data down to the openGL
 	glBufferData(GL_ARRAY_BUFFER, shape.vertexBufferSize(), shape.vertices, GL_STATIC_DRAW);
-
 	//enable the vertex attribute (position)
 	glEnableVertexAttribArray(0);
-	//describe position data to openGL
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
-
 	//enable the vertex attribute (color)
 	glEnableVertexAttribArray(1);
-	//solid blue color
-	//glVertexAttrib3f(1, 0, 0, 1);
+	
+	glGenBuffers(1, &cubeIndexBufferID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIndexBufferID);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, shape.indexBufferSize(), shape.indices, GL_STATIC_DRAW);
+	cubeNumIndices = shape.numIndices;
+	shape.cleanup();
+
+	//Arrow
+	shape = ShapeGenerator::makeArrow();
+
+	//put data on the graphics card
+	//create buffer
+	glGenBuffers(1, &arrowVertexBufferID);
+	//bind the buffer to the binding point 
+	glBindBuffer(GL_ARRAY_BUFFER, arrowVertexBufferID);
+	//send the data down to the openGL
+	glBufferData(GL_ARRAY_BUFFER, shape.vertexBufferSize(), shape.vertices, GL_STATIC_DRAW);
+	//describe position data to openGL
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
 	//describe color data to openGL
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
 
-	GLuint indexArrayBufferID;
-	glGenBuffers(1, &indexArrayBufferID);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexArrayBufferID);
+	glGenBuffers(1, &arrowIndexBufferID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, arrowIndexBufferID);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, shape.indexBufferSize(), shape.indices, GL_STATIC_DRAW);
-
-	numIndices = shape.numIndices;
+	arrowNumIndices = shape.numIndices;
 	shape.cleanup();
+
+	/*
+	//instancing
 
 	GLuint transformationMatrixBufferID;
 	glGenBuffers(1, &transformationMatrixBufferID);
@@ -73,6 +94,8 @@ void MeGLWindow::sendDataToOpenGL()
 	glVertexAttribDivisor(3, 1);
 	glVertexAttribDivisor(4, 1);
 	glVertexAttribDivisor(5, 1);
+	*/
+	
 
 
 }
@@ -113,38 +136,52 @@ void  MeGLWindow::keyPressEvent(QKeyEvent* e)
 //run everytime you call
 void MeGLWindow::paintGL()
 {
-	mat4 projectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
-	mat4 fullTransforms[] =
-	{
-		/*OoenGL Instancing:
-		render the same geometry twice,
-		didn't have to send down the graphic cards twice,
-		by using different full transform matrix*/
-
-		/*
-		//Cube 1:
-		mat4 TranslationMatrix = glm::translate(vec3(-1.0f, 0.0f, -3.0f));
-		mat4 RotationMatrix = glm::rotate(36.0f, vec3(1.0f, 0.0f, 0.0f));
-
-		//Cube 2:
-		TranslationMatrix = glm::translate(vec3(1.0f, 0.0f, -3.75f));
-		RotationMatrix = glm::rotate(126.0f, vec3(0.0f, 1.0f, 0.0f));
-		*/
-
-		//view to projection matrix * model to world matrix
-		projectionMatrix * camera.getWorldToViewMatrix() * glm::translate(vec3(-1.0f, 0.0f, -3.0f)) * glm::rotate(36.0f, vec3(1.0f, 0.0f, 0.0f)),
-		projectionMatrix * camera.getWorldToViewMatrix() * glm::translate(vec3(1.0f, 0.0f, -3.75f)) * glm::rotate(126.0f, vec3(0.0f, 1.0f, 0.0f))
-	};
-	glBufferData(GL_ARRAY_BUFFER, sizeof(fullTransforms), fullTransforms, GL_DYNAMIC_DRAW);
-
-	//set the depth buffer to 1 & clear the previous tri
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	//render the triangle on the full screen
 	glViewport(0, 0, width(), height());
-	
-	//draw the cube
-	//draw multiple instances of a set of elements
-	glDrawElementsInstanced(GL_TRIANGLES, numIndices, GL_UNSIGNED_SHORT, 0, 2);
+
+	mat4 fullTransformMatrix;
+	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
+	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
+	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
+
+	//Cube
+	//rebind cube vertex bufferID back
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVertexBufferID);
+	//describe position data to openGL
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
+	//describe color data to openGL
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
+	//rebind cube index bufferID back
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIndexBufferID);
+
+	mat4 cube1ModelToWorldMatrix =
+		glm::translate(vec3(-1.0f, 0.0f, -3.0f)) *
+		glm::rotate(36.0f, vec3(1.0f, 0.0f, 0.0f));
+	fullTransformMatrix = worldToProjectionMatrix * cube1ModelToWorldMatrix;
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
+	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, 0);
+
+	mat4 cube2ModelToWorldMatrix =
+		glm::translate(vec3(1.0f, 0.0f, -3.75f)) *
+		glm::rotate(126.0f, vec3(0.0f, 1.0f, 0.0f));
+	fullTransformMatrix = worldToProjectionMatrix * cube2ModelToWorldMatrix;
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
+	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, 0);
+
+	//Arrow
+	//rebind arrow vertex bufferID back
+	glBindBuffer(GL_ARRAY_BUFFER, arrowVertexBufferID);
+	//describe position data to openGL
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
+	//describe color data to openGL
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
+	//rebind arrow index bufferID back
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, arrowIndexBufferID);
+
+	mat4 arrowModelToWorldMatrix = glm::translate(0.0f, 0.0f, -0.3f);
+	fullTransformMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
+	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, 0);
 }
 
 
@@ -257,6 +294,7 @@ void MeGLWindow::initializeGL()
 	glEnable(GL_DEPTH_TEST);
 	sendDataToOpenGL();
 	installShaders();
+	fullTransformationUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
 
 }
 
