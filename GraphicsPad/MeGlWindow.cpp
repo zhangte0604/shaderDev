@@ -27,6 +27,8 @@ GLuint cubeVertexBufferID;
 GLuint cubeIndexBufferID;
 GLuint arrowVertexBufferID;
 GLuint arrowIndexBufferID;
+GLuint cubeVertexArrayObjectID;
+GLuint arrowVertexArrayObjectID;
 
 void MeGLWindow::sendDataToOpenGL()
 {
@@ -41,10 +43,7 @@ void MeGLWindow::sendDataToOpenGL()
 	glBindBuffer(GL_ARRAY_BUFFER, cubeVertexBufferID);
 	//send the data down to the openGL
 	glBufferData(GL_ARRAY_BUFFER, shape.vertexBufferSize(), shape.vertices, GL_STATIC_DRAW);
-	//enable the vertex attribute (position)
-	glEnableVertexAttribArray(0);
-	//enable the vertex attribute (color)
-	glEnableVertexAttribArray(1);
+
 	
 	glGenBuffers(1, &cubeIndexBufferID);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIndexBufferID);
@@ -100,6 +99,41 @@ void MeGLWindow::sendDataToOpenGL()
 
 }
 
+void MeGLWindow::setupVertexArrays()
+{
+	glGenVertexArrays(1, &cubeVertexArrayObjectID);
+	glGenVertexArrays(1, &arrowVertexArrayObjectID);
+	
+	//where array object is activated
+	glBindVertexArray(cubeVertexArrayObjectID);
+	//enable the vertex attribute (position)
+	glEnableVertexAttribArray(0);
+	//enable the vertex attribute (color)
+	glEnableVertexAttribArray(1);
+	//rebind cube vertex bufferID back
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVertexBufferID);
+	//describe position data to openGL
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
+	//describe color data to openGL
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
+	//rebind cube index bufferID back
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIndexBufferID);
+
+	glBindVertexArray(arrowVertexArrayObjectID);
+	//enable the vertex attribute (position)
+	glEnableVertexAttribArray(0);
+	//enable the vertex attribute (color)
+	glEnableVertexAttribArray(1);
+	//rebind arrow vertex bufferID back
+	glBindBuffer(GL_ARRAY_BUFFER, arrowVertexBufferID);
+	//describe position data to openGL
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
+	//describe color data to openGL
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
+	//rebind arrow index bufferID back
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, arrowIndexBufferID);
+}
+
 void MeGLWindow::mouseMoveEvent(QMouseEvent* e)
 {
 	camera.mouseUpdate(glm::vec2(e->x(), e->y()));
@@ -145,38 +179,24 @@ void MeGLWindow::paintGL()
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
 	//Cube
-	//rebind cube vertex bufferID back
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVertexBufferID);
-	//describe position data to openGL
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
-	//describe color data to openGL
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
-	//rebind cube index bufferID back
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIndexBufferID);
+	glBindVertexArray(cubeVertexArrayObjectID);
 
 	mat4 cube1ModelToWorldMatrix =
-		glm::translate(vec3(-1.0f, 0.0f, -3.0f)) *
+		glm::translate(vec3(-2.0f, 0.0f, -3.0f)) *
 		glm::rotate(36.0f, vec3(1.0f, 0.0f, 0.0f));
 	fullTransformMatrix = worldToProjectionMatrix * cube1ModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, 0);
 
 	mat4 cube2ModelToWorldMatrix =
-		glm::translate(vec3(1.0f, 0.0f, -3.75f)) *
+		glm::translate(vec3(2.0f, 0.0f, -3.75f)) *
 		glm::rotate(126.0f, vec3(0.0f, 1.0f, 0.0f));
 	fullTransformMatrix = worldToProjectionMatrix * cube2ModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, 0);
 
 	//Arrow
-	//rebind arrow vertex bufferID back
-	glBindBuffer(GL_ARRAY_BUFFER, arrowVertexBufferID);
-	//describe position data to openGL
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
-	//describe color data to openGL
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
-	//rebind arrow index bufferID back
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, arrowIndexBufferID);
+	glBindVertexArray(arrowVertexArrayObjectID);
 
 	mat4 arrowModelToWorldMatrix = glm::translate(0.0f, 0.0f, -0.3f);
 	fullTransformMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
@@ -293,7 +313,9 @@ void MeGLWindow::initializeGL()
 	//enable the buffer
 	glEnable(GL_DEPTH_TEST);
 	sendDataToOpenGL();
+	setupVertexArrays();
 	installShaders();
+
 	fullTransformationUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
 
 }
