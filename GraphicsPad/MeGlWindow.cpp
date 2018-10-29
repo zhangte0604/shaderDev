@@ -23,54 +23,38 @@ GLuint cubeNumIndices;
 GLuint arrowNumIndices;
 Camera camera;
 GLuint fullTransformationUniformLocation;
-GLuint cubeVertexBufferID;
-GLuint cubeIndexBufferID;
-GLuint arrowVertexBufferID;
-GLuint arrowIndexBufferID;
+GLuint theVertexBufferID;
+GLuint theIndexBufferID;
 GLuint cubeVertexArrayObjectID;
 GLuint arrowVertexArrayObjectID;
+GLuint arrowIndexDataByteOffset;
 
 void MeGLWindow::sendDataToOpenGL()
 {
-	//Cube
-	ShapeData shape = ShapeGenerator::makeCube();
+	//Cube + Arrow
+	ShapeData cube = ShapeGenerator::makeCube();
+	ShapeData arrow = ShapeGenerator::makeArrow();
 
 	
 	//put data on the graphics card
 	//create buffer
-	glGenBuffers(1, &cubeVertexBufferID);
+	glGenBuffers(1, &theVertexBufferID);
 	//bind the buffer to the binding point 
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVertexBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, theVertexBufferID);
 	//send the data down to the openGL
-	glBufferData(GL_ARRAY_BUFFER, shape.vertexBufferSize(), shape.vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, cube.vertexBufferSize() + arrow.vertexBufferSize(), 0, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, cube.vertexBufferSize(), cube.vertices);
+	glBufferSubData(GL_ARRAY_BUFFER, cube.vertexBufferSize(), arrow.vertexBufferSize(), arrow.vertices);
 
 	
-	glGenBuffers(1, &cubeIndexBufferID);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIndexBufferID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, shape.indexBufferSize(), shape.indices, GL_STATIC_DRAW);
-	cubeNumIndices = shape.numIndices;
-	shape.cleanup();
+	glGenBuffers(1, &theIndexBufferID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theIndexBufferID);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, cube.indexBufferSize() + arrow.indexBufferSize(), 0, GL_STATIC_DRAW);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, cube.indexBufferSize(), cube.indices);
+	glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, cube.indexBufferSize(), arrow.indexBufferSize(), arrow.indices);
 
-	//Arrow
-	shape = ShapeGenerator::makeArrow();
-
-	//put data on the graphics card
-	//create buffer
-	glGenBuffers(1, &arrowVertexBufferID);
-	//bind the buffer to the binding point 
-	glBindBuffer(GL_ARRAY_BUFFER, arrowVertexBufferID);
-	//send the data down to the openGL
-	glBufferData(GL_ARRAY_BUFFER, shape.vertexBufferSize(), shape.vertices, GL_STATIC_DRAW);
-	//describe position data to openGL
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
-	//describe color data to openGL
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
-
-	glGenBuffers(1, &arrowIndexBufferID);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, arrowIndexBufferID);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, shape.indexBufferSize(), shape.indices, GL_STATIC_DRAW);
-	arrowNumIndices = shape.numIndices;
-	shape.cleanup();
+	cubeNumIndices = cube.numIndices;
+	arrowNumIndices = arrow.numIndices;
 
 	/*
 	//instancing
@@ -95,12 +79,6 @@ void MeGLWindow::sendDataToOpenGL()
 	glVertexAttribDivisor(5, 1);
 	*/
 	
-
-
-}
-
-void MeGLWindow::setupVertexArrays()
-{
 	glGenVertexArrays(1, &cubeVertexArrayObjectID);
 	glGenVertexArrays(1, &arrowVertexArrayObjectID);
 	
@@ -111,13 +89,13 @@ void MeGLWindow::setupVertexArrays()
 	//enable the vertex attribute (color)
 	glEnableVertexAttribArray(1);
 	//rebind cube vertex bufferID back
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVertexBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, theVertexBufferID);
 	//describe position data to openGL
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
 	//describe color data to openGL
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(sizeof(float) * 3));
 	//rebind cube index bufferID back
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubeIndexBufferID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theIndexBufferID);
 
 	glBindVertexArray(arrowVertexArrayObjectID);
 	//enable the vertex attribute (position)
@@ -125,13 +103,17 @@ void MeGLWindow::setupVertexArrays()
 	//enable the vertex attribute (color)
 	glEnableVertexAttribArray(1);
 	//rebind arrow vertex bufferID back
-	glBindBuffer(GL_ARRAY_BUFFER, arrowVertexBufferID);
+	glBindBuffer(GL_ARRAY_BUFFER, theVertexBufferID);
 	//describe position data to openGL
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, 0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(cube.vertexBufferSize()));
 	//describe color data to openGL
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (char*)(sizeof(float) * 3));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 6, (void*)(cube.vertexBufferSize() + sizeof(float) * 3));
 	//rebind arrow index bufferID back
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, arrowIndexBufferID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theIndexBufferID);
+
+	arrowIndexDataByteOffset = cube.indexBufferSize();
+	cube.cleanup();
+	arrow.cleanup();
 }
 
 void MeGLWindow::mouseMoveEvent(QMouseEvent* e)
@@ -201,7 +183,7 @@ void MeGLWindow::paintGL()
 	mat4 arrowModelToWorldMatrix = glm::translate(0.0f, 0.0f, -0.3f);
 	fullTransformMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, 0);
+	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
 }
 
 
@@ -313,7 +295,6 @@ void MeGLWindow::initializeGL()
 	//enable the buffer
 	glEnable(GL_DEPTH_TEST);
 	sendDataToOpenGL();
-	setupVertexArrays();
 	installShaders();
 
 	fullTransformationUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
