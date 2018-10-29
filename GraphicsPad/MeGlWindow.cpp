@@ -35,7 +35,7 @@ void MeGLWindow::sendDataToOpenGL()
 {
 	//Cube + Arrow
 	ShapeData cube = ShapeGenerator::makeCube();
-	ShapeData arrow = ShapeGenerator::makeArrow();
+	ShapeData arrow = ShapeGenerator::makePlane();
 
 	
 	//put data on the graphics card
@@ -163,7 +163,7 @@ void MeGLWindow::paintGL()
 	glViewport(0, 0, width(), height());
 
 	mat4 fullTransformMatrix;
-	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 10.0f);
+	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 20.0f);
 	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
