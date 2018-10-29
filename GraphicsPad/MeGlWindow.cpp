@@ -35,7 +35,7 @@ void MeGLWindow::sendDataToOpenGL()
 {
 	//Cube + Arrow
 	ShapeData cube = ShapeGenerator::makeCube();
-	ShapeData arrow = ShapeGenerator::makePlane();
+	ShapeData arrow = ShapeGenerator::makeTeapot(10);
 
 	
 	//put data on the graphics card
