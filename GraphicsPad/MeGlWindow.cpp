@@ -18,6 +18,7 @@ using glm::mat4;
 const uint NUM_VERTICES_PER_TRI = 3;
 const uint NUM_FLOATS_PER_VERTICE = 6;
 const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
+
 GLuint programID;
 GLuint teapotNumIndices;
 GLuint arrowNumIndices;
@@ -204,6 +205,11 @@ void MeGLWindow::paintGL()
 	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 20.0f);
 	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
+
+	//Ambient Light
+	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
+	vec3 ambientLight(0.5f, 0.5f, 0.5f);
+	glUniform3fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 
 	//Teapot
 	glBindVertexArray(teapotVertexArrayObjectID);
