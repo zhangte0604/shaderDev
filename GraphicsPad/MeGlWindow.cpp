@@ -19,23 +19,29 @@ const uint NUM_VERTICES_PER_TRI = 3;
 const uint NUM_FLOATS_PER_VERTICE = 6;
 const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 GLuint programID;
-GLuint cubeNumIndices;
+GLuint teapotNumIndices;
 GLuint arrowNumIndices;
+GLuint planeNumIndices;
+
 Camera camera;
 GLuint fullTransformationUniformLocation;
 
 GLuint theBufferID;
 
-GLuint cubeVertexArrayObjectID;
+GLuint teapotVertexArrayObjectID;
 GLuint arrowVertexArrayObjectID;
+GLuint planeVertexArrayObjectID;
+
 GLuint arrowIndexDataByteOffset;
-GLuint cubeIndexDataByteOffset;
+GLuint teapotIndexDataByteOffset;
+GLuint planeIndexDataByteOffset;
 
 void MeGLWindow::sendDataToOpenGL()
 {
-	//Cube + Arrow
-	ShapeData cube = ShapeGenerator::makeCube();
-	ShapeData arrow = ShapeGenerator::makeTeapot(10);
+	//Teapot + Arrow
+	ShapeData teapot = ShapeGenerator::makeTeapot(10);
+	ShapeData arrow = ShapeGenerator::makeArrow();
+	ShapeData plane = ShapeGenerator::makePlane(20);
 
 	
 	//put data on the graphics card
@@ -45,20 +51,29 @@ void MeGLWindow::sendDataToOpenGL()
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	//send the data down to the openGL
 	glBufferData(GL_ARRAY_BUFFER, 
-		cube.vertexBufferSize() + cube.indexBufferSize() +
-		arrow.vertexBufferSize() + arrow.indexBufferSize(), 0, GL_STATIC_DRAW);
+		teapot.vertexBufferSize() + teapot.indexBufferSize() +
+		arrow.vertexBufferSize() + arrow.indexBufferSize()+
+		plane.vertexBufferSize() + plane.indexBufferSize(), 0, GL_STATIC_DRAW);
 	
 	GLsizeiptr currentOffset = 0;
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, cube.vertexBufferSize(), cube.vertices);
-	currentOffset += cube.vertexBufferSize();
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, cube.indexBufferSize(), cube.indices);
-	currentOffset += cube.indexBufferSize();
+	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, teapot.vertexBufferSize(), teapot.vertices);
+	currentOffset += teapot.vertexBufferSize();
+	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, teapot.indexBufferSize(), teapot.indices);
+	currentOffset += teapot.indexBufferSize();
+	
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, arrow.vertexBufferSize(), arrow.vertices);
 	currentOffset += arrow.vertexBufferSize();
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, arrow.indexBufferSize(), arrow.indices);
+	currentOffset += arrow.indexBufferSize();
 
-	cubeNumIndices = cube.numIndices;
+	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, plane.vertexBufferSize(), plane.vertices);
+	currentOffset += plane.vertexBufferSize();
+	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, plane.indexBufferSize(), plane.indices);
+	
+
+	teapotNumIndices = teapot.numIndices;
 	arrowNumIndices = arrow.numIndices;
+	planeNumIndices = plane.numIndices;
 
 	/*
 	//instancing
@@ -83,24 +98,28 @@ void MeGLWindow::sendDataToOpenGL()
 	glVertexAttribDivisor(5, 1);
 	*/
 	
-	glGenVertexArrays(1, &cubeVertexArrayObjectID);
+	glGenVertexArrays(1, &teapotVertexArrayObjectID);
 	glGenVertexArrays(1, &arrowVertexArrayObjectID);
+	glGenVertexArrays(1, &planeVertexArrayObjectID);
 	
+	//teapot
 	//where array object is activated
-	glBindVertexArray(cubeVertexArrayObjectID);
+	glBindVertexArray(teapotVertexArrayObjectID);
 	//enable the vertex attribute (position)
 	glEnableVertexAttribArray(0);
 	//enable the vertex attribute (color)
 	glEnableVertexAttribArray(1);
-	//rebind cube vertex bufferID back
+	//rebind teapot vertex bufferID back
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	//describe position data to openGL
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, 0);
 	//describe color data to openGL
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(sizeof(float) * 3));
-	//rebind cube index bufferID back
+	//rebind teapot index bufferID back
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
+	//arrow
+	//where array object is activated
 	glBindVertexArray(arrowVertexArrayObjectID);
 	//enable the vertex attribute (position)
 	glEnableVertexAttribArray(0);
@@ -108,19 +127,38 @@ void MeGLWindow::sendDataToOpenGL()
 	glEnableVertexAttribArray(1);
 	//rebind arrow vertex bufferID back
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
-	GLuint arrowBoyteOffset = cube.vertexBufferSize() + cube.indexBufferSize();
+	GLuint arrowByteOffset = teapot.vertexBufferSize() + teapot.indexBufferSize();
 	//describe position data to openGL
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)arrowBoyteOffset);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)arrowByteOffset);
 	//describe color data to openGL
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(arrowBoyteOffset + sizeof(float) * 3));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(arrowByteOffset + sizeof(float) * 3));
 	//rebind arrow index bufferID back
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
-	cubeIndexDataByteOffset = cube.vertexBufferSize();
-	arrowIndexDataByteOffset = arrowBoyteOffset + arrow.vertexBufferSize();
+	//plane
+	//where array object is activated
+	glBindVertexArray(planeVertexArrayObjectID);
+	//enable the vertex attribute (position)
+	glEnableVertexAttribArray(0);
+	//enable the vertex attribute (color)
+	glEnableVertexAttribArray(1);
+	//rebind arrow vertex bufferID back
+	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
+	GLuint planeByteOffset = arrowByteOffset + arrow.vertexBufferSize() + arrow.indexBufferSize();
+	//describe position data to openGL
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)planeByteOffset);
+	//describe color data to openGL
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeByteOffset + sizeof(float) * 3));
+	//rebind arrow index bufferID back
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
-	cube.cleanup();
+	teapotIndexDataByteOffset = teapot.vertexBufferSize();
+	arrowIndexDataByteOffset = arrowByteOffset + arrow.vertexBufferSize();
+	planeIndexDataByteOffset = planeByteOffset + plane.vertexBufferSize();
+
+	teapot.cleanup();
 	arrow.cleanup();
+	plane.cleanup();
 }
 
 void MeGLWindow::mouseMoveEvent(QMouseEvent* e)
@@ -167,22 +205,22 @@ void MeGLWindow::paintGL()
 	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
-	//Cube
-	glBindVertexArray(cubeVertexArrayObjectID);
+	//Teapot
+	glBindVertexArray(teapotVertexArrayObjectID);
 
-	mat4 cube1ModelToWorldMatrix =
-		glm::translate(vec3(-2.0f, 0.0f, -3.0f)) *
-		glm::rotate(36.0f, vec3(1.0f, 0.0f, 0.0f));
-	fullTransformMatrix = worldToProjectionMatrix * cube1ModelToWorldMatrix;
+	mat4 teapot1ModelToWorldMatrix =
+		glm::translate(vec3(-3.0f, 0.0f, -6.0f)) *
+		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
+	fullTransformMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
+	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
 
-	mat4 cube2ModelToWorldMatrix =
-		glm::translate(vec3(2.0f, 0.0f, -3.75f)) *
-		glm::rotate(126.0f, vec3(0.0f, 1.0f, 0.0f));
-	fullTransformMatrix = worldToProjectionMatrix * cube2ModelToWorldMatrix;
+	mat4 teapot2ModelToWorldMatrix =
+		glm::translate(vec3(3.0f, 0.0f, -6.75f)) *
+		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
+	fullTransformMatrix = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
+	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
 
 	//Arrow
 	glBindVertexArray(arrowVertexArrayObjectID);
@@ -191,6 +229,14 @@ void MeGLWindow::paintGL()
 	fullTransformMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
+
+	//Plane
+	glBindVertexArray(planeVertexArrayObjectID);
+
+	mat4 planeModelToWorldMatrix = glm::mat4();
+	fullTransformMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
+	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 }
 
 
@@ -301,6 +347,15 @@ void MeGLWindow::initializeGL()
 	glewInit();
 	//enable the buffer
 	glEnable(GL_DEPTH_TEST);
+	//disable rendering tris not facing the cam
+	glEnable(GL_CULL_FACE);
+
+	//Face Culling: choose which face you wanna cull
+	//glCullFace(GL_FRONT); //default is GL_BACK
+
+	//Winding Order: make front face to be clockwise rather than counter clockwise
+	//glFrontFace(GL_CW); //default is GL_CCW
+
 	sendDataToOpenGL();
 	installShaders();
 
