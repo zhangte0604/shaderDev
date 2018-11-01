@@ -54,11 +54,11 @@ void MeGLWindow::sendDataToOpenGL()
 {
 	//Teapot + Arrow
 	ShapeData teapot = ShapeGenerator::makeTeapot();
-	ShapeData teapotNormals = ShapeGenerator::generateNormals(teapot);
+	//ShapeData teapotNormals = ShapeGenerator::generateNormals(teapot);
 	ShapeData arrow = ShapeGenerator::makeArrow();
-	ShapeData arrowNormals = ShapeGenerator::generateNormals(arrow);
+	//ShapeData arrowNormals = ShapeGenerator::generateNormals(arrow);
 	ShapeData plane = ShapeGenerator::makePlane(20);
-	ShapeData planeNormals = ShapeGenerator::generateNormals(plane);
+	//ShapeData planeNormals = ShapeGenerator::generateNormals(plane);
 
 	
 	//put data on the graphics card
@@ -70,10 +70,7 @@ void MeGLWindow::sendDataToOpenGL()
 	glBufferData(GL_ARRAY_BUFFER, 
 		teapot.vertexBufferSize() + teapot.indexBufferSize() +
 		arrow.vertexBufferSize() + arrow.indexBufferSize() +
-		plane.vertexBufferSize() + plane.indexBufferSize() +
-		teapotNormals.vertexBufferSize() + teapotNormals.indexBufferSize() +
-		arrowNormals.vertexBufferSize() + arrowNormals.indexBufferSize() +
-		planeNormals.vertexBufferSize() + planeNormals.indexBufferSize(), 0, GL_STATIC_DRAW);
+		plane.vertexBufferSize() + plane.indexBufferSize(), 0, GL_STATIC_DRAW);
 	
 	GLsizeiptr currentOffset = 0;
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, teapot.vertexBufferSize(), teapot.vertices);
@@ -91,7 +88,7 @@ void MeGLWindow::sendDataToOpenGL()
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, plane.indexBufferSize(), plane.indices);
 	currentOffset += plane.indexBufferSize();
 	
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, teapotNormals.vertexBufferSize(), teapotNormals.vertices);
+	/*glBufferSubData(GL_ARRAY_BUFFER, currentOffset, teapotNormals.vertexBufferSize(), teapotNormals.vertices);
 	currentOffset += teapotNormals.vertexBufferSize();
 	teapotNormalsIndexDataByteOffset = currentOffset;
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, teapotNormals.indexBufferSize(), teapotNormals.indices);
@@ -105,15 +102,15 @@ void MeGLWindow::sendDataToOpenGL()
 	currentOffset += planeNormals.vertexBufferSize();
 	planeNormalsIndexDataByteOffset = currentOffset;
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, planeNormals.indexBufferSize(), planeNormals.indices);
-	currentOffset += planeNormals.indexBufferSize();
+	currentOffset += planeNormals.indexBufferSize();*/
 	
 
 	teapotNumIndices = teapot.numIndices;
-	teapotNormalsNumIndices = teapotNormals.numIndices;
+	//teapotNormalsNumIndices = teapotNormals.numIndices;
 	arrowNumIndices = arrow.numIndices;
-	arrowNormalsNumIndices = arrowNormals.numIndices;
+	//arrowNormalsNumIndices = arrowNormals.numIndices;
 	planeNumIndices = plane.numIndices;
-	planeNormalsNumIndices = planeNormals.numIndices;
+	//planeNormalsNumIndices = planeNormals.numIndices;
 
 	/*
 	//instancing
@@ -142,10 +139,11 @@ void MeGLWindow::sendDataToOpenGL()
 	glGenVertexArrays(1, &arrowVertexArrayObjectID);
 	glGenVertexArrays(1, &planeVertexArrayObjectID);
 
-	glGenVertexArrays(1, &teapotNormalsVertexArrayObjectID);
+	/*glGenVertexArrays(1, &teapotNormalsVertexArrayObjectID);
 	glGenVertexArrays(1, &arrowNormalsVertexArrayObjectID);
 	glGenVertexArrays(1, &planeNormalsVertexArrayObjectID);
-	
+	*/
+
 	//teapot
 	//where array object is activated
 	glBindVertexArray(teapotVertexArrayObjectID);
@@ -153,12 +151,16 @@ void MeGLWindow::sendDataToOpenGL()
 	glEnableVertexAttribArray(0);
 	//enable the vertex attribute (color)
 	glEnableVertexAttribArray(1);
+	//enable the normal attribute (color)
+	glEnableVertexAttribArray(2);
 	//rebind teapot vertex bufferID back
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	//describe position data to openGL
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, 0);
 	//describe color data to openGL
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(sizeof(float) * 3));
+	//describe normal data to openGL
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(sizeof(float) * 6));
 	//rebind teapot index bufferID back
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
@@ -169,6 +171,8 @@ void MeGLWindow::sendDataToOpenGL()
 	glEnableVertexAttribArray(0);
 	//enable the vertex attribute (color)
 	glEnableVertexAttribArray(1);
+	//enable the normal attribute (color)
+	glEnableVertexAttribArray(2);
 	//rebind arrow vertex bufferID back
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	GLuint arrowByteOffset = teapot.vertexBufferSize() + teapot.indexBufferSize();
@@ -176,6 +180,8 @@ void MeGLWindow::sendDataToOpenGL()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)arrowByteOffset);
 	//describe color data to openGL
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(arrowByteOffset + sizeof(float) * 3));
+	//describe normal data to openGL
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(arrowByteOffset + sizeof(float) * 6));
 	//rebind arrow index bufferID back
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
@@ -186,6 +192,8 @@ void MeGLWindow::sendDataToOpenGL()
 	glEnableVertexAttribArray(0);
 	//enable the vertex attribute (color)
 	glEnableVertexAttribArray(1);
+	//enable the normal attribute (color)
+	glEnableVertexAttribArray(2);
 	//rebind arrow vertex bufferID back
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	GLuint planeByteOffset = arrowByteOffset + arrow.vertexBufferSize() + arrow.indexBufferSize();
@@ -193,6 +201,8 @@ void MeGLWindow::sendDataToOpenGL()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)planeByteOffset);
 	//describe color data to openGL
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeByteOffset + sizeof(float) * 3));
+	//describe normal data to openGL
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeByteOffset + sizeof(float) * 6));
 	//rebind arrow index bufferID back
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
@@ -200,7 +210,7 @@ void MeGLWindow::sendDataToOpenGL()
 	arrowIndexDataByteOffset = arrowByteOffset + arrow.vertexBufferSize();
 	planeIndexDataByteOffset = planeByteOffset + plane.vertexBufferSize();
 
-	glBindVertexArray(teapotNormalsVertexArrayObjectID);
+	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
@@ -225,7 +235,7 @@ void MeGLWindow::sendDataToOpenGL()
 	GLuint planeNormalsByteOffset = arrowNormalsByteOffset + arrowNormals.vertexBufferSize() + arrowNormals.indexBufferSize();
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)planeNormalsByteOffset);
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeNormalsByteOffset + sizeof(float) * 3));
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);*/
 
 	teapot.cleanup();
 	arrow.cleanup();
@@ -281,35 +291,40 @@ void MeGLWindow::paintGL()
 	vec3 ambientLight(0.5f, 0.5f, 0.5f);
 	glUniform3fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 
+	//Light position
+	GLint lightPositionUniformLocation = glGetUniformLocation(programID, "lightPosition");
+	glm::vec3 lightPosition(0.0f, 3.0f, 0.0f);
+	glUniform3fv(lightPositionUniformLocation, 1, &lightPosition[0]);
+
 	//Teapot
 	glBindVertexArray(teapotVertexArrayObjectID);
 	mat4 teapot1ModelToWorldMatrix =
 		glm::translate(vec3(-3.0f, 0.0f, -6.0f)) *
 		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
 	fullTransformMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
-	glBindVertexArray(teapotNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);
+	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
+	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
+	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
+	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
 
 	glBindVertexArray(teapotVertexArrayObjectID);
 	mat4 teapot2ModelToWorldMatrix =
 		glm::translate(vec3(3.0f, 0.0f, -6.75f)) *
 		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
 	fullTransformMatrix = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
-	glBindVertexArray(teapotNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);
+	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
+	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
+	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
+	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
 
 	//Arrow
 	glBindVertexArray(arrowVertexArrayObjectID);
 	mat4 arrowModelToWorldMatrix = glm::translate(0.0f, 0.0f, -0.3f);
 	fullTransformMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
-	glBindVertexArray(arrowNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, arrowNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)arrowNormalsIndexDataByteOffset);
+	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
+	//glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
+	/*glBindVertexArray(arrowNormalsVertexArrayObjectID);
+	glDrawElements(GL_LINES, arrowNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)arrowNormalsIndexDataByteOffset);*/
 
 
 	//Plane
@@ -318,8 +333,8 @@ void MeGLWindow::paintGL()
 	fullTransformMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
-	glBindVertexArray(planeNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, planeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)planeNormalsIndexDataByteOffset);
+	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
+	glDrawElements(GL_LINES, planeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)planeNormalsIndexDataByteOffset);*/
 }
 
 
