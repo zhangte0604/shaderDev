@@ -281,7 +281,7 @@ void MeGLWindow::paintGL()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
 
-	mat4 fullTransformMatrix;
+	mat4 modelToProjectionMatrix;
 	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 20.0f);
 	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
@@ -292,17 +292,17 @@ void MeGLWindow::paintGL()
 	glUniform3fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 
 	//Light position
-	GLint lightPositionUniformLocation = glGetUniformLocation(programID, "lightPosition");
-	glm::vec3 lightPosition(0.0f, 3.0f, 0.0f);
-	glUniform3fv(lightPositionUniformLocation, 1, &lightPosition[0]);
+	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
+	glm::vec3 lightPositionWorld(0.0f, 3.0f, 0.0f);
+	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 
 	//Teapot
 	glBindVertexArray(teapotVertexArrayObjectID);
 	mat4 teapot1ModelToWorldMatrix =
 		glm::translate(vec3(-3.0f, 0.0f, -6.0f)) *
 		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
-	fullTransformMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
-	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
+	modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
+	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
 	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
@@ -311,25 +311,25 @@ void MeGLWindow::paintGL()
 	mat4 teapot2ModelToWorldMatrix =
 		glm::translate(vec3(3.0f, 0.0f, -6.75f)) *
 		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
-	fullTransformMatrix = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
-	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
+	modelToProjectionMatrix = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
+	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
 	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
 
 
-	GLint modelToWorldTransformMatrixUniformLocation =
-		glGetUniformLocation(programID, "modelToWorldTransformMatrix");
+	GLint modelToWorldMatrixUniformLocation =
+		glGetUniformLocation(programID, "modelToWorldMatrix");
 
 	//Arrow translated
 	glBindVertexArray(arrowVertexArrayObjectID);
 	mat4 arrowModelToWorldMatrix = 
 		glm::translate(0.0f, 2.0f, -8.0f) *
-		glm::rotate(-90.0f, 1.0f, 0.0f, 0.0f);
+		glm::rotate(-70.0f, 1.0f, 0.0f, 0.0f);
 	
-	fullTransformMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldTransformMatrixUniformLocation, 1, GL_FALSE, 
+	modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
 		&arrowModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
 	/*glBindVertexArray(arrowNormalsVertexArrayObjectID);
@@ -337,18 +337,18 @@ void MeGLWindow::paintGL()
 
 	//arrow centered
 	arrowModelToWorldMatrix = mat4();
-	fullTransformMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldTransformMatrixUniformLocation, 1, GL_FALSE,
+	modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
 		&arrowModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
 
 	//Plane
 	glBindVertexArray(planeVertexArrayObjectID);
 	mat4 planeModelToWorldMatrix;
-	fullTransformMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &fullTransformMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldTransformMatrixUniformLocation, 1, GL_FALSE,
+	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
 		&planeModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
@@ -446,7 +446,7 @@ void MeGLWindow::installShaders()
 	//Where are these attributes automatically
 	GLint positionLocation = glGetAttribLocation(programID, "position");
 	GLint colorLocation = glGetAttribLocation(programID, "vertexColor");
-	GLint transformLocation = glGetAttribLocation(programID, "fullTransformMatrix");
+	GLint transformLocation = glGetAttribLocation(programID, "modelToProjectionMatrix");
 	*/
 	
 
@@ -475,7 +475,7 @@ void MeGLWindow::initializeGL()
 	sendDataToOpenGL();
 	installShaders();
 
-	fullTransformationUniformLocation = glGetUniformLocation(programID, "fullTransformMatrix");
+	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
 
 }
 
