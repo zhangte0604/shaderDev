@@ -6,12 +6,16 @@ in vec3 normalWorld;
 in vec3 vertexPositionWorld;
 
 uniform vec3 lightPositionWorld;
+uniform vec4 ambientLight;
 
 
 void main()
 {
 	vec3 lightVectorWorld = normalize(lightPositionWorld - vertexPositionWorld);
 	float brightness = dot(lightVectorWorld, normalize(normalWorld));
-	daColor = vec4(brightness, brightness, brightness, 1.0);
+	vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
+	
+	//Clamp: Don't wanna distract from diffuse light when adding ambient light
+	daColor = clamp(diffuseLight, 0, 1) + ambientLight;
 
 }

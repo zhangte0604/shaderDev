@@ -13,6 +13,7 @@
 
 using namespace std;
 using glm::vec3;
+using glm::vec4;
 using glm::mat4;
 
 const uint NUM_VERTICES_PER_TRI = 3;
@@ -288,8 +289,8 @@ void MeGLWindow::paintGL()
 
 	//Ambient Light
 	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	vec3 ambientLight(0.5f, 0.5f, 0.5f);
-	glUniform3fv(ambientLightUniformLocation, 1, &ambientLight[0]);
+	vec4 ambientLight(0.15f, 0.01f, 0.01f, 1.0f);
+	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 
 	//Light position
 	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
