@@ -32,6 +32,10 @@ void Camera::mouseUpdate(const glm::vec2& newMousePosition)
 	oldMousePosition = newMousePosition;
 }
 
+glm::vec3 Camera::getPosition() const
+{
+	return Camera::position;
+}
 
 glm::mat4 Camera::getWorldToViewMatrix() const
 {
