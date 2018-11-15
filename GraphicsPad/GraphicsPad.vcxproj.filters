@@ -30,6 +30,8 @@
   <ItemGroup>
     <None Include="VertexShaderCode.glsl" />
     <None Include="FragmentShaderCode.glsl" />
+    <None Include="VertexShaderCodePlane.glsl" />
+    <None Include="FragmentShaderCodePlane.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Primitives">

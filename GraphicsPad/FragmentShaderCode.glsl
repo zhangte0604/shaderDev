@@ -20,7 +20,7 @@ void main()
 	vec3 lightVectorWorld = normalize(lightPositionWorld - vertexPositionWorld);
 	float brightness = dot(lightVectorWorld, normalize(normalWorld));
 	//vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
-	vec4 diffuseLight = brightness * texColor;
+	vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
 	
 
 	// Specular

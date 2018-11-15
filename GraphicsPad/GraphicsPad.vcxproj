@@ -37,7 +37,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderCode.glsl" />
+    <None Include="FragmentShaderCodePlane.glsl" />
     <None Include="VertexShaderCode.glsl" />
+    <None Include="VertexShaderCodePlane.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
