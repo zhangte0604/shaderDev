@@ -5,7 +5,7 @@
 #include <QtOpenGL\qglwidget>
 #include <string>
 
-class MeGLWindow : public QGLWidget
+class MeGlWindow : public QGLWidget
 {
 	void sendDataToOpenGL();
 	bool checkStatus(GLuint objectID,
@@ -17,12 +17,13 @@ class MeGLWindow : public QGLWidget
 	std::string readShaderCode(const char* fileName);
 	void installShaders();
 protected:
+	void textureSetup();
 	void initializeGL();
 	void paintGL();
 	void mouseMoveEvent(QMouseEvent*);
 	void keyPressEvent(QKeyEvent*);
 public:
-	~MeGLWindow();
+	~MeGlWindow();
 
 };
 

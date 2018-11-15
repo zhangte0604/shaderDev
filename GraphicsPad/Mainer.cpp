@@ -1,10 +1,15 @@
 #include <Qt/qapplication.h>
-#include <MeGLWindow.h>
+#include <MeGlWindow.h>
+#include <MeWidget.h>
 
 int main(int argc, char* argv[])
 {
 	QApplication app(argc, argv);
-	MeGLWindow meWindow;
+
+	//QWidget meWidg;
+	//meWidg.show();
+
+	MeGlWindow meWindow;
 	//meWindow.setFixedSize(1024, 1024);
 	meWindow.show();
 

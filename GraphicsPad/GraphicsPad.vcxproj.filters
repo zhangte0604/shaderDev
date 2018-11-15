@@ -8,6 +8,7 @@
       <Filter>Primitives</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="MeWidget.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MeGlWindow.h" />
@@ -24,6 +25,7 @@
     <ClInclude Include="TeapotData.h">
       <Filter>Primitives</Filter>
     </ClInclude>
+    <ClInclude Include="MeWidget.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="VertexShaderCode.glsl" />

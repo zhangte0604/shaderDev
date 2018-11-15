@@ -3,7 +3,7 @@
 #include <fstream>
 #include <QtGui/qmouseevent>
 #include <QtGui/qkeyevent>
-#include <MeGLWindow.h>
+#include <MeGlWindow.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
@@ -51,7 +51,36 @@ GLuint teapotNormalsIndexDataByteOffset;
 GLuint arrowNormalsIndexDataByteOffset;
 GLuint planeNormalsIndexDataByteOffset;
 
-void MeGLWindow::sendDataToOpenGL()
+void MeGlWindow::textureSetup()
+
+{
+	// Load texture file
+	const char * texName = "Texture/turkey.png";
+	QImage timg =
+		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
+	
+	// Copy file to OpenGL
+	glActiveTexture(GL_TEXTURE0);
+	GLuint tid;
+	glGenTextures(1, &tid);
+	glBindTexture(GL_TEXTURE_2D, tid);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, timg.width(),
+		timg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		timg.bits());
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+		GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		GL_LINEAR);
+
+	//// Set the Tex1 sampler uniform to refer to texture unit 0
+	//int loc = glGetUniformLocation(programHandle, "Tex1");
+	//if (loc >= 0)
+	//	glUniform1i(loc, 0);
+	//else
+	//	fprintf(stderr, "Uniform variable Tex1 not found!\n");
+}
+
+void MeGlWindow::sendDataToOpenGL()
 {
 	//Teapot + Arrow
 	ShapeData teapot = ShapeGenerator::makeTeapot();
@@ -195,6 +224,9 @@ void MeGLWindow::sendDataToOpenGL()
 	glEnableVertexAttribArray(1);
 	//enable the normal attribute (color)
 	glEnableVertexAttribArray(2);
+	
+	glEnableVertexAttribArray(3);
+	
 	//rebind arrow vertex bufferID back
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	GLuint planeByteOffset = arrowByteOffset + arrow.vertexBufferSize() + arrow.indexBufferSize();
@@ -204,6 +236,10 @@ void MeGLWindow::sendDataToOpenGL()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeByteOffset + sizeof(float) * 3));
 	//describe normal data to openGL
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeByteOffset + sizeof(float) * 6));
+
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 15, (char*)(sizeof(float) * 9));
+
 	//rebind arrow index bufferID back
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
@@ -243,13 +279,13 @@ void MeGLWindow::sendDataToOpenGL()
 	plane.cleanup();
 }
 
-void MeGLWindow::mouseMoveEvent(QMouseEvent* e)
+void MeGlWindow::mouseMoveEvent(QMouseEvent* e)
 {
 	camera.mouseUpdate(glm::vec2(e->x(), e->y()));
 	repaint();
 }
 
-void  MeGLWindow::keyPressEvent(QKeyEvent* e)
+void  MeGlWindow::keyPressEvent(QKeyEvent* e)
 {
 	switch (e->key())
 	{
@@ -277,7 +313,7 @@ void  MeGLWindow::keyPressEvent(QKeyEvent* e)
 
 
 //run everytime you call
-void MeGLWindow::paintGL()
+void MeGlWindow::paintGL()
 {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
@@ -356,6 +392,11 @@ void MeGLWindow::paintGL()
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
 		&planeModelToWorldMatrix[0][0]);
+	
+	//texture
+	GLint TextureUniformLocation = glGetUniformLocation(programID, "Tex1");
+	glUniform1i(TextureUniformLocation, 0);
+
 	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, planeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)planeNormalsIndexDataByteOffset);*/
@@ -363,7 +404,7 @@ void MeGLWindow::paintGL()
 
 
 //check error !!!!!!!not finish
-bool MeGLWindow::checkStatus(
+bool MeGlWindow::checkStatus(
 	GLuint objectID,
 	PFNGLGETSHADERIVPROC objectPropertyGetterFunc,
 	PFNGLGETSHADERINFOLOGPROC getInfoLogFunc,
@@ -388,19 +429,19 @@ bool MeGLWindow::checkStatus(
 
 
 //check compile error function
-bool MeGLWindow::checkShaderStatus(GLuint shaderID)
+bool MeGlWindow::checkShaderStatus(GLuint shaderID)
 {
 	return checkStatus(shaderID, glGetShaderiv, glGetShaderInfoLog, GL_COMPILE_STATUS);
 }
 
 //check linker error function
-bool MeGLWindow::checkProgramStatus(GLuint programID)
+bool MeGlWindow::checkProgramStatus(GLuint programID)
 {
 	return checkStatus(programID, glGetProgramiv, glGetProgramInfoLog, GL_LINK_STATUS);
 }
 
 //
-string MeGLWindow::readShaderCode(const char* fileName)
+string MeGlWindow::readShaderCode(const char* fileName)
 {
 	ifstream meInput(fileName);
 	if (!meInput.good())
@@ -414,7 +455,7 @@ string MeGLWindow::readShaderCode(const char* fileName)
 }
 
 
-void MeGLWindow::installShaders()
+void MeGlWindow::installShaders()
 {
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -454,7 +495,6 @@ void MeGLWindow::installShaders()
 	GLint colorLocation = glGetAttribLocation(programID, "vertexColor");
 	GLint transformLocation = glGetAttribLocation(programID, "modelToProjectionMatrix");
 	*/
-	
 
 	//delete shader
 	glDeleteShader(vertexShaderID);
@@ -463,8 +503,9 @@ void MeGLWindow::installShaders()
 	glUseProgram(programID);
 }
 
-void MeGLWindow::initializeGL()
+void MeGlWindow::initializeGL()
 {
+	setMinimumSize(1200, 500);
 	setMouseTracking(true);
 	glewInit();
 	//enable the buffer
@@ -478,6 +519,8 @@ void MeGLWindow::initializeGL()
 	//Winding Order: make front face to be clockwise rather than counter clockwise
 	//glFrontFace(GL_CW); //default is GL_CCW
 
+	textureSetup();
+
 	sendDataToOpenGL();
 	installShaders();
 
@@ -485,7 +528,7 @@ void MeGLWindow::initializeGL()
 
 }
 
-MeGLWindow::~MeGLWindow()
+MeGlWindow::~MeGlWindow()
 {
 	glDeleteBuffers(1, &theBufferID);
 	glUseProgram(0);
