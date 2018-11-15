@@ -4,30 +4,26 @@ out vec4 daColor;
 
 in vec3 normalWorld;
 in vec3 vertexPositionWorld;
-in vec2 TexCoord;
 
 uniform vec3 lightPositionWorld;
 uniform vec3 eyePositionWorld;
 uniform vec4 ambientLight;
-uniform sampler2D Tex1;
 
 
 void main()
 {
-	vec4 texColor = texture(Tex1, TexCoord);
-
 	// Diffuse
 	vec3 lightVectorWorld = normalize(lightPositionWorld - vertexPositionWorld);
 	float brightness = dot(lightVectorWorld, normalize(normalWorld));
 	//vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
-	vec4 diffuseLight = brightness * texColor;
+	vec4 diffuseLight = vec4(brightness, brightness, brightness, 1);
 	
 
 	// Specular
 	vec3 reflectedLightVectorWorld = reflect(-lightVectorWorld, normalWorld);
 	vec3 eyeVectorWorld = normalize(eyePositionWorld - vertexPositionWorld);
 	float s = dot(reflectedLightVectorWorld, eyeVectorWorld);
-	s = pow(s, 50);
+	s = pow(s, 10);
 	vec4 specularLight = vec4(0, 0, s, 1);
 	
 	

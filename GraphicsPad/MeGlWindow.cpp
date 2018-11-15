@@ -51,34 +51,6 @@ GLuint teapotNormalsIndexDataByteOffset;
 GLuint arrowNormalsIndexDataByteOffset;
 GLuint planeNormalsIndexDataByteOffset;
 
-void MeGlWindow::textureSetup()
-
-{
-	// Load texture file
-	const char * texName = "Texture/turkey.png";
-	QImage timg =
-		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
-	
-	// Copy file to OpenGL
-	glActiveTexture(GL_TEXTURE0);
-	GLuint tid;
-	glGenTextures(1, &tid);
-	glBindTexture(GL_TEXTURE_2D, tid);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, timg.width(),
-		timg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-		timg.bits());
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-		GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-		GL_LINEAR);
-
-	//// Set the Tex1 sampler uniform to refer to texture unit 0
-	//int loc = glGetUniformLocation(programHandle, "Tex1");
-	//if (loc >= 0)
-	//	glUniform1i(loc, 0);
-	//else
-	//	fprintf(stderr, "Uniform variable Tex1 not found!\n");
-}
 
 void MeGlWindow::sendDataToOpenGL()
 {
@@ -225,8 +197,6 @@ void MeGlWindow::sendDataToOpenGL()
 	//enable the normal attribute (color)
 	glEnableVertexAttribArray(2);
 	
-	glEnableVertexAttribArray(3);
-	
 	//rebind arrow vertex bufferID back
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	GLuint planeByteOffset = arrowByteOffset + arrow.vertexBufferSize() + arrow.indexBufferSize();
@@ -236,9 +206,6 @@ void MeGlWindow::sendDataToOpenGL()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeByteOffset + sizeof(float) * 3));
 	//describe normal data to openGL
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeByteOffset + sizeof(float) * 6));
-
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 15, (char*)(sizeof(float) * 9));
 
 	//rebind arrow index bufferID back
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
@@ -335,7 +302,7 @@ void MeGlWindow::paintGL()
 
 	//Light position
 	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	glm::vec3 lightPositionWorld(3.0f, 5.0f, 0.0f);
+	glm::vec3 lightPositionWorld(5.0f, 2.0f, 0.0f);
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 
 	//Teapot
@@ -366,7 +333,7 @@ void MeGlWindow::paintGL()
 	//Arrow translated
 	glBindVertexArray(arrowVertexArrayObjectID);
 	mat4 arrowModelToWorldMatrix = 
-		glm::translate(0.0f, 2.0f, -8.0f) *
+		glm::translate(0.0f, 2.0f, -3.0f) *
 		glm::rotate(-70.0f, 1.0f, 0.0f, 0.0f);
 	
 	modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
@@ -393,10 +360,6 @@ void MeGlWindow::paintGL()
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
 		&planeModelToWorldMatrix[0][0]);
 	
-	//texture
-	GLint TextureUniformLocation = glGetUniformLocation(programID, "Tex1");
-	glUniform1i(TextureUniformLocation, 0);
-
 	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, planeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)planeNormalsIndexDataByteOffset);*/
@@ -518,8 +481,6 @@ void MeGlWindow::initializeGL()
 
 	//Winding Order: make front face to be clockwise rather than counter clockwise
 	//glFrontFace(GL_CW); //default is GL_CCW
-
-	textureSetup();
 
 	sendDataToOpenGL();
 	installShaders();
