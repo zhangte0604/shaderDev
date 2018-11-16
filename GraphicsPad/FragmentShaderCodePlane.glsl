@@ -1,5 +1,6 @@
 #version 430
 
+
 out vec4 daColor;
 
 in vec3 normalWorld;
@@ -20,6 +21,7 @@ void main()
 	vec3 lightVectorWorld = normalize(lightPositionWorld - vertexPositionWorld);
 	float brightness = dot(lightVectorWorld, normalize(normalWorld));
 	//vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
+	
 	vec4 diffuseLight = brightness * texColor;
 	
 
@@ -33,7 +35,8 @@ void main()
 	
 	
 	//Clamp: Don't wanna distract from diffuse light when adding ambient light
-	//daColor = clamp(diffuseLight, 0, 1) + ambientLight + clamp(specularLight, 0, 1);
+	daColor = clamp(diffuseLight, 0, 1) + ambientLight + clamp(specularLight, 0, 1);
+	daColor = vec4(1,0,0,1);
 	
 	//daColor = ambientLight + clamp(specularLight, 0, 1);
 	//daColor = clamp(specularLight, 0, 1);

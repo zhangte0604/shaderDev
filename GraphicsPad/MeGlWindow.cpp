@@ -265,77 +265,79 @@ void MeGlWindow::paintGL()
 	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 20.0f);
 	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
-	
-	glUseProgram(programID);
-
-	//Ambient Light
-	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	vec4 ambientLight(0.01f, 0.01f, 0.01f, 1.0f);
-	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
-
-	//Specular Light
-	GLint eyePositionUniformLocation = glGetUniformLocation(programID, "eyePositionWorld");
-	glm::vec3 eyePosition = camera.getPosition();
-	glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
-
-	//Light position
-	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	glm::vec3 lightPositionWorld(3.0f, 5.0f, 0.0f);
-	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
-
-	//Teapot
-	glBindVertexArray(teapotVertexArrayObjectID);
-	mat4 teapot1ModelToWorldMatrix =
-		glm::translate(vec3(0.0f, -1.0f, -1.0f)) *
-		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
-	modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
-	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
-
-	glBindVertexArray(teapotVertexArrayObjectID);
-	mat4 teapot2ModelToWorldMatrix =
-		glm::translate(vec3(3.0f, 0.0f, -6.75f)) *
-		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
-	modelToProjectionMatrix = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
-	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
-	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
-
 
 	GLint modelToWorldMatrixUniformLocation =
 		glGetUniformLocation(programID, "modelToWorldMatrix");
-
-	//Arrow translated
-	glBindVertexArray(arrowVertexArrayObjectID);
-	mat4 arrowModelToWorldMatrix = 
-		glm::translate(0.0f, 2.0f, -8.0f) *
-		glm::rotate(-70.0f, 1.0f, 0.0f, 0.0f);
 	
-	modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
-		&arrowModelToWorldMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
-	/*glBindVertexArray(arrowNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, arrowNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)arrowNormalsIndexDataByteOffset);*/
+	//glUseProgram(programID);
 
-	//arrow centered
-	arrowModelToWorldMatrix = mat4();
-	modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
-		&arrowModelToWorldMatrix[0][0]);
+	////Ambient Light
+	//GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
+	//vec4 ambientLight(0.01f, 0.01f, 0.01f, 1.0f);
+	//glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
+
+	////Specular Light
+	//GLint eyePositionUniformLocation = glGetUniformLocation(programID, "eyePositionWorld");
+	//glm::vec3 eyePosition = camera.getPosition();
+	//glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
+
+	////Light position
+	//GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
+	//glm::vec3 lightPositionWorld(3.0f, 5.0f, 0.0f);
+	//glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
+
+	////Teapot
+	//glBindVertexArray(teapotVertexArrayObjectID);
+	//mat4 teapot1ModelToWorldMatrix =
+	//	glm::translate(vec3(0.0f, -1.0f, -1.0f)) *
+	//	glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
+	//modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
+	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
+	///*glBindVertexArray(teapotNormalsVertexArrayObjectID);
+	//glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
+
+	//glBindVertexArray(teapotVertexArrayObjectID);
+	//mat4 teapot2ModelToWorldMatrix =
+	//	glm::translate(vec3(3.0f, 0.0f, -6.75f)) *
+	//	glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
+	//modelToProjectionMatrix = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
+	////glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	////glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
+	///*glBindVertexArray(teapotNormalsVertexArrayObjectID);
+	//glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
+
+
+	//
+
+	////Arrow translated
+	//glBindVertexArray(arrowVertexArrayObjectID);
+	//mat4 arrowModelToWorldMatrix = 
+	//	glm::translate(0.0f, 2.0f, -8.0f) *
+	//	//glm::rotate(-70.0f, 1.0f, 0.0f, 0glDeleteProgram(programID);.0f);
+	//
+	//modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
+	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
+	//	&arrowModelToWorldMatrix[0][0]);
 	//glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
-	
-	
+	///*glBindVertexArray(arrowNormalsVertexArrayObjectID);
+	//glDrawElements(GL_LINES, arrowNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)arrowNormalsIndexDataByteOffset);*/
+
+	////arrow centered
+	//arrowModelToWorldMatrix = mat4();
+	//modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
+	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
+	//	&arrowModelToWorldMatrix[0][0]);
+	////glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
+	//
+	//
 	
 	glUseProgram(programPlaneTextureID);
 
 	//Plane
-	glBindVertexArray(planeVertexArrayObjectID);
+	glBindVertexArray(arrowVertexArrayObjectID);
 	mat4 planeModelToWorldMatrix;
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
@@ -434,13 +436,13 @@ void MeGlWindow::installShaders()
 	//  Plane Texture Shader
 	temp = readShaderCode("VertexShaderCodePlane.glsl");
 	adapter[0] = temp.c_str();
-	glShaderSource(vertexShaderID, 1, adapter, 0);
+	glShaderSource(vertexShaderPlaneID, 1, adapter, 0);
 	temp = readShaderCode("FragmentShaderCodePlane.glsl");
 	adapter[0] = temp.c_str();
-	glShaderSource(fragmentShaderID, 1, adapter, 0);
+	glShaderSource(fragmentShaderPlaneID, 1, adapter, 0);
 
-	glCompileShader(vertexShaderID);
-	glCompileShader(fragmentShaderID);
+	glCompileShader(vertexShaderPlaneID);
+	glCompileShader(fragmentShaderPlaneID);
 
 	programPlaneTextureID = glCreateProgram();
 	glAttachShader(programPlaneTextureID, vertexShaderPlaneID);
