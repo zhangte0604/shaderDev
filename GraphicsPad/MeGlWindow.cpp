@@ -17,7 +17,7 @@ using glm::vec4;
 using glm::mat4;
 
 const uint NUM_VERTICES_PER_TRI = 3;
-const uint NUM_FLOATS_PER_VERTICE = 11;
+const uint NUM_FLOATS_PER_VERTICE = 9;
 const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 
 GLuint programID;
@@ -157,7 +157,7 @@ void MeGlWindow::sendDataToOpenGL()
 	//describe normal data to openGL
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(sizeof(float) * 6));
 	//describe uv data to openGL
-	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(sizeof(float) * 9));
+	//glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(sizeof(float) * 9));
 	//rebind teapot index bufferID back
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
@@ -182,7 +182,7 @@ void MeGlWindow::sendDataToOpenGL()
 	//describe normal data to openGL
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(arrowByteOffset + sizeof(float) * 6));
 	//describe uv data to openGL
-	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(arrowByteOffset + sizeof(float) * 9));
+	//glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(arrowByteOffset + sizeof(float) * 9));
 	//rebind arrow index bufferID back
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
@@ -207,7 +207,7 @@ void MeGlWindow::sendDataToOpenGL()
 	//describe normal data to openGL
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeByteOffset + sizeof(float) * 6));
 	//describe uv data to openGL
-	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeByteOffset + sizeof(float) * 9));
+	//glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeByteOffset + sizeof(float) * 9));
 
 	//rebind arrow index bufferID back
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
@@ -269,75 +269,75 @@ void MeGlWindow::paintGL()
 	GLint modelToWorldMatrixUniformLocation =
 		glGetUniformLocation(programID, "modelToWorldMatrix");
 	
-	//glUseProgram(programID);
+	glUseProgram(programID);
 
-	////Ambient Light
-	//GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	//vec4 ambientLight(0.01f, 0.01f, 0.01f, 1.0f);
-	//glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
+	//Ambient Light
+	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
+	vec4 ambientLight(0.01f, 0.01f, 0.01f, 1.0f);
+	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 
-	////Specular Light
-	//GLint eyePositionUniformLocation = glGetUniformLocation(programID, "eyePositionWorld");
-	//glm::vec3 eyePosition = camera.getPosition();
-	//glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
+	//Specular Light
+	GLint eyePositionUniformLocation = glGetUniformLocation(programID, "eyePositionWorld");
+	glm::vec3 eyePosition = camera.getPosition();
+	glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
 
-	////Light position
-	//GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	//glm::vec3 lightPositionWorld(3.0f, 5.0f, 0.0f);
-	//glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
+	//Light position
+	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
+	glm::vec3 lightPositionWorld(3.0f, 5.0f, 0.0f);
+	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 
-	////Teapot
-	//glBindVertexArray(teapotVertexArrayObjectID);
-	//mat4 teapot1ModelToWorldMatrix =
-	//	glm::translate(vec3(0.0f, -1.0f, -1.0f)) *
-	//	glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
-	//modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
+	//Teapot
+	glBindVertexArray(teapotVertexArrayObjectID);
+	mat4 teapot1ModelToWorldMatrix =
+		glm::translate(vec3(0.0f, -1.0f, -1.0f)) *
+		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
+	modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
+	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
+	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
+
+	glBindVertexArray(teapotVertexArrayObjectID);
+	mat4 teapot2ModelToWorldMatrix =
+		glm::translate(vec3(3.0f, 0.0f, -6.75f)) *
+		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
+	modelToProjectionMatrix = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
 	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
-	///*glBindVertexArray(teapotNormalsVertexArrayObjectID);
-	//glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
-
-	//glBindVertexArray(teapotVertexArrayObjectID);
-	//mat4 teapot2ModelToWorldMatrix =
-	//	glm::translate(vec3(3.0f, 0.0f, -6.75f)) *
-	//	glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
-	//modelToProjectionMatrix = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
-	////glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	////glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
-	///*glBindVertexArray(teapotNormalsVertexArrayObjectID);
-	//glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
+	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
+	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
 
 
-	//
+	
 
-	////Arrow translated
-	//glBindVertexArray(arrowVertexArrayObjectID);
-	//mat4 arrowModelToWorldMatrix = 
-	//	glm::translate(0.0f, 2.0f, -8.0f) *
-	//	//glm::rotate(-70.0f, 1.0f, 0.0f, 0glDeleteProgram(programID);.0f);
-	//
-	//modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
-	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
-	//	&arrowModelToWorldMatrix[0][0]);
+	//Arrow translated
+	glBindVertexArray(arrowVertexArrayObjectID);
+	mat4 arrowModelToWorldMatrix = 
+		glm::translate(0.0f, 2.0f, -8.0f) *
+		//glm::rotate(-70.0f, 1.0f, 0.0f, 0glDeleteProgram(programID);.0f);
+	
+	modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
+		&arrowModelToWorldMatrix[0][0]);
+	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
+	/*glBindVertexArray(arrowNormalsVertexArrayObjectID);
+	glDrawElements(GL_LINES, arrowNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)arrowNormalsIndexDataByteOffset);*/
+
+	//arrow centered
+	arrowModelToWorldMatrix = mat4();
+	modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
+		&arrowModelToWorldMatrix[0][0]);
 	//glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
-	///*glBindVertexArray(arrowNormalsVertexArrayObjectID);
-	//glDrawElements(GL_LINES, arrowNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)arrowNormalsIndexDataByteOffset);*/
-
-	////arrow centered
-	//arrowModelToWorldMatrix = mat4();
-	//modelToProjectionMatrix = worldToProjectionMatrix * arrowModelToWorldMatrix;
-	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
-	//	&arrowModelToWorldMatrix[0][0]);
-	////glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
-	//
-	//
+	
+	
 	
 	glUseProgram(programPlaneTextureID);
 
 	//Plane
-	glBindVertexArray(arrowVertexArrayObjectID);
+	glBindVertexArray(planeVertexArrayObjectID);
 	mat4 planeModelToWorldMatrix;
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
@@ -410,8 +410,8 @@ void MeGlWindow::installShaders()
 {
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-	GLuint vertexShaderPlaneID = glCreateShader(GL_VERTEX_SHADER);
-	GLuint fragmentShaderPlaneID = glCreateShader(GL_FRAGMENT_SHADER);
+	//GLuint vertexShaderPlaneID = glCreateShader(GL_VERTEX_SHADER);
+	//GLuint fragmentShaderPlaneID = glCreateShader(GL_FRAGMENT_SHADER);
 
 	//define array of character pointers
 	const GLchar* adapter[1];
@@ -433,6 +433,7 @@ void MeGlWindow::installShaders()
 
 	//glUseProgram(programID);
 
+	/*
 	//  Plane Texture Shader
 	temp = readShaderCode("VertexShaderCodePlane.glsl");
 	adapter[0] = temp.c_str();
@@ -450,23 +451,23 @@ void MeGlWindow::installShaders()
 	//Linker decideds where the attributes are
 	glLinkProgram(programPlaneTextureID);
 
+	*/
+	
 
 	//check if compile has error
 	if (!checkShaderStatus(vertexShaderID) 
-		|| !checkShaderStatus(fragmentShaderID) 
-		|| !checkShaderStatus(vertexShaderPlaneID) 
-		|| !checkShaderStatus(fragmentShaderPlaneID))
+		|| !checkShaderStatus(fragmentShaderID))
 		return;
 
 	//check if linker has error
-	if (!checkProgramStatus(programID) || !checkProgramStatus(programPlaneTextureID))
+	if (!checkProgramStatus(programID))
 		return;
 
 	//delete shader
 	glDeleteShader(vertexShaderID);
 	glDeleteShader(fragmentShaderID);
-	glDeleteShader(vertexShaderPlaneID);
-	glDeleteShader(fragmentShaderPlaneID);
+	//glDeleteShader(vertexShaderPlaneID);
+	//glDeleteShader(fragmentShaderPlaneID);
 
 	//glUseProgram(programPlaneTextureID);
 }
@@ -487,7 +488,7 @@ void MeGlWindow::initializeGL()
 	//Winding Order: make front face to be clockwise rather than counter clockwise
 	//glFrontFace(GL_CW); //default is GL_CCW
 
-	textureSetup();
+	//textureSetup();
 
 	sendDataToOpenGL();
 	installShaders();
