@@ -147,7 +147,7 @@ void MeGlWindow::sendDataToOpenGL()
 	//enable the normal attribute (normal)
 	glEnableVertexAttribArray(2);
 	//enable the uv attribute (uv)
-	glEnableVertexAttribArray(3);
+	//glEnableVertexAttribArray(3);
 	//rebind teapot vertex bufferID back
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	//describe position data to openGL
@@ -171,7 +171,7 @@ void MeGlWindow::sendDataToOpenGL()
 	//enable the normal attribute (color)
 	glEnableVertexAttribArray(2);
 	//enable the uv attribute (uv)
-	glEnableVertexAttribArray(3);
+	//glEnableVertexAttribArray(3);
 	//rebind arrow vertex bufferID back
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	GLuint arrowByteOffset = teapot.vertexBufferSize() + teapot.indexBufferSize();
@@ -196,7 +196,7 @@ void MeGlWindow::sendDataToOpenGL()
 	//enable the normal attribute (color)
 	glEnableVertexAttribArray(2);
 	//enable the uv attribute (uv)
-	glEnableVertexAttribArray(3);
+	//glEnableVertexAttribArray(3);
 	//rebind arrow vertex bufferID back
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	GLuint planeByteOffset = arrowByteOffset + arrow.vertexBufferSize() + arrow.indexBufferSize();
@@ -334,7 +334,7 @@ void MeGlWindow::paintGL()
 	
 	
 	
-	glUseProgram(programPlaneTextureID);
+	//glUseProgram(programPlaneTextureID);
 
 	//Plane
 	glBindVertexArray(planeVertexArrayObjectID);
@@ -344,9 +344,12 @@ void MeGlWindow::paintGL()
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
 		&planeModelToWorldMatrix[0][0]);
 	
+	/*
 	//texture
 	GLint TextureUniformLocation = glGetUniformLocation(programPlaneTextureID, "Tex1");
 	glUniform1i(TextureUniformLocation, 0);
+	*/
+	
 
 	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, 0);
 	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
