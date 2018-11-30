@@ -17,7 +17,7 @@ using glm::vec4;
 using glm::mat4;
 
 const uint NUM_VERTICES_PER_TRI = 3;
-const uint NUM_FLOATS_PER_VERTICE = 9;
+const uint NUM_FLOATS_PER_VERTICE = 14;
 const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 
 GLuint programID;
@@ -241,9 +241,9 @@ void MeGlWindow::sendDataToOpenGL()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeNormalsByteOffset + sizeof(float) * 3));
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);*/
 
-	teapot.cleanup();
+	/*teapot.cleanup();
 	arrow.cleanup();
-	plane.cleanup();
+	plane.cleanup();*/
 }
 
 void MeGlWindow::mouseMoveEvent(QMouseEvent* e)

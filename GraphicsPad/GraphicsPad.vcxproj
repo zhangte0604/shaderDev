@@ -33,10 +33,12 @@
     <ClInclude Include="ShapeData.h" />
     <ClInclude Include="ShapeGenerator.h" />
     <ClInclude Include="TeapotData.h" />
+    <ClInclude Include="TypeDefs.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShaderCode.glsl" />
+    <None Include="ShapeData.inl" />
     <None Include="VertexShaderCode.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
