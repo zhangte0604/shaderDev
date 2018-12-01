@@ -531,6 +531,7 @@ ShapeData ShapeGenerator::makePlaneIndices(uint dimensions)
 	return ret;
 }
 
+
 ShapeData ShapeGenerator::makePlane(uint dimensions)
 {
 	ShapeData ret = makePlaneVerts(dimensions);
@@ -543,7 +544,7 @@ ShapeData ShapeGenerator::makePlane(uint dimensions)
 ShapeData ShapeGenerator::makeTeapot(uint tesselation, const glm::mat4& lidTransform)
 {
 	ShapeData ret;
-
+	float* TCs = NULL;
 
 	ret.numVertices = 32 * (tesselation + 1) * (tesselation + 1);
 	uint faces = tesselation * tesselation * 32;
@@ -569,9 +570,13 @@ ShapeData ShapeGenerator::makeTeapot(uint tesselation, const glm::mat4& lidTrans
 		v.normal.z = normals[i * 3 + 2];
 		v.color = randomColor();
 		
+		//v.uv.x = TCs[i * 2 + 0];
+		//v.uv.y = TCs[i * 2 + 1];
+		
 	}
 	return ret;
 }
+
 
 void ShapeGenerator::generatePatches(float * v, float * n, float * tc, unsigned short* el, int grid) {
 	float * B = new float[4 * (grid + 1)];  // Pre-computed Bernstein basis functions
