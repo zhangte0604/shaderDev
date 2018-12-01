@@ -366,7 +366,7 @@ void MeGlWindow::paintGL()
 		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
 	modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
+	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
 	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
 
@@ -394,7 +394,7 @@ void MeGlWindow::paintGL()
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
 		&arrowModelToWorldMatrix[0][0]);
-	//glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
+	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
 	/*glBindVertexArray(arrowNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, arrowNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)arrowNormalsIndexDataByteOffset);*/
 
@@ -414,7 +414,7 @@ void MeGlWindow::paintGL()
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
 		&planeModelToWorldMatrix[0][0]);
 	
-	//glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
+	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, planeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)planeNormalsIndexDataByteOffset);*/
 }

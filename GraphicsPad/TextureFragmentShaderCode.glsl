@@ -20,10 +20,11 @@ void main()
 
 	// Diffuse
 	vec3 lightVectorWorld = normalize(lightPositionWorld - vertexPositionWorld);
-	float brightness = dot(lightVectorWorld, normalize(normalWorld));
-	//vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
-
-	vec4 diffuseLight = brightness * texColor;
+	//float brightness = dot(lightVectorWorld, normalize(normalWorld));
+	float brightness = dot(lightVectorWorld, texColor.xyz);
+	
+	vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
+	//vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0) * texColor;
 
 
 	// Specular
@@ -36,9 +37,8 @@ void main()
 
 
 	//Clamp: Don't wanna distract from diffuse light when adding ambient light
-	daColor = clamp(diffuseLight, 0, 1) + ambientLight + clamp(specularLight, 0, 1);
-	//daColor = vec4(1, 0, 0, 1);
-
+	daColor = clamp(diffuseLight, 0, 1) * texColor + ambientLight * texColor + clamp(specularLight, 0, 1);
+	
 	//daColor = ambientLight + clamp(specularLight, 0, 1);
 	//daColor = clamp(specularLight, 0, 1);
 

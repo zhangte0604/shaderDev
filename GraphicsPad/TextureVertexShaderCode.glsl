@@ -1,7 +1,7 @@
 #version 430
 
 
-in layout(location = 0) vec3 vertexPositionModel;
+in layout(location = 0) vec4 vertexPositionModel;
 in layout(location = 1) vec3 vertexColor;
 in layout(location = 2) vec3 normalModel;
 in layout(location = 3) vec2 VertexTexCoord;
@@ -20,7 +20,7 @@ void main()
 {
 	//vec4 v = vec4(vertexPositionModel, 1.0);
 	
-	gl_Position =  vertexPositionModel;
+	gl_Position = modelToProjectionMatrix * vertexPositionModel;
 
 	//Smooth Surface Normals: the vertex of intersection uses the same normal which is the vertexPositionModel normal
 	//normalWorld = vec3(modelToWorldMatrix * normalize(vertexPositionModel));
