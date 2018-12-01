@@ -492,10 +492,16 @@ ShapeData ShapeGenerator::makePlaneVerts(uint dimensions)
 			thisVert.position.z = i - half;
 			thisVert.position.y = 0;
 			thisVert.color = randomColor();
+
 			thisVert.normal = glm::vec3(0.0f, 1.0f, 0.0f);
 			thisVert.tangent = glm::vec3(1.0f, 0.0f, 0.0f);
-			thisVert.uv.x = j / (float)dimensions;
-			thisVert.uv.y = i / (float)dimensions;
+
+			//thisVert.uv.x = j / (float)dimensions;
+			//thisVert.uv.y = i / (float)dimensions;
+			
+
+			thisVert.uv.x = ((float)j) / ((float)(dimensions - 1));
+			thisVert.uv.y = ((float)i) / ((float)(dimensions - 1));
 			
 		}
 	}

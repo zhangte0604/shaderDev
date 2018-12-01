@@ -51,9 +51,39 @@ GLuint teapotNormalsIndexDataByteOffset;
 GLuint arrowNormalsIndexDataByteOffset;
 GLuint planeNormalsIndexDataByteOffset;
 
+void MeGlWindow::textureSetup()
+
+{
+	// Load texture file
+	const char * texName = "Texture/turkey.png";
+	QImage timg =
+		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
+
+	// Copy file to OpenGL
+	glActiveTexture(GL_TEXTURE0);
+	GLuint tid;
+	glGenTextures(1, &tid);
+	glBindTexture(GL_TEXTURE_2D, tid);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, timg.width(),
+		timg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		timg.bits());
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+		GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		GL_LINEAR);
+
+	//// Set the Tex1 sampler uniform to refer to texture unit 0
+	//int loc = glGetUniformLocation(programHandle, "Tex1");
+	//if (loc >= 0)
+	//	glUniform1i(loc, 0);
+	//else
+	//	fprintf(stderr, "Uniform variable Tex1 not found!\n");
+}
 
 void MeGlWindow::sendDataToOpenGL()
 {
+	textureSetup();
+
 	//Teapot + Arrow
 	ShapeData teapot = ShapeGenerator::makeTeapot();
 	//ShapeData teapotNormals = ShapeGenerator::generateNormals(teapot);
@@ -153,8 +183,12 @@ void MeGlWindow::sendDataToOpenGL()
 	glEnableVertexAttribArray(0);
 	//enable the vertex attribute (color)
 	glEnableVertexAttribArray(1);
-	//enable the normal attribute (color)
+	//enable the normal attribute (normal)
 	glEnableVertexAttribArray(2);
+	//enable the uv attribute (uv)
+	glEnableVertexAttribArray(3);
+	//enable the tangent attribute (tangent)
+	glEnableVertexAttribArray(4);
 	//rebind teapot vertex bufferID back
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	//describe position data to openGL
@@ -163,6 +197,10 @@ void MeGlWindow::sendDataToOpenGL()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(sizeof(float) * 3));
 	//describe normal data to openGL
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(sizeof(float) * 6));
+	//describe uv data to openGL
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(sizeof(float) * 9));
+	//describe tangent data to openGL
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(sizeof(float) * 11));
 	//rebind teapot index bufferID back
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
@@ -175,6 +213,10 @@ void MeGlWindow::sendDataToOpenGL()
 	glEnableVertexAttribArray(1);
 	//enable the normal attribute (color)
 	glEnableVertexAttribArray(2);
+	//enable the uv attribute (uv)
+	glEnableVertexAttribArray(3);
+	//enable the tangent attribute (tangent)
+	glEnableVertexAttribArray(4);
 	//rebind arrow vertex bufferID back
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	GLuint arrowByteOffset = teapot.vertexBufferSize() + teapot.indexBufferSize();
@@ -184,6 +226,10 @@ void MeGlWindow::sendDataToOpenGL()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(arrowByteOffset + sizeof(float) * 3));
 	//describe normal data to openGL
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(arrowByteOffset + sizeof(float) * 6));
+	//describe uv data to openGL
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(arrowByteOffset + sizeof(float) * 9));
+	//describe uv data to openGL
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(arrowByteOffset + sizeof(float) * 11));
 	//rebind arrow index bufferID back
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
 
@@ -194,8 +240,12 @@ void MeGlWindow::sendDataToOpenGL()
 	glEnableVertexAttribArray(0);
 	//enable the vertex attribute (color)
 	glEnableVertexAttribArray(1);
-	//enable the normal attribute (color)
+	//enable the normal attribute (normal)
 	glEnableVertexAttribArray(2);
+	//enable the uv attribute (uv)
+	glEnableVertexAttribArray(3);
+	//enable the tangent attribute (tangent)
+	glEnableVertexAttribArray(4);
 	
 	//rebind arrow vertex bufferID back
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
@@ -206,6 +256,10 @@ void MeGlWindow::sendDataToOpenGL()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeByteOffset + sizeof(float) * 3));
 	//describe normal data to openGL
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeByteOffset + sizeof(float) * 6));
+	//describe uv data to openGL
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeByteOffset + sizeof(float) * 9));
+	//describe uv data to openGL
+	glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeByteOffset + sizeof(float) * 11));
 
 	//rebind arrow index bufferID back
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
@@ -241,9 +295,9 @@ void MeGlWindow::sendDataToOpenGL()
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeNormalsByteOffset + sizeof(float) * 3));
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);*/
 
-	/*teapot.cleanup();
+	teapot.cleanup();
 	arrow.cleanup();
-	plane.cleanup();*/
+	plane.cleanup();
 }
 
 void MeGlWindow::mouseMoveEvent(QMouseEvent* e)
@@ -340,7 +394,7 @@ void MeGlWindow::paintGL()
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
 		&arrowModelToWorldMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
+	//glDrawElements(GL_TRIANGLES, arrowNumIndices, GL_UNSIGNED_SHORT, (void*)arrowIndexDataByteOffset);
 	/*glBindVertexArray(arrowNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, arrowNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)arrowNormalsIndexDataByteOffset);*/
 
@@ -360,7 +414,7 @@ void MeGlWindow::paintGL()
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
 		&planeModelToWorldMatrix[0][0]);
 	
-	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
+	//glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, planeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)planeNormalsIndexDataByteOffset);*/
 }
@@ -425,10 +479,10 @@ void MeGlWindow::installShaders()
 
 	//define array of character pointers
 	const GLchar* adapter[1];
-	string temp = readShaderCode("VertexShaderCode.glsl");
+	string temp = readShaderCode("TextureVertexShaderCode.glsl");
 	adapter[0] = temp.c_str();
 	glShaderSource(vertexShaderID, 1, adapter, 0);
-	temp = readShaderCode("FragmentShaderCode.glsl");	
+	temp = readShaderCode("TextureFragmentShaderCode.glsl");	
 	adapter[0] = temp.c_str();
 	glShaderSource(fragmentShaderID, 1, adapter, 0);
 
@@ -482,6 +536,7 @@ void MeGlWindow::initializeGL()
 	//Winding Order: make front face to be clockwise rather than counter clockwise
 	//glFrontFace(GL_CW); //default is GL_CCW
 
+	//textureSetup();
 	sendDataToOpenGL();
 	installShaders();
 

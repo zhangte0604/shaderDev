@@ -36,6 +36,8 @@
     <None Include="ShapeData.inl">
       <Filter>Primitives</Filter>
     </None>
+    <None Include="TextureVertexShaderCode.glsl" />
+    <None Include="TextureFragmentShaderCode.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Primitives">
