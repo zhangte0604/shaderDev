@@ -6,7 +6,7 @@ out vec4 daColor;
 in vec3 normalWorld;
 in vec3 vertexPositionWorld;
 in vec2 TexCoord;
-in vec3 tangentToModelTransform;
+//in vec3 tangentToModelTransform;
 
 uniform vec3 lightPositionWorld;
 uniform vec3 eyePositionWorld;
@@ -21,10 +21,10 @@ void main()
 	// Diffuse
 	vec3 lightVectorWorld = normalize(lightPositionWorld - vertexPositionWorld);
 	float brightness = dot(lightVectorWorld, normalize(normalWorld));
-	//vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
+	vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
 
-	vec4 diffuseLight = brightness * texColor;
-
+	//vec4 diffuseLight = brightness * texColor;
+	
 
 	// Specular
 	vec3 reflectedLightVectorWorld = reflect(-lightVectorWorld, normalWorld);

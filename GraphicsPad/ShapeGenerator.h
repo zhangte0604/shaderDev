@@ -7,6 +7,7 @@ class ShapeGenerator
 	static ShapeData makePlaneVerts(uint dimensions);
 	static ShapeData makePlaneIndices(uint dimensions);
 
+	
 	// Teapot helpers
 	static void generatePatches(float * v, float * n, float * tc, unsigned short* el, int grid);
 	static void moveLid(int grid, float *v, glm::mat4 lidTransform);
@@ -28,6 +29,7 @@ class ShapeGenerator
 	static glm::vec3 evaluate(int gridU, int gridV, float *B, glm::vec3 patch[][4]);
 	static glm::vec3 evaluateNormal(int gridU, int gridV,
 		float *B, float *dB, glm::vec3 patch[][4]);
+	
 public:
 	static ShapeData makeTriangle();
 	static ShapeData makeCube();
