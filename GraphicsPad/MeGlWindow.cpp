@@ -54,30 +54,72 @@ GLuint planeNormalsIndexDataByteOffset;
 void MeGlWindow::textureSetup()
 
 {
-	// Load texture file
-	const char * texName = "Texture/cat.png";
-	QImage timg =
-		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
-
+	/*
 	// Copy file to OpenGL
 	glActiveTexture(GL_TEXTURE0);
-	GLuint tid;
-	glGenTextures(1, &tid);
-	glBindTexture(GL_TEXTURE_2D, tid);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, timg.width(),
-		timg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-		timg.bits());
+	GLuint texIDs[2];
+	glGenTextures(2, texIDs);
+
+	//load the first texture(catImg) file
+	const char * texName = "Texture/cat.png";
+	QImage catImg =
+		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
+	//Copy the first texture to OpenGL
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texIDs[0]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, catImg.width(),
+		catImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		catImg.bits());
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
 		GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 		GL_LINEAR);
 
-	//// Set the Tex1 sampler uniform to refer to texture unit 0
-	//int loc = glGetUniformLocation(programHandle, "Tex1");
-	//if (loc >= 0)
-	//	glUniform1i(loc, 0);
-	//else
-	//	fprintf(stderr, "Uniform variable Tex1 not found!\n");
+	// Set the colorTex sampler uniform to refer to texture unit 0
+	int uniloc = glGetUniformLocation(programHandle, "colorTex");
+	if (uniloc >= 0)
+		glUniform1i(uniloc, 0);
+	else
+		fprintf(stderr, "Uniform variable colorTex not found!\n");
+
+	*/
+
+	//Cat Normal Map
+	const char * normalMapName = "Texture/normal.png";
+	QImage catNormalImg =
+		QGLWidget::convertToGLFormat(QImage(normalMapName, "PNG"));
+	// send Normal Image to OpenGL
+	glActiveTexture(GL_TEXTURE0);
+	GLuint NormalID;
+	glGenTextures(1, &NormalID);
+	glBindTexture(GL_TEXTURE_2D, NormalID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, catNormalImg.width(),
+		catNormalImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		catNormalImg.bits());
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+		GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		GL_LINEAR);
+
+	////Cat Texture
+	//const char * texName = "Texture/cat.png";
+	//QImage catImg =
+	//	QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
+	//// send Normal Image to OpenGL
+	//glActiveTexture(GL_TEXTURE0);
+	//GLuint textureID;
+	//glGenTextures(1, &textureID);
+	//glBindTexture(GL_TEXTURE_2D, textureID);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, catImg.width(),
+	//	catImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+	//	catImg.bits());
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+	//	GL_LINEAR);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+	//	GL_LINEAR);
+
+	
+
 }
 
 void MeGlWindow::sendDataToOpenGL()
