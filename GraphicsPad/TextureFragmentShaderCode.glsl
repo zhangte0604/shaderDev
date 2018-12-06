@@ -3,6 +3,7 @@
 out vec4 daColor;
 
 in vec3 vertexPositionWorld;
+in vec3 vertexPositionView;
 in vec3 vertexPositionTangent;
 in vec3 normalWorld;
 in vec2 texCoord;
@@ -17,6 +18,8 @@ uniform vec3 eyePositionWorld;
 uniform vec4 ambientLight;
 uniform sampler2D colorTex;
 uniform sampler2D normalMapTex;
+
+uniform mat4 worldToViewMatrix;
 
 /*
 struct LightInfo
@@ -61,35 +64,53 @@ void main()
 	vec4 normal = texture(normalMapTex, texCoord);
 	
 	
+	/*
 	// Diffuse in world space
 	vec3 lightVectorWorld = normalize(lightPositionWorld - vertexPositionWorld);
-	//float brightness = dot(lightVectorWorld, normalize(normalWorld));
 	float brightness = dot(lightVectorWorld, texColor.xyz);
 	vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
-	
-	
-	//Diffuse in tangent space
-	vec3 lightVectorTangent = normalize(lightPositionTangent - vertexPositionTangent);
-	//float brightness = dot(lightDirTangent, normalize(normal.xyz));
-	//vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
-	
+	*/	
 
-	
+	/*
 	// Specular in world space
 	vec3 reflectedLightVectorWorld = reflect(-lightVectorWorld, normalWorld);
 	vec3 eyeVectorWorld = normalize(eyePositionWorld - vertexPositionWorld);
 	float specIntensity = dot(reflectedLightVectorWorld, eyeVectorWorld);
 	specIntensity = pow(specIntensity, 50);
 	vec4 specularLight = vec4(0, 0, specIntensity, 1);
+	*/
 	
+	//Diffuse in tangent space
+	vec3 lightPositionView = vec3(worldToViewMatrix * vec4(lightPositionWorld, 1.0));
+	vec3 lightVectorTangent = normalize(viewToTangentMatrix * (lightPositionView - vertexPositionView));
+	float brightness = dot(lightVectorTangent, normalize(normal.xyz));
+	vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
+	
+	//float brightness = dot(lightDirTangent, normalize(normal.xyz)); //old
+	//vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0); //old
+
+	
+	//Specular in tangent space
+	vec3 reflectedLightVectorTangent = reflect(-lightVectorTangent, normal.xyz);
+	vec3 eyeVectorTangent = viewToTangentMatrix * normalize(-vertexPositionView);
+	float specIntensity = dot(reflectedLightVectorTangent, eyeVectorTangent);
+	specIntensity = pow(specIntensity, 50);
+	vec4 specularLight = vec4(0, 0, specIntensity, 1);
+
 
 	/*
-	//Specular in tangent space
-	vec3 reflectedLightVectorTangent = reflect(-lightDirTangent, normal.xyz);
+	//Specular in tangent space old
+	vec3 reflectedLightVectorTangent = reflect(-lightVectorTangent, normal.xyz);
 	//vec3 eyeVectorTangent = normalize(eyePositionTangent - vertexPositionTangent);
 	float specIntensity = dot(reflectedLightVectorTangent, viewDirTangent);
 	specIntensity = pow(specIntensity, 50);
 	vec4 specularLight = vec4(0, 0, specIntensity, 1);
+	*/
+
+	/* //from vertex shader
+	//Transform light dir and view dir (from view space???) to tangent space
+	lightDirTangent = normalize(viewToTangentMatrix * (Light.Position.xyz - vertexPositionView));
+	viewDirTangent = viewToTangentMatrix * normalize(-vertexPositionView);
 	*/
 
 	//The purpose of Clamp: Don't wanna distract from diffuse light when adding ambient light

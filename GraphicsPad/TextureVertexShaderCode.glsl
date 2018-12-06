@@ -21,6 +21,7 @@ uniform mat4 modelToViewMatrix;
 uniform mat4 worldToViewMatrix;
 
 out vec3 vertexPositionWorld;
+out vec3 vertexPositionView;
 out vec3 normalWorld;
 out vec2 texCoord;
 out vec3 lightDirTangent;
@@ -67,10 +68,13 @@ void main()
 
 	//Compute vertexPositionView
 	vec3 vertexPositionView = vec3(modelToViewMatrix * vertexPositionModel);
+	
 
+	/*
 	//Transform light dir and view dir (from view space???) to tangent space
 	lightDirTangent = normalize(viewToTangentMatrix * (Light.Position.xyz - vertexPositionView));
 	viewDirTangent = viewToTangentMatrix * normalize(-vertexPositionView);
+	*/
 
 	//Pass along the texture coordinate
 	texCoord = vertexTexCoord;
