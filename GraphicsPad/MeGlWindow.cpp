@@ -382,9 +382,11 @@ void MeGlWindow::paintGL()
 	glViewport(0, 0, width(), height());
 
 	mat4 modelToProjectionMatrix;
+	//mat4 modelToWorldMatrix;
 	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 20.0f);
 	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
+	//mat4 modelToViewMatrix = worldToViewMatrix * modelToWorldMatrix;
 
 	//Ambient Light
 	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
@@ -396,10 +398,18 @@ void MeGlWindow::paintGL()
 	glm::vec3 eyePosition = camera.getPosition();
 	glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
 
+	
 	//Light position
 	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
 	glm::vec3 lightPositionWorld(5.0f, 2.0f, 0.0f);
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
+	
+	/*
+	//Light position in space
+	GLint lightPositionTangentUniformLocation = glGetUniformLocation(programID, "Light.Position.xyz");
+	glm::vec3 lightPositionTangent(5.0f, 2.0f, 0.0f);
+	glUniform3fv(lightPositionTangentUniformLocation, 1, &lightPositionTangent[0]);
+	*/
 
 	//Teapot
 	glBindVertexArray(teapotVertexArrayObjectID);
