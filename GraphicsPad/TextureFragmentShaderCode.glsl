@@ -2,13 +2,13 @@
 
 out vec4 daColor;
 
-in vec3 vertexPositionWorld;
+//in vec3 vertexPositionWorld;
 in vec3 vertexPositionView;
-in vec3 vertexPositionTangent;
-in vec3 normalWorld;
+//in vec3 vertexPositionTangent;
+//in vec3 normalWorld;
 in vec2 texCoord;
-in vec3 lightDirTangent;
-in vec3 viewDirTangent;
+//in vec3 lightDirTangent;
+//in vec3 viewDirTangent;
 in mat3 viewToTangentMatrix;
 
 uniform vec3 lightPositionWorld;
@@ -84,7 +84,7 @@ void main()
 	vec3 lightPositionView = vec3(worldToViewMatrix * vec4(lightPositionWorld, 1.0));
 	vec3 lightVectorTangent = normalize(viewToTangentMatrix * (lightPositionView - vertexPositionView));
 	float brightness = dot(lightVectorTangent, normalize(normal.xyz));
-	vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
+	vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0) * 0.5;
 	
 	//float brightness = dot(lightDirTangent, normalize(normal.xyz)); //old
 	//vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0); //old
@@ -93,9 +93,13 @@ void main()
 	//Specular in tangent space
 	vec3 reflectedLightVectorTangent = reflect(-lightVectorTangent, normal.xyz);
 	vec3 eyeVectorTangent = viewToTangentMatrix * normalize(-vertexPositionView);
-	float specIntensity = dot(reflectedLightVectorTangent, eyeVectorTangent);
+	vec4 specularLight = vec4(0.0);
+	if(max(dot(lightVectorTangent, normal.xyz), 0.0) > 0.0)
+	{
+	float specIntensity = max(dot(reflectedLightVectorTangent, eyeVectorTangent), 0.0);
 	specIntensity = pow(specIntensity, 50);
-	vec4 specularLight = vec4(0, 0, specIntensity, 1);
+	specularLight = vec4(0, 0, specIntensity, 1);
+	}
 
 
 	/*

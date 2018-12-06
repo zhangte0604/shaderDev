@@ -17,15 +17,15 @@ uniform LightInfo Light;
 
 uniform mat4 modelToProjectionMatrix; //MVP 
 uniform mat4 modelToWorldMatrix;
-uniform mat4 modelToViewMatrix;
+//uniform mat4 modelToViewMatrix;
 uniform mat4 worldToViewMatrix;
 
-out vec3 vertexPositionWorld;
+//out vec3 vertexPositionWorld;
 out vec3 vertexPositionView;
-out vec3 normalWorld;
+//out vec3 normalWorld;
 out vec2 texCoord;
-out vec3 lightDirTangent;
-out vec3 viewDirTangent;
+//out vec3 lightDirTangent;
+//out vec3 viewDirTangent;
 out mat3 viewToTangentMatrix;
 
 
@@ -48,11 +48,12 @@ void main()
 	
 	//Compute normalWorld & vertexPositionWorld
 	//Smooth Surface Normals: the vertex of intersection uses the same normal which is the vertexPositionModel normal
-	normalWorld = vec3(modelToWorldMatrix * vec4(normalModel, 0));
-	vertexPositionWorld = vec3(modelToWorldMatrix * vertexPositionModel);
+	//normalWorld = vec3(modelToWorldMatrix * vec4(normalModel, 0));
+	//vertexPositionWorld = vec3(modelToWorldMatrix * vertexPositionModel);
 
 	//Compute normalView & tangentView
 	//Transform normal and tangent from model space to view space
+	mat4 modelToViewMatrix = worldToViewMatrix * modelToWorldMatrix;
 	vec3 normalView = normalize(mat3(modelToViewMatrix) * normalModel);
 	vec3 tangentView = normalize(mat3(modelToViewMatrix) * tangentModel);
 
@@ -61,13 +62,13 @@ void main()
 
 	//viewToTangentMatrix
 	//Matrix for transformation from view space to tangent space
-	mat3 viewToTangentMatrix = mat3(
+	viewToTangentMatrix = mat3(
 		tangentView.x, binormalView.x, normalView.x,
 		tangentView.y, binormalView.y, normalView.y,
 		tangentView.z, binormalView.z, normalView.z);
 
 	//Compute vertexPositionView
-	vec3 vertexPositionView = vec3(modelToViewMatrix * vertexPositionModel);
+	vertexPositionView = vec3(modelToViewMatrix * vertexPositionModel);
 	
 
 	/*

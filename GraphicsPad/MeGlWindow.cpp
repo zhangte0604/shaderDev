@@ -401,7 +401,7 @@ void MeGlWindow::paintGL()
 	
 	//Light position
 	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	glm::vec3 lightPositionWorld(5.0f, 2.0f, 0.0f);
+	glm::vec3 lightPositionWorld(0.0f, 10.0f, 0.0f);
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 	
 	/*
@@ -436,6 +436,10 @@ void MeGlWindow::paintGL()
 	GLint modelToWorldMatrixUniformLocation =
 		glGetUniformLocation(programID, "modelToWorldMatrix");
 
+	GLint worldToViewMatrixUniformLocation =
+		glGetUniformLocation(programID, "worldToViewMatrix");
+	glUniformMatrix4fv(worldToViewMatrixUniformLocation, 1, GL_FALSE, &worldToViewMatrix[0][0]);
+
 	//cube translated
 	glBindVertexArray(cubeVertexArrayObjectID);
 	mat4 cubeModelToWorldMatrix = 
@@ -461,10 +465,12 @@ void MeGlWindow::paintGL()
 	//Plane
 	glBindVertexArray(planeVertexArrayObjectID);
 	mat4 planeModelToWorldMatrix;
+
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
 		&planeModelToWorldMatrix[0][0]);
+	
 	
 	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
