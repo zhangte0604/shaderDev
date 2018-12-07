@@ -7,26 +7,15 @@ in layout(location = 2) vec3 normalModel;
 in layout(location = 3) vec2 vertexTexCoord;
 in layout(location = 4) vec3 tangentModel;
 
-struct LightInfo
-{
-	vec4 Position; // Light position in eye coords.
-	vec3 Intensity; // A,D,S intensity
-};
-
-uniform LightInfo Light;
-
 uniform mat4 modelToProjectionMatrix; //MVP 
 uniform mat4 modelToWorldMatrix;
-//uniform mat4 modelToViewMatrix;
 uniform mat4 worldToViewMatrix;
 
-//out vec3 vertexPositionWorld;
 out vec3 vertexPositionView;
-//out vec3 normalWorld;
 out vec2 texCoord;
-//out vec3 lightDirTangent;
-//out vec3 viewDirTangent;
 out mat3 viewToTangentMatrix;
+
+
 
 
 /*

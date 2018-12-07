@@ -37,6 +37,8 @@
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="CubemapFragmentShaderCode.glsl" />
+    <None Include="CubemapVertexShaderCode.glsl" />
     <None Include="TextureFragmentShaderCode.glsl" />
     <None Include="FragmentShaderCode.glsl" />
     <None Include="ShapeData.inl" />

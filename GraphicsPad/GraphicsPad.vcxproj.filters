@@ -38,6 +38,8 @@
     </None>
     <None Include="TextureVertexShaderCode.glsl" />
     <None Include="TextureFragmentShaderCode.glsl" />
+    <None Include="CubemapVertexShaderCode.glsl" />
+    <None Include="CubemapFragmentShaderCode.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Primitives">

@@ -18,10 +18,12 @@ class MeGlWindow : public QGLWidget
 	void installShaders();
 protected:
 	void textureSetup();
+	void loadCubeMap();
 	void initializeGL();
 	void paintGL();
 	void mouseMoveEvent(QMouseEvent*);
 	void keyPressEvent(QKeyEvent*);
+	static const char* TexFile[];
 public:
 	~MeGlWindow();
 

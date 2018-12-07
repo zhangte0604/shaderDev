@@ -101,30 +101,58 @@ void MeGlWindow::textureSetup()
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 		GL_LINEAR);
 
-	////Cat Texture
-	//const char * texName = "Texture/cat.png";
-	//QImage catImg =
-	//	QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
-	//// send Normal Image to OpenGL
-	//glActiveTexture(GL_TEXTURE0);
-	//GLuint textureID;
-	//glGenTextures(1, &textureID);
-	//glBindTexture(GL_TEXTURE_2D, textureID);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, catImg.width(),
-	//	catImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-	//	catImg.bits());
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-	//	GL_LINEAR);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-	//	GL_LINEAR);
+}
 
+const char* MeGlWindow::TexFile[] = { "Texture/posx.png","Texture/negx.png","Texture/negy.png","Texture/posx.png","Texture/negz.png","Texture/posz.png" };
+
+void MeGlWindow::loadCubeMap()
+{
+	//Cube map
+	glActiveTexture(GL_TEXTURE1);
+	GLuint CubemapID;
+	glGenTextures(1, &CubemapID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, CubemapID);
+	const char * suffixes[] = { "posx", "negx", "posy",
+		"negy", "posz", "negz" };
+	GLuint targets[] = {
+		GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+		GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+		GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+	};
+	for (int i = 0; i < 6; i++) {
+		//string texName = string(baseFileName) +"_" + suffixes[i] + ".png";
+		QImage img = QGLWidget::convertToGLFormat(QImage(TexFile[i], "PNG"));
+		glTexImage2D(targets[i], 0, GL_RGBA,
+			img.width(), img.height(),
+			0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+	}
+
+	// Typical cube map settings
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER,
+		GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER,
+		GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S,
+		GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T,
+		GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R,
+		GL_CLAMP_TO_EDGE);
 	
+	// Set the CubeMapTex uniform to texture unit 0
+	/*uniloc = glGetUniformLocation(programHandle, "CubeMapTex");
+	if (uniloc >= 0)
+		glUniform1i(uniloc, 0);*/
 
 }
 
 void MeGlWindow::sendDataToOpenGL()
 {
 	textureSetup();
+	loadCubeMap();
 
 	//Teapot + cube
 	ShapeData teapot = ShapeGenerator::makeTeapot();
@@ -382,12 +410,11 @@ void MeGlWindow::paintGL()
 	glViewport(0, 0, width(), height());
 
 	mat4 modelToProjectionMatrix;
-	//mat4 modelToWorldMatrix;
 	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 20.0f);
 	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
-	//mat4 modelToViewMatrix = worldToViewMatrix * modelToWorldMatrix;
 
+	
 	//Ambient Light
 	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
 	vec4 ambientLight(0.01f, 0.01f, 0.01f, 1.0f);
@@ -439,6 +466,7 @@ void MeGlWindow::paintGL()
 	GLint worldToViewMatrixUniformLocation =
 		glGetUniformLocation(programID, "worldToViewMatrix");
 	glUniformMatrix4fv(worldToViewMatrixUniformLocation, 1, GL_FALSE, &worldToViewMatrix[0][0]);
+
 
 	//cube translated
 	glBindVertexArray(cubeVertexArrayObjectID);
@@ -537,10 +565,10 @@ void MeGlWindow::installShaders()
 
 	//define array of character pointers
 	const GLchar* adapter[1];
-	string temp = readShaderCode("TextureVertexShaderCode.glsl");
+	string temp = readShaderCode("CubemapVertexShaderCode.glsl");
 	adapter[0] = temp.c_str();
 	glShaderSource(vertexShaderID, 1, adapter, 0);
-	temp = readShaderCode("TextureFragmentShaderCode.glsl");	
+	temp = readShaderCode("CubemapFragmentShaderCode.glsl");	
 	adapter[0] = temp.c_str();
 	glShaderSource(fragmentShaderID, 1, adapter, 0);
 
