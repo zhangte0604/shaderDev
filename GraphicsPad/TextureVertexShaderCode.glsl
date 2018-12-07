@@ -20,9 +20,9 @@ uniform mat4 modelToWorldMatrix;
 //uniform mat4 modelToViewMatrix;
 uniform mat4 worldToViewMatrix;
 
-//out vec3 vertexPositionWorld;
+out vec3 vertexPositionWorld;
 out vec3 vertexPositionView;
-//out vec3 normalWorld;
+out vec3 normalWorld;
 out vec2 texCoord;
 //out vec3 lightDirTangent;
 //out vec3 viewDirTangent;
@@ -36,7 +36,7 @@ We'll transform the position, normal, and tangent to eye space,
 and then compute the binormal vector (in eye space). 
 3. Next, we'll compute the viewing direction (v) and the direction towards the light source (s) in eye space, 
 4. eye space -> tangent space
-and then transform them to tangent space. 
+and then transfer them to tangent space. 
 5. pass data to fragment shader
 We'll pass the tangent space v and s vectors and the (unchanged) texture
 coordinate to the fragment shader, where we'll evaluate the Phong reflection model, using the
@@ -48,8 +48,8 @@ void main()
 	
 	//Compute normalWorld & vertexPositionWorld
 	//Smooth Surface Normals: the vertex of intersection uses the same normal which is the vertexPositionModel normal
-	//normalWorld = vec3(modelToWorldMatrix * vec4(normalModel, 0));
-	//vertexPositionWorld = vec3(modelToWorldMatrix * vertexPositionModel);
+	normalWorld = vec3(modelToWorldMatrix * vec4(normalModel, 0));
+	vertexPositionWorld = vec3(modelToWorldMatrix * vertexPositionModel);
 
 	//Compute normalView & tangentView
 	//Transform normal and tangent from model space to view space
