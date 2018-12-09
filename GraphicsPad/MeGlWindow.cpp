@@ -390,7 +390,7 @@ void MeGlWindow::paintGL()
 
 	//Ambient Light
 	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	vec4 ambientLight(0.01f, 0.01f, 0.01f, 1.0f);
+	vec4 ambientLight(0.05f, 0.05f, 0.05f, 1.0f);
 	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 
 	//Specular Light
@@ -401,7 +401,7 @@ void MeGlWindow::paintGL()
 	
 	//Light position
 	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	glm::vec3 lightPositionWorld(0.0f, 0.0f, 1.0f);
+	glm::vec3 lightPositionWorld(0.0f, 10.0f, 0.0f);
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 	
 	/*
@@ -466,7 +466,7 @@ void MeGlWindow::paintGL()
 	glBindVertexArray(planeVertexArrayObjectID);
 	mat4 planeModelToWorldMatrix = 
 	
-		glm::rotate(90.0f, 1.0f, 0.0f, 0.0f);
+		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f);
 
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
