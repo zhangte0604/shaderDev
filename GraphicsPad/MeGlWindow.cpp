@@ -10,6 +10,7 @@
 #include <Vertex.h>
 #include <ShapeGenerator.h>
 #include "Camera.h"
+#include "Light.h"
 
 using namespace std;
 using glm::vec3;
@@ -32,6 +33,8 @@ GLuint planeNumIndices;
 GLuint planeNormalsNumIndices;
 
 Camera camera;
+Light light;
+
 GLuint fullTransformationUniformLocation;
 
 GLuint theBufferID;
@@ -51,55 +54,91 @@ GLuint teapotNormalsIndexDataByteOffset;
 GLuint cubeNormalsIndexDataByteOffset;
 GLuint planeNormalsIndexDataByteOffset;
 
+glm::vec3 lightPositionWorld(0.0f, 5.0f, 0.0f);
+
 void MeGlWindow::textureSetup()
 
 {
-	/*
-	// Copy file to OpenGL
-	glActiveTexture(GL_TEXTURE0);
-	GLuint texIDs[2];
-	glGenTextures(2, texIDs);
-
-	//load the first texture(catImg) file
-	const char * texName = "Texture/cat.png";
-	QImage catImg =
+	GLuint texIDs[3];
+	glGenTextures(3, texIDs);
+	// Load cat texture file
+	const char * texName = "Texture/brick.png";
+	QImage brickImg =
 		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
-	//Copy the first texture to OpenGL
+	// Copy cat texture to OpenGL
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texIDs[0]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, catImg.width(),
-		catImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-		catImg.bits());
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, brickImg.width(),
+		brickImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		brickImg.bits());
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
 		GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 		GL_LINEAR);
 
-	// Set the colorTex sampler uniform to refer to texture unit 0
-	int uniloc = glGetUniformLocation(programHandle, "colorTex");
+	// Set the catTex sampler uniform to texture unit0
+	int uniloc = glGetUniformLocation(programID, "brickTex");
 	if (uniloc >= 0)
 		glUniform1i(uniloc, 0);
-	else
-		fprintf(stderr, "Uniform variable colorTex not found!\n");
 
-	*/
+	// Load turkey texture file
+	texName = "Texture/moss2.png";
+	QImage mossImg =
+		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
 
-	//Cat Normal Map
-	const char * normalMapName = "Texture/normal.png";
-	QImage catNormalImg =
-		QGLWidget::convertToGLFormat(QImage(normalMapName, "PNG"));
-	// send Normal Image to OpenGL
-	glActiveTexture(GL_TEXTURE0);
-	GLuint NormalID;
-	glGenTextures(1, &NormalID);
-	glBindTexture(GL_TEXTURE_2D, NormalID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, catNormalImg.width(),
-		catNormalImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-		catNormalImg.bits());
+	// Copy turkey texture to OpenGL
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texIDs[1]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mossImg.width(),
+		mossImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		mossImg.bits());
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
 		GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 		GL_LINEAR);
+
+	// Set the MossTex sampler uniform to texture unit 1
+	uniloc = glGetUniformLocation(programID, "mossTex");
+	if (uniloc >= 0)
+		glUniform1i(uniloc, 1);
+
+	// load normal map file
+	texName = "Texture/brickNormal.png";
+	QImage normalImg =
+		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
+
+	// Copy normal texture to OpenGL
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, texIDs[2]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, normalImg.width(),
+		normalImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		normalImg.bits());
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+		GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		GL_LINEAR);
+
+	// Set the MossTex sampler uniform to texture unit 2
+	uniloc = glGetUniformLocation(programID, "normalMapTex");
+	if (uniloc >= 0)
+		glUniform1i(uniloc, 2);
+
+	////Cat Normal Map
+	//const char * normalMapName = "Texture/normal.png";
+	//QImage catNormalImg =
+	//	QGLWidget::convertToGLFormat(QImage(normalMapName, "PNG"));
+	//// send Normal Image to OpenGL
+	//glActiveTexture(GL_TEXTURE0);
+	//GLuint NormalID;
+	//glGenTextures(1, &NormalID);
+	//glBindTexture(GL_TEXTURE_2D, NormalID);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, catNormalImg.width(),
+	//	catNormalImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+	//	catNormalImg.bits());
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+	//	GL_LINEAR);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+	//	GL_LINEAR);
 
 	////Cat Texture
 	//const char * texName = "Texture/cat.png";
@@ -352,6 +391,7 @@ void  MeGlWindow::keyPressEvent(QKeyEvent* e)
 {
 	switch (e->key())
 	{
+	// Camera
 	case Qt::Key::Key_W:
 		camera.moveForward();
 		break;
@@ -370,6 +410,40 @@ void  MeGlWindow::keyPressEvent(QKeyEvent* e)
 	case Qt::Key::Key_F:
 		camera.moveDown();
 		break;
+
+	
+	// Light
+	case Qt::Key::Key_2:
+		lightPositionWorld += glm::vec3(0.0, 0.0, -0.2);
+		break;
+	case Qt::Key::Key_0:
+		lightPositionWorld += glm::vec3(0.0, 0.0, 0.2);
+		break;
+	case Qt::Key::Key_Right:
+		lightPositionWorld += glm::vec3(0.2, 0.0, 0.0);
+		break;
+	case Qt::Key::Key_Left:
+		lightPositionWorld += glm::vec3(-0.2, 0.0, 0.0);
+		break;
+	case Qt::Key::Key_Up:
+		lightPositionWorld += glm::vec3(0.0, 0.2, 0.0);
+		break;
+	case Qt::Key::Key_Down:
+		lightPositionWorld += glm::vec3(0.0, -0.2, 0.0);
+		break;
+
+	/*case Qt::Key::Key_Up:
+		light.moveUp();
+		break;
+	case Qt::Key::Key_Down:
+		light.moveDown();
+		break;
+	case Qt::Key::Key_Left:
+		light.strafeLeft();
+		break;
+	case Qt::Key::Key_Right:
+		light.strafeRight();
+		break;*/
 	}
 	repaint();
 }
@@ -401,7 +475,8 @@ void MeGlWindow::paintGL()
 	
 	//Light position
 	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	glm::vec3 lightPositionWorld(0.0f, 10.0f, 0.0f);
+	
+	//glm::vec3 lightPositionWorld = light.getPosition();
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 	
 	/*
@@ -450,7 +525,7 @@ void MeGlWindow::paintGL()
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
 		&cubeModelToWorldMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
+	//glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
 	/*glBindVertexArray(cubeNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, cubeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)cubeNormalsIndexDataByteOffset);*/
 
@@ -580,7 +655,7 @@ void MeGlWindow::installShaders()
 
 void MeGlWindow::initializeGL()
 {
-	setMinimumSize(1200, 500);
+	setMinimumSize(1200, 900);
 	setMouseTracking(true);
 	glewInit();
 	//enable the buffer
@@ -595,8 +670,9 @@ void MeGlWindow::initializeGL()
 	//glFrontFace(GL_CW); //default is GL_CCW
 
 	//textureSetup();
-	sendDataToOpenGL();
 	installShaders();
+	sendDataToOpenGL();
+	
 
 	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
 

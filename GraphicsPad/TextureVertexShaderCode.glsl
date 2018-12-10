@@ -4,7 +4,7 @@
 in layout(location = 0) vec4 vertexPositionModel;
 in layout(location = 1) vec3 vertexColor;
 in layout(location = 2) vec3 normalModel;
-in layout(location = 3) vec2 vertexTexCoord;
+in layout(location = 3) vec2 uvModel;
 in layout(location = 4) vec3 tangentModel;
 
 uniform mat4 modelToProjectionMatrix; //MVP 
@@ -14,7 +14,7 @@ uniform mat4 worldToViewMatrix;
 out vec3 vertexPositionWorld;
 out vec3 vertexPositionView;
 out vec3 normalWorld;
-out vec2 texCoord;
+out vec2 uvFrag;
 out mat3 viewToTangentMatrix;
 out mat3 tangentToModelMatrix;
 
@@ -41,7 +41,7 @@ void main()
 	vertexPositionWorld = vec3(modelToWorldMatrix * vertexPositionModel);
 
 	//Pass along the texture coordinate
-	texCoord = vertexTexCoord;
+	uvFrag = uvModel;
 	
 	gl_Position = modelToProjectionMatrix * vertexPositionModel;
 
