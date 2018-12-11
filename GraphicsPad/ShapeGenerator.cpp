@@ -60,26 +60,26 @@ ShapeData ShapeGenerator::makeCube() {
 		vec3(-1.0f, +1.0f, +1.0f),  // 0
 		vec3(+1.0f, +0.0f, +0.0f),	// Color
 		vec3(+0.0f, +1.0f, +0.0f),  // Normal
-		vec2(+0.0f, +1.0f),               // UV
-		vec3(+1.0f, +0.0f, +0.0f),		  // Tangent
+		vec2(+0.0f, +0.0f),//uv
+		vec3(+1.0f, +0.0f, +0.0f),//tangent
 
 		vec3(+1.0f, +1.0f, +1.0f),  // 1
 		vec3(+0.0f, +1.0f, +0.0f),	// Color
 		vec3(+0.0f, +1.0f, +0.0f),  // Normal
-		vec2(+1.0f, +1.0f),               // UV
-		vec3(+1.0f, +0.0f, +0.0f),		  // Tangent
+		vec2(+1.0f, +0.0f),
+		vec3(+1.0f, +0.0f, +0.0f),//tangent
 
 		vec3(+1.0f, +1.0f, -1.0f),  // 2
 		vec3(+0.0f, +0.0f, +1.0f),  // Color
 		vec3(+0.0f, +1.0f, +0.0f),  // Normal
-		vec2(+1.0f, +0.0f),               // UV
-		vec3(+1.0f, +0.0f, +0.0f),		  // Tangent
+		vec2(+1.0f, +1.0f),
+		vec3(+1.0f, +0.0f, +0.0f),//tangent
 
 		vec3(-1.0f, +1.0f, -1.0f),  // 3
 		vec3(+1.0f, +1.0f, +1.0f),  // Color
 		vec3(+0.0f, +1.0f, +0.0f),  // Normal
-		vec2(+0.0f, +0.0f),               // UV
-		vec3(+1.0f, +0.0f, +0.0f),		  // Tangent
+		vec2(+0.0f, +1.0f),
+		vec3(+1.0f, +0.0f, +0.0f),//tangent
 		
 		// Front
 		vec3(-1.0f, +1.0f, -1.0f),  // 4

@@ -19,6 +19,7 @@ using namespace std;
 using glm::vec3;
 using glm::vec4;
 using glm::mat4;
+using glm::mat3;
 
 const uint NUM_VERTICES_PER_TRI = 3;
 const uint NUM_FLOATS_PER_VERTICE = 14;
@@ -403,6 +404,13 @@ void MeGlWindow::paintGL()
 	glUseProgram(programID); //this must call before texture
 	//initializeGL() is before paintGL()
 
+	//disable rendering tris not facing the cam
+	glEnable(GL_CULL_FACE);
+
+
+	//glDepthMask(GL_TRUE);
+
+
 	// Set the catTex sampler uniform to texture unit0
 	int uniloc = glGetUniformLocation(programID, "brickTex");
 	if (uniloc >= 0)
@@ -464,13 +472,12 @@ void MeGlWindow::paintGL()
 	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
 
-
-
 	//Plane
 	glBindVertexArray(planeVertexArrayObjectID);
 	mat4 planeModelToWorldMatrix = 
 	
-		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f);
+		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f)*
+		glm::scale(0.5f, 0.5f, 0.5f);
 
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
@@ -492,11 +499,14 @@ void MeGlWindow::paintGL()
 	//	&cubeModelToWorldMatrix[0][0]);
 	////glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
 
-
-	
 	
 	//CubeMap
 	glUseProgram(cubemapProgramID);
+
+	//disable rendering tris not facing the cam
+	glDisable(GL_CULL_FACE);
+
+	//glDepthMask(GL_FALSE);
 
 	int cubeuniloc = glGetUniformLocation(cubemapProgramID, "cubeMapTex");
 	if (cubeuniloc >= 0)
@@ -504,14 +514,20 @@ void MeGlWindow::paintGL()
 	
 	glBindVertexArray(cubeVertexArrayObjectID);
 	mat4 cubeModelToWorldMatrix =
-		glm::scale(5.0f, 5.0f, 5.0f);
+		glm::scale(70.0f, 70.0f, 70.0f);
+
+	//remove the translation part of the world to view matrix so movement doesn't affect the skybox's position vectors
+	//This removes any translation, but keeps all rotation transformations so the user can still look around the scene.
+	mat4 skyboxWorldToViewMatrix = mat4(mat3(camera.getWorldToViewMatrix()));
+	mat4 skyboxWorldToProjectionMatrix = viewToProjectionMatrix * skyboxWorldToViewMatrix;
 
 	////CubeMap doesn't move with camera
 	//worldToViewMatrix[3][0] = 0.0;
 	//worldToViewMatrix[3][1] = 0.0;
 	//worldToViewMatrix[3][2] = 0.0;
+
 	GLuint skyboxTransformMatrixUniformLocation = glGetUniformLocation(cubemapProgramID, "skyboxTransformMatrix");
-	mat4 skyboxTransformMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
+	mat4 skyboxTransformMatrix = skyboxWorldToProjectionMatrix * cubeModelToWorldMatrix;
 	//modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
 	glUniformMatrix4fv(skyboxTransformMatrixUniformLocation, 1, GL_FALSE, &skyboxTransformMatrix[0][0]);
 	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
@@ -658,10 +674,16 @@ void MeGlWindow::initializeGL()
 	setMinimumSize(1200, 900);
 	setMouseTracking(true);
 	glewInit();
+	
+
 	//enable the buffer
 	glEnable(GL_DEPTH_TEST);
+	
 	//disable rendering tris not facing the cam
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
+
+	// enable two side?????????
+	//glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
 
 	//Face Culling: choose which face you wanna cull
 	//glCullFace(GL_FRONT); //default is GL_BACK

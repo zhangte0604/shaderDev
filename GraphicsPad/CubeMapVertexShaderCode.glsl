@@ -16,8 +16,9 @@ out vec3 uvFrag;
 
 void main()
 {
-	gl_Position = skyboxTransformMatrix * vertexPositionModel;
 	uvFrag = vec3(vertexPositionModel.x, -vertexPositionModel.yz);
+	
+	gl_Position = skyboxTransformMatrix * vertexPositionModel;
 	
 	
 	
