@@ -54,11 +54,51 @@ GLuint teapotNormalsIndexDataByteOffset;
 GLuint cubeNormalsIndexDataByteOffset;
 GLuint planeNormalsIndexDataByteOffset;
 
-glm::vec3 lightPositionWorld(0.0f, 5.0f, 0.0f);
+glm::vec3 lightPositionWorld(0.0f, 10.0f, 0.0f);
 
-void MeGlWindow::textureSetup()
+const char* MeGlWindow::TexFile[] = { "Texture/right.png","Texture/left.png","Texture/down.png","Texture/up.png","Texture/back.png","Texture/front.png" };
 
+void MeGlWindow::cubeMapSetup()
 {
+	glActiveTexture(GL_TEXTURE0);
+	GLuint texID;
+	glGenTextures(1, &texID);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
+	const char * suffixes[] = { "posx", "negx", "posy",
+	 "negy", "posz", "negz" };
+	GLuint targets[] = {
+	 GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+	 GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+	 GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+	 GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+	 GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+	 GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+	};
+
+	for (int i = 0; i < 6; ++i)
+	{
+		//string texName = string(baseFileName) +
+		//	"_" + suffixes[i] + ".png";
+		QImage img = QGLWidget::convertToGLFormat(QImage(TexFile[i], "PNG"));
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA,
+			img.width(), img.height(),0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+	}
+
+	// Typical cube map settings
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+	// Set the CubeMapTex uniform to texture unit 0
+	int uniloc = glGetUniformLocation(programID, "cubeMapTex");
+	if (uniloc >= 0)
+		glUniform1i(uniloc, 0);
+}
+void MeGlWindow::textureSetup()
+{
+	// Brick and Moss
 	GLuint texIDs[3];
 	glGenTextures(3, texIDs);
 	// Load cat texture file
@@ -122,48 +162,12 @@ void MeGlWindow::textureSetup()
 	uniloc = glGetUniformLocation(programID, "normalMapTex");
 	if (uniloc >= 0)
 		glUniform1i(uniloc, 2);
-
-	////Cat Normal Map
-	//const char * normalMapName = "Texture/normal.png";
-	//QImage catNormalImg =
-	//	QGLWidget::convertToGLFormat(QImage(normalMapName, "PNG"));
-	//// send Normal Image to OpenGL
-	//glActiveTexture(GL_TEXTURE0);
-	//GLuint NormalID;
-	//glGenTextures(1, &NormalID);
-	//glBindTexture(GL_TEXTURE_2D, NormalID);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, catNormalImg.width(),
-	//	catNormalImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-	//	catNormalImg.bits());
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-	//	GL_LINEAR);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-	//	GL_LINEAR);
-
-	////Cat Texture
-	//const char * texName = "Texture/cat.png";
-	//QImage catImg =
-	//	QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
-	//// send Normal Image to OpenGL
-	//glActiveTexture(GL_TEXTURE0);
-	//GLuint textureID;
-	//glGenTextures(1, &textureID);
-	//glBindTexture(GL_TEXTURE_2D, textureID);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, catImg.width(),
-	//	catImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-	//	catImg.bits());
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-	//	GL_LINEAR);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-	//	GL_LINEAR);
-
-	
-
 }
 
 void MeGlWindow::sendDataToOpenGL()
 {
-	textureSetup();
+	cubeMapSetup();
+	//textureSetup();
 
 	//Teapot + cube
 	ShapeData teapot = ShapeGenerator::makeTeapot();
@@ -455,8 +459,8 @@ void MeGlWindow::paintGL()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
 
+	//Matrix setup
 	mat4 modelToProjectionMatrix;
-	//mat4 modelToWorldMatrix;
 	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 200.0f);
 	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
@@ -475,7 +479,6 @@ void MeGlWindow::paintGL()
 	
 	//Light position
 	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	
 	//glm::vec3 lightPositionWorld = light.getPosition();
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 	
@@ -515,27 +518,37 @@ void MeGlWindow::paintGL()
 		glGetUniformLocation(programID, "worldToViewMatrix");
 	glUniformMatrix4fv(worldToViewMatrixUniformLocation, 1, GL_FALSE, &worldToViewMatrix[0][0]);
 
-	//cube translated
-	glBindVertexArray(cubeVertexArrayObjectID);
-	mat4 cubeModelToWorldMatrix = 
-		glm::translate(0.0f, 2.0f, -3.0f) *
-		glm::rotate(-70.0f, 1.0f, 0.0f, 0.0f);
-	
-	modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
-		&cubeModelToWorldMatrix[0][0]);
-	//glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
-	/*glBindVertexArray(cubeNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, cubeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)cubeNormalsIndexDataByteOffset);*/
 
+	////cube translated
+	//glBindVertexArray(cubeVertexArrayObjectID);
+	//mat4 cubeModelToWorldMatrix = 
+	//	glm::translate(0.0f, 2.0f, -3.0f) *
+	//	glm::rotate(-70.0f, 1.0f, 0.0f, 0.0f);
+	//
+	//modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
+	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
+	//	&cubeModelToWorldMatrix[0][0]);
+	////glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
+
+
+	//CubeMap
 	//cube centered
-	cubeModelToWorldMatrix = mat4();
-	modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
-		&cubeModelToWorldMatrix[0][0]); 
-	//glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
+	glBindVertexArray(cubeVertexArrayObjectID);
+	mat4 cubeModelToWorldMatrix =
+		glm::scale(5.0f, 5.0f, 5.0f);
+
+	//CubeMap doesn't move with camera
+	worldToViewMatrix[3][0] = 0.0;
+	worldToViewMatrix[3][1] = 0.0;
+	worldToViewMatrix[3][2] = 0.0;
+	GLuint skyboxTransformMatrixUniformLocation = glGetUniformLocation(programID, "skyboxTransformMatrix");
+	mat4 skyboxTransformMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
+	//modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
+	glUniformMatrix4fv(skyboxTransformMatrixUniformLocation, 1, GL_FALSE, &skyboxTransformMatrix[0][0]);
+	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
+	//	&cubeModelToWorldMatrix[0][0]); 
+	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
 
 	//Plane
 	glBindVertexArray(planeVertexArrayObjectID);
@@ -612,10 +625,10 @@ void MeGlWindow::installShaders()
 
 	//define array of character pointers
 	const GLchar* adapter[1];
-	string temp = readShaderCode("TextureVertexShaderCode.glsl");
+	string temp = readShaderCode("CubeMapVertexShaderCode.glsl");
 	adapter[0] = temp.c_str();
 	glShaderSource(vertexShaderID, 1, adapter, 0);
-	temp = readShaderCode("TextureFragmentShaderCode.glsl");	
+	temp = readShaderCode("CubeMapFragmentShaderCode.glsl");	
 	adapter[0] = temp.c_str();
 	glShaderSource(fragmentShaderID, 1, adapter, 0);
 
@@ -625,7 +638,6 @@ void MeGlWindow::installShaders()
 	//check if compile has error
 	if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
 		return;
-
 	
 	programID = glCreateProgram();
 	glAttachShader(programID, vertexShaderID);
@@ -638,13 +650,6 @@ void MeGlWindow::installShaders()
 	//check if linker has error
 	if (!checkProgramStatus(programID))
 		return;
-
-	/*
-	//Where are these attributes automatically
-	GLint positionLocation = glGetAttribLocation(programID, "position");
-	GLint colorLocation = glGetAttribLocation(programID, "vertexColor");
-	GLint transformLocation = glGetAttribLocation(programID, "modelToProjectionMatrix");
-	*/
 
 	//delete shader
 	glDeleteShader(vertexShaderID);
