@@ -8,11 +8,6 @@ in layout(location = 3) vec2 uvModel;
 in layout(location = 4) vec3 tangentModel;
 
 uniform bool drawSkyBox; // Are we drawing the sky box?
-uniform vec3 eyePositionWorld;
-uniform mat4 modelToProjectionMatrix; //MVP 
-uniform mat4 modelToWorldMatrix;
-uniform mat4 worldToViewMatrix;
-
 uniform mat4 skyboxTransformMatrix;
 
 out vec3 reflectDir; //The direction of the reflected ray

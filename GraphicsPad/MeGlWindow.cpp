@@ -12,6 +12,9 @@
 #include "Camera.h"
 #include "Light.h"
 
+//move "tex" from textureSetup() to paintGL() -> correct texture ?????????why
+//what is the chronological order of functions(paintGL & initialize)
+
 using namespace std;
 using glm::vec3;
 using glm::vec4;
@@ -22,6 +25,7 @@ const uint NUM_FLOATS_PER_VERTICE = 14;
 const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 
 GLuint programID;
+GLuint cubemapProgramID;
 
 GLuint teapotNumIndices;
 GLuint teapotNormalsNumIndices;
@@ -92,7 +96,7 @@ void MeGlWindow::cubeMapSetup()
 	glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	// Set the CubeMapTex uniform to texture unit 0
-	int uniloc = glGetUniformLocation(programID, "cubeMapTex");
+	int uniloc = glGetUniformLocation(cubemapProgramID, "cubeMapTex");
 	if (uniloc >= 0)
 		glUniform1i(uniloc, 0);
 }
@@ -121,12 +125,12 @@ void MeGlWindow::textureSetup()
 	if (uniloc >= 0)
 		glUniform1i(uniloc, 0);
 
-	// Load turkey texture file
+	// Load moss texture file
 	texName = "Texture/moss2.png";
 	QImage mossImg =
 		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
 
-	// Copy turkey texture to OpenGL
+	// Copy moss texture to OpenGL
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_2D, texIDs[1]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mossImg.width(),
@@ -166,9 +170,7 @@ void MeGlWindow::textureSetup()
 
 void MeGlWindow::sendDataToOpenGL()
 {
-	cubeMapSetup();
-	//textureSetup();
-
+	
 	//Teapot + cube
 	ShapeData teapot = ShapeGenerator::makeTeapot();
 	//ShapeData teapotNormals = ShapeGenerator::generateNormals(teapot);
@@ -177,7 +179,6 @@ void MeGlWindow::sendDataToOpenGL()
 	ShapeData plane = ShapeGenerator::makePlane(20);
 	//ShapeData planeNormals = ShapeGenerator::generateNormals(plane);
 
-	
 	//put data on the graphics card
 	//create buffer
 	glGenBuffers(1, &theBufferID);
@@ -204,23 +205,7 @@ void MeGlWindow::sendDataToOpenGL()
 	currentOffset += plane.vertexBufferSize();
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, plane.indexBufferSize(), plane.indices);
 	currentOffset += plane.indexBufferSize();
-	
-	/*glBufferSubData(GL_ARRAY_BUFFER, currentOffset, teapotNormals.vertexBufferSize(), teapotNormals.vertices);
-	currentOffset += teapotNormals.vertexBufferSize();
-	teapotNormalsIndexDataByteOffset = currentOffset;
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, teapotNormals.indexBufferSize(), teapotNormals.indices);
-	currentOffset += teapotNormals.indexBufferSize();
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, cubeNormals.vertexBufferSize(), cubeNormals.vertices);
-	currentOffset += cubeNormals.vertexBufferSize();
-	cubeNormalsIndexDataByteOffset = currentOffset;
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, cubeNormals.indexBufferSize(), cubeNormals.indices);
-	currentOffset += cubeNormals.indexBufferSize();
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, planeNormals.vertexBufferSize(), planeNormals.vertices);
-	currentOffset += planeNormals.vertexBufferSize();
-	planeNormalsIndexDataByteOffset = currentOffset;
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, planeNormals.indexBufferSize(), planeNormals.indices);
-	currentOffset += planeNormals.indexBufferSize();*/
-	
+
 
 	teapotNumIndices = teapot.numIndices;
 	//teapotNormalsNumIndices = teapotNormals.numIndices;
@@ -229,37 +214,10 @@ void MeGlWindow::sendDataToOpenGL()
 	planeNumIndices = plane.numIndices;
 	//planeNormalsNumIndices = planeNormals.numIndices;
 
-	/*
-	//instancing
-
-	GLuint transformationMatrixBufferID;
-	glGenBuffers(1, &transformationMatrixBufferID);
-	glBindBuffer(GL_ARRAY_BUFFER, transformationMatrixBufferID);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(mat4) * 2, 0, GL_DYNAMIC_DRAW);
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 0));
-	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 4));
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 8));
-	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 12));
-	//enable the vertex attribute (TransformMatrix)
-	glEnableVertexAttribArray(2);
-	glEnableVertexAttribArray(3);
-	glEnableVertexAttribArray(4);
-	glEnableVertexAttribArray(5);
-	glVertexAttribDivisor(2, 1);
-	glVertexAttribDivisor(3, 1);
-	glVertexAttribDivisor(4, 1);
-	glVertexAttribDivisor(5, 1);
-	*/
-	
 	glGenVertexArrays(1, &teapotVertexArrayObjectID);
 	glGenVertexArrays(1, &cubeVertexArrayObjectID);
 	glGenVertexArrays(1, &planeVertexArrayObjectID);
 
-	/*glGenVertexArrays(1, &teapotNormalsVertexArrayObjectID);
-	glGenVertexArrays(1, &cubeNormalsVertexArrayObjectID);
-	glGenVertexArrays(1, &planeNormalsVertexArrayObjectID);
-	*/
 
 	//teapot
 	//where array object is activated
@@ -353,33 +311,6 @@ void MeGlWindow::sendDataToOpenGL()
 	cubeIndexDataByteOffset = cubeByteOffset + cube.vertexBufferSize();
 	planeIndexDataByteOffset = planeByteOffset + plane.vertexBufferSize();
 
-	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
-	GLuint teapotNormalsByteOffset = planeByteOffset + plane.vertexBufferSize() + plane.indexBufferSize();
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)teapotNormalsByteOffset);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(teapotNormalsByteOffset + sizeof(float) * 3));
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
-
-	glBindVertexArray(cubeNormalsVertexArrayObjectID);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
-	GLuint cubeNormalsByteOffset = teapotNormalsByteOffset + teapotNormals.vertexBufferSize() + teapotNormals.indexBufferSize();
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)cubeNormalsByteOffset);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(cubeNormalsByteOffset + sizeof(float) * 3));
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
-
-	glBindVertexArray(planeNormalsVertexArrayObjectID);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
-	GLuint planeNormalsByteOffset = cubeNormalsByteOffset + cubeNormals.vertexBufferSize() + cubeNormals.indexBufferSize();
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)planeNormalsByteOffset);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeNormalsByteOffset + sizeof(float) * 3));
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);*/
-
 	teapot.cleanup();
 	cube.cleanup();
 	plane.cleanup();
@@ -459,16 +390,47 @@ void MeGlWindow::paintGL()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
 
+	
 	//Matrix setup
 	mat4 modelToProjectionMatrix;
 	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 200.0f);
 	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
+
+	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
 	//mat4 modelToViewMatrix = worldToViewMatrix * modelToWorldMatrix;
+
+	glUseProgram(programID); //this must call before texture
+	//initializeGL() is before paintGL()
+
+	// Set the catTex sampler uniform to texture unit0
+	int uniloc = glGetUniformLocation(programID, "brickTex");
+	if (uniloc >= 0)
+		glUniform1i(uniloc, 0);
+	uniloc = glGetUniformLocation(programID, "mossTex");
+	if (uniloc >= 0)
+		glUniform1i(uniloc, 1);
+	uniloc = glGetUniformLocation(programID, "normalMapTex");
+	if (uniloc >= 0)
+		glUniform1i(uniloc, 2);
+
+	//// brick tex
+	//GLint brickTextureUniformLocation = glGetUniformLocation(programID, "brickTex");
+	//glUniform1i(brickTextureUniformLocation, 0);
+	////moss tex
+	//GLint mossTextureUniformLocation = glGetUniformLocation(programID, "mossTex");
+	//glUniform1i(mossTextureUniformLocation, 1);
+	//// Normal Setup
+	//GLint normalmapUniformLocation = glGetUniformLocation(programID, "normalMapTex");
+	//glUniform1i(normalmapUniformLocation, 2);
+
+	GLint modelToWorldMatrixUniformLocation =
+		glGetUniformLocation(programID, "modelToWorldMatrix");
+	//glUniform1i(modelToWorldMatrixUniformLocation, 1);
 
 	//Ambient Light
 	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	vec4 ambientLight(0.05f, 0.05f, 0.05f, 1.0f);
+	vec4 ambientLight(0.55f, 0.55f, 0.55f, 1.0f);
 	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 
 	//Specular Light
@@ -476,18 +438,10 @@ void MeGlWindow::paintGL()
 	glm::vec3 eyePosition = camera.getPosition();
 	glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
 
-	
 	//Light position
 	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
 	//glm::vec3 lightPositionWorld = light.getPosition();
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
-	
-	/*
-	//Light position in space
-	GLint lightPositionTangentUniformLocation = glGetUniformLocation(programID, "Light.Position.xyz");
-	glm::vec3 lightPositionTangent(5.0f, 2.0f, 0.0f);
-	glUniform3fv(lightPositionTangentUniformLocation, 1, &lightPositionTangent[0]);
-	*/
 
 	//Teapot
 	glBindVertexArray(teapotVertexArrayObjectID);
@@ -511,44 +465,6 @@ void MeGlWindow::paintGL()
 	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
 
 
-	GLint modelToWorldMatrixUniformLocation =
-		glGetUniformLocation(programID, "modelToWorldMatrix");
-
-	GLint worldToViewMatrixUniformLocation =
-		glGetUniformLocation(programID, "worldToViewMatrix");
-	glUniformMatrix4fv(worldToViewMatrixUniformLocation, 1, GL_FALSE, &worldToViewMatrix[0][0]);
-
-
-	////cube translated
-	//glBindVertexArray(cubeVertexArrayObjectID);
-	//mat4 cubeModelToWorldMatrix = 
-	//	glm::translate(0.0f, 2.0f, -3.0f) *
-	//	glm::rotate(-70.0f, 1.0f, 0.0f, 0.0f);
-	//
-	//modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
-	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
-	//	&cubeModelToWorldMatrix[0][0]);
-	////glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
-
-
-	//CubeMap
-	//cube centered
-	glBindVertexArray(cubeVertexArrayObjectID);
-	mat4 cubeModelToWorldMatrix =
-		glm::scale(5.0f, 5.0f, 5.0f);
-
-	//CubeMap doesn't move with camera
-	worldToViewMatrix[3][0] = 0.0;
-	worldToViewMatrix[3][1] = 0.0;
-	worldToViewMatrix[3][2] = 0.0;
-	GLuint skyboxTransformMatrixUniformLocation = glGetUniformLocation(programID, "skyboxTransformMatrix");
-	mat4 skyboxTransformMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
-	//modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
-	glUniformMatrix4fv(skyboxTransformMatrixUniformLocation, 1, GL_FALSE, &skyboxTransformMatrix[0][0]);
-	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
-	//	&cubeModelToWorldMatrix[0][0]); 
-	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
 
 	//Plane
 	glBindVertexArray(planeVertexArrayObjectID);
@@ -563,6 +479,46 @@ void MeGlWindow::paintGL()
 	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, planeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)planeNormalsIndexDataByteOffset);*/
+
+	////cube translated
+	//glBindVertexArray(cubeVertexArrayObjectID);
+	//mat4 cubeModelToWorldMatrix = 
+	//	glm::translate(0.0f, 2.0f, -3.0f) *
+	//	glm::rotate(-70.0f, 1.0f, 0.0f, 0.0f);
+	//
+	//modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
+	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
+	//	&cubeModelToWorldMatrix[0][0]);
+	////glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
+
+
+	
+	
+	//CubeMap
+	glUseProgram(cubemapProgramID);
+
+	int cubeuniloc = glGetUniformLocation(cubemapProgramID, "cubeMapTex");
+	if (cubeuniloc >= 0)
+		glUniform1i(cubeuniloc, 0);
+	
+	glBindVertexArray(cubeVertexArrayObjectID);
+	mat4 cubeModelToWorldMatrix =
+		glm::scale(5.0f, 5.0f, 5.0f);
+
+	////CubeMap doesn't move with camera
+	//worldToViewMatrix[3][0] = 0.0;
+	//worldToViewMatrix[3][1] = 0.0;
+	//worldToViewMatrix[3][2] = 0.0;
+	GLuint skyboxTransformMatrixUniformLocation = glGetUniformLocation(cubemapProgramID, "skyboxTransformMatrix");
+	mat4 skyboxTransformMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
+	//modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
+	glUniformMatrix4fv(skyboxTransformMatrixUniformLocation, 1, GL_FALSE, &skyboxTransformMatrix[0][0]);
+	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
+	//	&cubeModelToWorldMatrix[0][0]); 
+	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
+	
+
 }
 
 
@@ -623,39 +579,78 @@ void MeGlWindow::installShaders()
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
+	//texture shader
 	//define array of character pointers
 	const GLchar* adapter[1];
-	string temp = readShaderCode("CubeMapVertexShaderCode.glsl");
+	string temp = readShaderCode("TextureVertexShaderCode.glsl");
 	adapter[0] = temp.c_str();
 	glShaderSource(vertexShaderID, 1, adapter, 0);
-	temp = readShaderCode("CubeMapFragmentShaderCode.glsl");	
+	temp = readShaderCode("TextureFragmentShaderCode.glsl");	
 	adapter[0] = temp.c_str();
 	glShaderSource(fragmentShaderID, 1, adapter, 0);
 
 	glCompileShader(vertexShaderID);
 	glCompileShader(fragmentShaderID);
 
-	//check if compile has error
-	if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
-		return;
+	////check if compile has error
+	//if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
+	//	return;
 	
 	programID = glCreateProgram();
 	glAttachShader(programID, vertexShaderID);
 	glAttachShader(programID, fragmentShaderID);
-	
-	
 	//Linker decideds where the attributes are
 	glLinkProgram(programID);
 
-	//check if linker has error
-	if (!checkProgramStatus(programID))
-		return;
+	
+
+	////check if linker has error
+	//if (!checkProgramStatus(programID))
+	//	return;
 
 	//delete shader
 	glDeleteShader(vertexShaderID);
 	glDeleteShader(fragmentShaderID);
 
-	glUseProgram(programID);
+	//glUseProgram(programID);
+
+
+	GLuint cubemapVertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+	GLuint cubemapFragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+	
+	//Cubemap Shader
+	temp = readShaderCode("CubeMapVertexShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(cubemapVertexShaderID, 1, adapter, 0);
+	temp = readShaderCode("CubeMapFragmentShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(cubemapFragmentShaderID, 1, adapter, 0);
+
+	glCompileShader(cubemapVertexShaderID);
+	glCompileShader(cubemapFragmentShaderID);
+
+	////check if compile has error
+	//if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
+	//	return;
+
+	cubemapProgramID = glCreateProgram();
+	glAttachShader(cubemapProgramID, cubemapVertexShaderID);
+	glAttachShader(cubemapProgramID, cubemapFragmentShaderID);
+	//Linker decideds where the attributes are
+	glLinkProgram(cubemapProgramID);
+
+	
+
+	////check if linker has error
+	//if (!checkProgramStatus(cubemapProgramID))
+	//	return;
+
+	//delete shader
+	glDeleteShader(cubemapVertexShaderID);
+	glDeleteShader(cubemapFragmentShaderID);
+
+	//glUseProgram(cubemapProgramID);
+	
 }
 
 void MeGlWindow::initializeGL()
@@ -676,10 +671,9 @@ void MeGlWindow::initializeGL()
 
 	//textureSetup();
 	installShaders();
+	textureSetup();
 	sendDataToOpenGL();
-	
-
-	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
+	cubeMapSetup();
 
 }
 
