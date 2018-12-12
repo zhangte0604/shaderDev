@@ -27,6 +27,7 @@ const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 
 GLuint programID;
 GLuint cubemapProgramID;
+GLuint reflectionProgramID;
 
 GLuint teapotNumIndices;
 GLuint teapotNormalsNumIndices;
@@ -390,7 +391,8 @@ void MeGlWindow::paintGL()
 {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
-
+	
+	
 	
 	//Matrix setup
 	mat4 modelToProjectionMatrix;
@@ -398,14 +400,16 @@ void MeGlWindow::paintGL()
 	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
-	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
-	//mat4 modelToViewMatrix = worldToViewMatrix * modelToWorldMatrix;
-
 	glUseProgram(programID); //this must call before texture
 	//initializeGL() is before paintGL()
 
+	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
+	GLint modelToWorldMatrixUniformLocation = glGetUniformLocation(programID, "modelToWorldMatrix");
+	//glUniform1i(modelToWorldMatrixUniformLocation, 1);
+	//mat4 modelToViewMatrix = worldToViewMatrix * modelToWorldMatrix;
+
 	//disable rendering tris not facing the cam
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 
 
 	//glDepthMask(GL_TRUE);
@@ -432,9 +436,7 @@ void MeGlWindow::paintGL()
 	//GLint normalmapUniformLocation = glGetUniformLocation(programID, "normalMapTex");
 	//glUniform1i(normalmapUniformLocation, 2);
 
-	GLint modelToWorldMatrixUniformLocation =
-		glGetUniformLocation(programID, "modelToWorldMatrix");
-	//glUniform1i(modelToWorldMatrixUniformLocation, 1);
+	
 
 	//Ambient Light
 	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
@@ -458,6 +460,7 @@ void MeGlWindow::paintGL()
 		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
 	modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &teapot1ModelToWorldMatrix[0][0]);
 	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
 	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
@@ -475,32 +478,41 @@ void MeGlWindow::paintGL()
 	//Plane
 	glBindVertexArray(planeVertexArrayObjectID);
 	mat4 planeModelToWorldMatrix = 
-	
 		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f)*
 		glm::scale(0.5f, 0.5f, 0.5f);
-
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
-		&planeModelToWorldMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, planeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)planeNormalsIndexDataByteOffset);*/
 
-	////cube translated
-	//glBindVertexArray(cubeVertexArrayObjectID);
-	//mat4 cubeModelToWorldMatrix = 
-	//	glm::translate(0.0f, 2.0f, -3.0f) *
-	//	glm::rotate(-70.0f, 1.0f, 0.0f, 0.0f);
-	//
-	//modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
-	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
-	//	&cubeModelToWorldMatrix[0][0]);
-	////glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
+
+	//Reflection cube
+	glUseProgram(reflectionProgramID);
+
+	int reflectionuniloc = glGetUniformLocation(reflectionProgramID, "cubeMapTex");
+	if (reflectionuniloc >= 0)
+		glUniform1i(reflectionuniloc, 0);
+
+	glBindVertexArray(cubeVertexArrayObjectID);
+	mat4 cubeModelToWorldMatrix =
+		glm::translate(0.0f, 2.0f, -3.0f) *
+		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f);
+
+	//mat4 reflectionWorldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
+	//mat4 reflectionModelToProjectionMatrix = reflectionWorldToProjectionMatrix * reflectionModelToWorldMatrix;
+	GLuint reflectionFullTransformationUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToProjectionMatrix2");
+	GLint reflectionModelToWorldMatrixUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToWorldMatrix2");
+	mat4 reflectionModelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
+
+	glUniformMatrix4fv(reflectionFullTransformationUniformLocation, 1, GL_FALSE, &reflectionModelToProjectionMatrix[0][0]);
+	glUniformMatrix4fv(reflectionModelToWorldMatrixUniformLocation, 1, GL_FALSE, &cubeModelToWorldMatrix[0][0]);
+
+	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
 
 	
-	//CubeMap
+	//Skybox
 	glUseProgram(cubemapProgramID);
 
 	//disable rendering tris not facing the cam
@@ -513,12 +525,13 @@ void MeGlWindow::paintGL()
 		glUniform1i(cubeuniloc, 0);
 	
 	glBindVertexArray(cubeVertexArrayObjectID);
-	mat4 cubeModelToWorldMatrix =
+	mat4 skyboxModelToWorldMatrix =
 		glm::scale(70.0f, 70.0f, 70.0f);
 
 	//remove the translation part of the world to view matrix so movement doesn't affect the skybox's position vectors
 	//This removes any translation, but keeps all rotation transformations so the user can still look around the scene.
 	mat4 skyboxWorldToViewMatrix = mat4(mat3(camera.getWorldToViewMatrix()));
+	//mat4 skyboxWorldToViewMatrix = camera.getWorldToViewMatrix();
 	mat4 skyboxWorldToProjectionMatrix = viewToProjectionMatrix * skyboxWorldToViewMatrix;
 
 	////CubeMap doesn't move with camera
@@ -527,7 +540,7 @@ void MeGlWindow::paintGL()
 	//worldToViewMatrix[3][2] = 0.0;
 
 	GLuint skyboxTransformMatrixUniformLocation = glGetUniformLocation(cubemapProgramID, "skyboxTransformMatrix");
-	mat4 skyboxTransformMatrix = skyboxWorldToProjectionMatrix * cubeModelToWorldMatrix;
+	mat4 skyboxTransformMatrix = skyboxWorldToProjectionMatrix * skyboxModelToWorldMatrix;
 	//modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
 	glUniformMatrix4fv(skyboxTransformMatrixUniformLocation, 1, GL_FALSE, &skyboxTransformMatrix[0][0]);
 	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
@@ -595,9 +608,10 @@ void MeGlWindow::installShaders()
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
-	//texture shader
 	//define array of character pointers
 	const GLchar* adapter[1];
+
+	//texture shader
 	string temp = readShaderCode("TextureVertexShaderCode.glsl");
 	adapter[0] = temp.c_str();
 	glShaderSource(vertexShaderID, 1, adapter, 0);
@@ -618,8 +632,6 @@ void MeGlWindow::installShaders()
 	//Linker decideds where the attributes are
 	glLinkProgram(programID);
 
-	
-
 	////check if linker has error
 	//if (!checkProgramStatus(programID))
 	//	return;
@@ -631,41 +643,66 @@ void MeGlWindow::installShaders()
 	//glUseProgram(programID);
 
 
-	GLuint cubemapVertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-	GLuint cubemapFragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+	//GLuint cubemapVertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+	//GLuint cubemapFragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 	
 	//Cubemap Shader
 	temp = readShaderCode("CubeMapVertexShaderCode.glsl");
 	adapter[0] = temp.c_str();
-	glShaderSource(cubemapVertexShaderID, 1, adapter, 0);
+	glShaderSource(vertexShaderID, 1, adapter, 0);
 	temp = readShaderCode("CubeMapFragmentShaderCode.glsl");
 	adapter[0] = temp.c_str();
-	glShaderSource(cubemapFragmentShaderID, 1, adapter, 0);
+	glShaderSource(fragmentShaderID, 1, adapter, 0);
 
-	glCompileShader(cubemapVertexShaderID);
-	glCompileShader(cubemapFragmentShaderID);
+	glCompileShader(vertexShaderID);
+	glCompileShader(fragmentShaderID);
 
 	////check if compile has error
 	//if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
 	//	return;
 
 	cubemapProgramID = glCreateProgram();
-	glAttachShader(cubemapProgramID, cubemapVertexShaderID);
-	glAttachShader(cubemapProgramID, cubemapFragmentShaderID);
+	glAttachShader(cubemapProgramID, vertexShaderID);
+	glAttachShader(cubemapProgramID, fragmentShaderID);
 	//Linker decideds where the attributes are
 	glLinkProgram(cubemapProgramID);
-
-	
 
 	////check if linker has error
 	//if (!checkProgramStatus(cubemapProgramID))
 	//	return;
 
 	//delete shader
-	glDeleteShader(cubemapVertexShaderID);
-	glDeleteShader(cubemapFragmentShaderID);
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
 
-	//glUseProgram(cubemapProgramID);
+	//Reflection Shader
+	temp = readShaderCode("ReflectionVertexShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(vertexShaderID, 1, adapter, 0);
+	temp = readShaderCode("ReflectionFragmentShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(fragmentShaderID, 1, adapter, 0);
+
+	glCompileShader(vertexShaderID);
+	glCompileShader(fragmentShaderID);
+
+	////check if compile has error
+	//if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
+	//	return;
+
+	reflectionProgramID = glCreateProgram();
+	glAttachShader(reflectionProgramID, vertexShaderID);
+	glAttachShader(reflectionProgramID, fragmentShaderID);
+	//Linker decideds where the attributes are
+	glLinkProgram(reflectionProgramID);
+
+	////check if linker has error
+	//if (!checkProgramStatus(programID))
+	//	return;
+
+	//delete shader
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
 	
 }
 
@@ -691,11 +728,11 @@ void MeGlWindow::initializeGL()
 	//Winding Order: make front face to be clockwise rather than counter clockwise
 	//glFrontFace(GL_CW); //default is GL_CCW
 
-	//textureSetup();
-	installShaders();
-	textureSetup();
+	
 	sendDataToOpenGL();
+	textureSetup();
 	cubeMapSetup();
+	installShaders();
 
 }
 
