@@ -4,7 +4,7 @@ out vec4 daColor;
 
 in vec3 vertexPositionWorld;
 in vec2 uvFrag;
-in vec3 normalWorld;
+//in vec3 normalWorld;
 in mat3 tangentToModelMatrix;
 
 uniform vec3 lightPositionWorld;

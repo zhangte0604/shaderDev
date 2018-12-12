@@ -1,0 +1,14 @@
+﻿  Camera.cpp
+c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\camera.cpp(69): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  Light.cpp
+c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\light.cpp(47): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  Mainer.cpp
+c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\mainer.cpp(19): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  MeGlWindow.cpp
+c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\meglwindow.cpp(761): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  MeShaderCode.cpp
+c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\meshadercode.cpp(32): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  MeWidget.cpp
+c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\mewidget.cpp(13): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?
+  ShapeGenerator.cpp
+c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\shapegenerator.cpp(816): fatal error C1010: unexpected end of file while looking for precompiled header. Did you forget to add '#include "stdafx.h"' to your source?

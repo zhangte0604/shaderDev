@@ -22,14 +22,14 @@ void main()
 	
 
 	//Smooth Surface Normals: the vertex of intersection uses the same normal which is the vertexPositionModel normal
-	vec3 normalWorld = vec3(modelToWorldMatrix2 * vec4(normalModel, 0));
+	vec3 normalWorld = vec3(mat4(transpose(inverse(modelToWorldMatrix2))) * vec4(normalModel, 0));
 	//normalWorld = mat3(transpose(inverse(modelToWorldMatrix2))) * normalModel;
 	vec4 vertexPositionWorld = modelToWorldMatrix2 * vertexPositionModel;
 	gl_Position = modelToProjectionMatrix2 * vertexPositionModel;
 
 	theColor = vertexColor;
 
-	vec3 eyeVectorWorld = normalize(vertexPositionWorld.xyz - eyePositionWorld);
+	vec3 eyeVectorWorld = normalize(eyePositionWorld - vertexPositionWorld.xyz);
 	reflectedVectorWorld = reflect(eyeVectorWorld, normalize(normalWorld));
 
 

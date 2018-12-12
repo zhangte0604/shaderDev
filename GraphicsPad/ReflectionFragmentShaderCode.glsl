@@ -31,7 +31,16 @@ void main()
 
 	//daColor = mix(daColor, reflectedColor, 0.6);
 
-	daColor = vec4(reflectedColor.rgb, 1.0);
+
+	// //Specular Light in world space
+	// vec3 reflectedLightVectorWorld = reflect(-lightVectorWorld, normalTextureInWorld);
+	// vec3 eyeVectorWorld = normalize(eyePositionWorld - vertexPositionWorld);
+	// float specIntensity = dot(reflectedLightVectorWorld, eyeVectorWorld);
+	// specIntensity = pow(specIntensity, 100);
+	// vec4 specularLight = vec4(specIntensity, specIntensity, specIntensity, 1);
+
+
+	daColor = vec4(reflectedColor.rgb, 1.0) * 0.5;
 	
 	
 }

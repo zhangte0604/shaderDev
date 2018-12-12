@@ -60,7 +60,7 @@ GLuint teapotNormalsIndexDataByteOffset;
 GLuint cubeNormalsIndexDataByteOffset;
 GLuint planeNormalsIndexDataByteOffset;
 
-glm::vec3 lightPositionWorld(0.0f, 10.0f, 0.0f);
+glm::vec3 lightPositionWorld(0.0f, 5.0f, 0.0f);
 
 const char* MeGlWindow::TexFile[] = { "Texture/right.png","Texture/left.png","Texture/down.png","Texture/up.png","Texture/back.png","Texture/front.png" };
 
@@ -453,33 +453,49 @@ void MeGlWindow::paintGL()
 	//glm::vec3 lightPositionWorld = light.getPosition();
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 
+	glUseProgram(reflectionProgramID);
+
+	//cupe map texture
+	int reflectionuniloc = glGetUniformLocation(reflectionProgramID, "cubeMapTex");
+	if (reflectionuniloc >= 0)
+		glUniform1i(reflectionuniloc, 0);
+
 	//Teapot
 	glBindVertexArray(teapotVertexArrayObjectID);
 	mat4 teapot1ModelToWorldMatrix =
-		glm::translate(vec3(0.0f, -1.0f, -1.0f)) *
-		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
-	modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &teapot1ModelToWorldMatrix[0][0]);
-	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
+		glm::rotate(-90.0f, 1.0f, 0.0f, 0.0f)*
+		glm::translate(-4.0f, -4.0f, 0.0f);
+
+	GLuint reflectionFullTransformationUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToProjectionMatrix2");
+	GLint reflectionModelToWorldMatrixUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToWorldMatrix2");
+	mat4 reflectionModelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
+
+	//modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
+	glUniformMatrix4fv(reflectionFullTransformationUniformLocation, 1, GL_FALSE, &reflectionModelToProjectionMatrix[0][0]);
+	glUniformMatrix4fv(reflectionModelToWorldMatrixUniformLocation, 1, GL_FALSE, &teapot1ModelToWorldMatrix[0][0]);
+	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
 	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
 
-	glBindVertexArray(teapotVertexArrayObjectID);
-	mat4 teapot2ModelToWorldMatrix =
-		glm::translate(vec3(3.0f, 0.0f, -6.75f)) *
-		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
-	modelToProjectionMatrix = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
+	//glBindVertexArray(teapotVertexArrayObjectID);
+	//mat4 teapot2ModelToWorldMatrix =
+	//	glm::translate(vec3(3.0f, 0.0f, -6.75f)) *
+	//	glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
+	//modelToProjectionMatrix = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
 	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
 	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
 
+
+	glUseProgram(programID);
+
 	//Plane
 	glBindVertexArray(planeVertexArrayObjectID);
 	mat4 planeModelToWorldMatrix = 
+		glm::translate(0.0f, -2.0f, 0.0f) *
 		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f)*
-		glm::scale(0.5f, 0.5f, 0.5f);
+		glm::scale(1.5f, 1.5f, 1.5f);
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
@@ -491,25 +507,29 @@ void MeGlWindow::paintGL()
 	//Reflection cube
 	glUseProgram(reflectionProgramID);
 
-	int reflectionuniloc = glGetUniformLocation(reflectionProgramID, "cubeMapTex");
+	reflectionuniloc = glGetUniformLocation(reflectionProgramID, "cubeMapTex");
 	if (reflectionuniloc >= 0)
 		glUniform1i(reflectionuniloc, 0);
 
+	//Specular Light
+	eyePositionUniformLocation = glGetUniformLocation(reflectionProgramID, "eyePositionWorld");
+	eyePosition = camera.getPosition();
+	glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
+
 	glBindVertexArray(cubeVertexArrayObjectID);
 	mat4 cubeModelToWorldMatrix =
-		glm::translate(0.0f, 2.0f, -3.0f) *
-		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f);
+		glm::translate(10.0f, 0.0f, 0.0f) *
+		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f) *
+		glm::scale(2.0f, 2.0f, 2.0f);
 
-	//mat4 reflectionWorldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
-	//mat4 reflectionModelToProjectionMatrix = reflectionWorldToProjectionMatrix * reflectionModelToWorldMatrix;
-	GLuint reflectionFullTransformationUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToProjectionMatrix2");
-	GLint reflectionModelToWorldMatrixUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToWorldMatrix2");
-	mat4 reflectionModelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
+	GLuint reflectionFullTransformationUniformLocation2 = glGetUniformLocation(reflectionProgramID, "modelToProjectionMatrix2");
+	GLint reflectionModelToWorldMatrixUniformLocation2 = glGetUniformLocation(reflectionProgramID, "modelToWorldMatrix2");
+	mat4 reflectionModelToProjectionMatrix2 = worldToProjectionMatrix * cubeModelToWorldMatrix;
+	//modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &cubeModelToWorldMatrix[0][0]);
 
-	glUniformMatrix4fv(reflectionFullTransformationUniformLocation, 1, GL_FALSE, &reflectionModelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(reflectionModelToWorldMatrixUniformLocation, 1, GL_FALSE, &cubeModelToWorldMatrix[0][0]);
-
-	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
+	//glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
 
 	
 	//Skybox
@@ -517,6 +537,7 @@ void MeGlWindow::paintGL()
 
 	//disable rendering tris not facing the cam
 	glDisable(GL_CULL_FACE);
+
 
 	//glDepthMask(GL_FALSE);
 

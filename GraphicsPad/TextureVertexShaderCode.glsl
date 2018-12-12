@@ -9,13 +9,13 @@ in layout(location = 4) vec3 tangentModel;
 
 uniform mat4 modelToProjectionMatrix; //MVP 
 uniform mat4 modelToWorldMatrix;
-uniform mat4 worldToViewMatrix;
+//uniform mat4 worldToViewMatrix;
 
 out vec3 vertexPositionWorld;
-out vec3 vertexPositionView;
-out vec3 normalWorld;
+//out vec3 vertexPositionView;
+//out vec3 normalWorld;
 out vec2 uvFrag;
-out mat3 viewToTangentMatrix;
+//out mat3 viewToTangentMatrix;
 out mat3 tangentToModelMatrix;
 
 
@@ -37,7 +37,7 @@ void main()
 {
 	vec3 bitangentModel = normalize(cross(normalModel, tangentModel));
 	tangentToModelMatrix = mat3(tangentModel, bitangentModel, normalModel);//??????????????why
-	normalWorld = vec3(modelToWorldMatrix * vec4(normalModel, 0));
+	//normalWorld = vec3(modelToWorldMatrix * vec4(normalModel, 0));
 	vertexPositionWorld = vec3(modelToWorldMatrix * vertexPositionModel);
 
 	//Pass along the texture coordinate
