@@ -413,29 +413,6 @@ void MeGlWindow::paintGL()
 
 
 	//glDepthMask(GL_TRUE);
-
-
-	// Set the catTex sampler uniform to texture unit0
-	int uniloc = glGetUniformLocation(programID, "brickTex");
-	if (uniloc >= 0)
-		glUniform1i(uniloc, 0);
-	uniloc = glGetUniformLocation(programID, "mossTex");
-	if (uniloc >= 0)
-		glUniform1i(uniloc, 1);
-	uniloc = glGetUniformLocation(programID, "normalMapTex");
-	if (uniloc >= 0)
-		glUniform1i(uniloc, 2);
-
-	//// brick tex
-	//GLint brickTextureUniformLocation = glGetUniformLocation(programID, "brickTex");
-	//glUniform1i(brickTextureUniformLocation, 0);
-	////moss tex
-	//GLint mossTextureUniformLocation = glGetUniformLocation(programID, "mossTex");
-	//glUniform1i(mossTextureUniformLocation, 1);
-	//// Normal Setup
-	//GLint normalmapUniformLocation = glGetUniformLocation(programID, "normalMapTex");
-	//glUniform1i(normalmapUniformLocation, 2);
-
 	
 
 	//Ambient Light
@@ -453,8 +430,21 @@ void MeGlWindow::paintGL()
 	//glm::vec3 lightPositionWorld = light.getPosition();
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 
+
+
+
 	glUseProgram(reflectionProgramID);
 
+	//Specular Light
+	eyePositionUniformLocation = glGetUniformLocation(reflectionProgramID, "eyePositionWorld");
+	eyePosition = camera.getPosition();
+	glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
+	/*
+	//Light position
+	lightPositionWorldUniformLocation = glGetUniformLocation(reflectionProgramID, "lightPositionWorld");
+	//glm::vec3 lightPositionWorld = light.getPosition();
+	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
+	*/
 	//cupe map texture
 	int reflectionuniloc = glGetUniformLocation(reflectionProgramID, "cubeMapTex");
 	if (reflectionuniloc >= 0)
@@ -464,7 +454,7 @@ void MeGlWindow::paintGL()
 	glBindVertexArray(teapotVertexArrayObjectID);
 	mat4 teapot1ModelToWorldMatrix =
 		glm::rotate(-90.0f, 1.0f, 0.0f, 0.0f)*
-		glm::translate(-4.0f, -4.0f, 0.0f);
+		glm::translate(0.0f, -4.0f, 0.0f);
 
 	GLuint reflectionFullTransformationUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToProjectionMatrix2");
 	GLint reflectionModelToWorldMatrixUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToWorldMatrix2");
@@ -490,6 +480,32 @@ void MeGlWindow::paintGL()
 
 	glUseProgram(programID);
 
+	// Set the catTex sampler uniform to texture unit0
+	int uniloc = glGetUniformLocation(programID, "brickTex");
+	if (uniloc >= 0)
+		glUniform1i(uniloc, 0);
+	uniloc = glGetUniformLocation(programID, "mossTex");
+	if (uniloc >= 0)
+		glUniform1i(uniloc, 1);
+	uniloc = glGetUniformLocation(programID, "normalMapTex");
+	if (uniloc >= 0)
+		glUniform1i(uniloc, 2);
+
+	//Ambient Light
+	ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
+	//vec4 ambientLight(0.55f, 0.55f, 0.55f, 1.0f);
+	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
+
+	//Specular Light
+	eyePositionUniformLocation = glGetUniformLocation(programID, "eyePositionWorld");
+	eyePosition = camera.getPosition();
+	glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
+
+	//Light position
+	lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
+	//glm::vec3 lightPositionWorld = light.getPosition();
+	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
+
 	//Plane
 	glBindVertexArray(planeVertexArrayObjectID);
 	mat4 planeModelToWorldMatrix = 
@@ -499,7 +515,7 @@ void MeGlWindow::paintGL()
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
+	//glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, planeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)planeNormalsIndexDataByteOffset);*/
 
@@ -507,14 +523,18 @@ void MeGlWindow::paintGL()
 	//Reflection cube
 	glUseProgram(reflectionProgramID);
 
-	reflectionuniloc = glGetUniformLocation(reflectionProgramID, "cubeMapTex");
-	if (reflectionuniloc >= 0)
-		glUniform1i(reflectionuniloc, 0);
-
-	//Specular Light
 	eyePositionUniformLocation = glGetUniformLocation(reflectionProgramID, "eyePositionWorld");
 	eyePosition = camera.getPosition();
 	glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
+
+	//Light position
+	lightPositionWorldUniformLocation = glGetUniformLocation(reflectionProgramID, "lightPositionWorld");
+	//glm::vec3 lightPositionWorld = light.getPosition();
+	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
+
+	reflectionuniloc = glGetUniformLocation(reflectionProgramID, "cubeMapTex");
+	if (reflectionuniloc >= 0)
+		glUniform1i(reflectionuniloc, 0);
 
 	glBindVertexArray(cubeVertexArrayObjectID);
 	mat4 cubeModelToWorldMatrix =
@@ -526,11 +546,11 @@ void MeGlWindow::paintGL()
 	GLint reflectionModelToWorldMatrixUniformLocation2 = glGetUniformLocation(reflectionProgramID, "modelToWorldMatrix2");
 	mat4 reflectionModelToProjectionMatrix2 = worldToProjectionMatrix * cubeModelToWorldMatrix;
 	//modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &cubeModelToWorldMatrix[0][0]);
+	glUniformMatrix4fv(reflectionFullTransformationUniformLocation2, 1, GL_FALSE, &reflectionModelToProjectionMatrix2[0][0]);
+	glUniformMatrix4fv(reflectionModelToWorldMatrixUniformLocation2, 1, GL_FALSE, &cubeModelToWorldMatrix[0][0]);
 
-	//glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
-
+	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
+	
 	
 	//Skybox
 	glUseProgram(cubemapProgramID);

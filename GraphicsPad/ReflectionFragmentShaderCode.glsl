@@ -2,12 +2,16 @@
 
 out vec4 daColor;
 
-in vec3 theColor;
+//in vec3 theColor;
 in vec3 reflectedVectorWorld;
+in vec3 refractedVectorWorld;
+in vec4 vertexPositionWorld;
+in vec3 normalWorld;
+in vec3 eyeVectorWorld;
 
-//uniform vec3 lightPositionWorld;
+uniform vec3 lightPositionWorld;
 //uniform vec4 ambientLight;
-uniform vec3 eyePositionWorld;
+//uniform vec3 eyePositionWorld;
 uniform samplerCube cubeMapTex;
 
 
@@ -26,21 +30,33 @@ void main()
 	//vec3 reflectedVectorWorld = reflect(eyeVectorWorld, normalize(normalWorld);//??????????????why not work with this line??????????????
 
 	//daColor = vec4(1.0,0.0,0.0, 1.0);
-
-	vec4 reflectedColor = texture(cubeMapTex, reflectedVectorWorld);
-
 	//daColor = mix(daColor, reflectedColor, 0.6);
 
+/*
+	//Specular Light in world space
+	vec3 lightVectorWorld = normalize(lightPositionWorld - vertexPositionWorld.xyz);
+	vec3 reflectedLightVectorWorld = reflect(-lightVectorWorld, normalWorld);
+	//eyeVectorWorld = normalize(eyePositionWorld - vertexPositionWorld);
+	float specIntensity = dot(reflectedLightVectorWorld, eyeVectorWorld);
+	specIntensity = pow(specIntensity, 100);
+	vec4 specularLight = vec4(specIntensity, specIntensity, specIntensity, 1);*/
 
-	// //Specular Light in world space
-	// vec3 reflectedLightVectorWorld = reflect(-lightVectorWorld, normalTextureInWorld);
-	// vec3 eyeVectorWorld = normalize(eyePositionWorld - vertexPositionWorld);
-	// float specIntensity = dot(reflectedLightVectorWorld, eyeVectorWorld);
-	// specIntensity = pow(specIntensity, 100);
-	// vec4 specularLight = vec4(specIntensity, specIntensity, specIntensity, 1);
+
+	//reflection
+	vec4 reflectedColor = texture(cubeMapTex, reflectedVectorWorld);
+	//daColor = vec4(reflectedColor.rgb, 1.0);
+	//refraction
+	vec4 refractedColor = texture(cubeMapTex, refractedVectorWorld);
+	//daColor = vec4(refractedColor.rgb, 0.0);
+
+	daColor = mix(reflectedColor, refractedColor, 0.5);
+	//!!!!!!!!!!!!!!!!!!!!!!!Remeber to add specular light?????????????????????????????????????????????
+	
+
+	
 
 
-	daColor = vec4(reflectedColor.rgb, 1.0) * 0.5;
+	
 	
 	
 }
