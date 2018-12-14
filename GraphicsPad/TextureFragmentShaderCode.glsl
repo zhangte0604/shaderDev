@@ -32,14 +32,14 @@ void main()
 
 	//Diffuse Light in world space
 	vec3 lightVectorWorld = normalize(lightPositionWorld - vertexPositionWorld);
-	float brightness = dot(lightVectorWorld, normalize(normalTextureInWorld));
+	float brightness = dot(-lightVectorWorld, normalize(normalTextureInWorld));
 	//float brightness = dot(lightVectorWorld, uvFrag.xyz);
 	vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
 
 	//Specular Light in world space
 	vec3 reflectedLightVectorWorld = reflect(-lightVectorWorld, normalTextureInWorld);
 	vec3 eyeVectorWorld = normalize(eyePositionWorld - vertexPositionWorld);
-	float specIntensity = dot(reflectedLightVectorWorld, eyeVectorWorld);
+	float specIntensity = dot(reflectedLightVectorWorld, -eyeVectorWorld);
 	specIntensity = pow(specIntensity, 100);
 	vec4 specularLight = vec4(specIntensity, specIntensity, specIntensity, 1);
 

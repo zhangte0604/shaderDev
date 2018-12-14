@@ -408,43 +408,35 @@ void MeGlWindow::paintGL()
 	//glUniform1i(modelToWorldMatrixUniformLocation, 1);
 	//mat4 modelToViewMatrix = worldToViewMatrix * modelToWorldMatrix;
 
-	//disable rendering tris not facing the cam
-	//glEnable(GL_CULL_FACE);
+	////Ambient Light
+	//GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
+	//vec4 ambientLight(0.55f, 0.55f, 0.55f, 1.0f);
+	//glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 
+	////Specular Light
+	//GLint eyePositionUniformLocation = glGetUniformLocation(programID, "eyePositionWorld");
+	//glm::vec3 eyePosition = camera.getPosition();
+	//glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
 
-	//glDepthMask(GL_TRUE);
-	
-
-	//Ambient Light
-	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	vec4 ambientLight(0.55f, 0.55f, 0.55f, 1.0f);
-	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
-
-	//Specular Light
-	GLint eyePositionUniformLocation = glGetUniformLocation(programID, "eyePositionWorld");
-	glm::vec3 eyePosition = camera.getPosition();
-	glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
-
-	//Light position
-	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	//glm::vec3 lightPositionWorld = light.getPosition();
-	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
+	////Light position
+	//GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
+	////glm::vec3 lightPositionWorld = light.getPosition();
+	//glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 
 
 
-
+	//------------------------------------GLASS TEAPOT------------------------------------------------
 	glUseProgram(reflectionProgramID);
 
 	//Specular Light
-	eyePositionUniformLocation = glGetUniformLocation(reflectionProgramID, "eyePositionWorld");
-	eyePosition = camera.getPosition();
+	GLint eyePositionUniformLocation = glGetUniformLocation(reflectionProgramID, "eyePositionWorld");
+	glm::vec3 eyePosition = camera.getPosition();
 	glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
-	/*
+	
 	//Light position
-	lightPositionWorldUniformLocation = glGetUniformLocation(reflectionProgramID, "lightPositionWorld");
-	//glm::vec3 lightPositionWorld = light.getPosition();
+	GLint lightPositionWorldUniformLocation = glGetUniformLocation(reflectionProgramID, "lightPositionWorld");
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
-	*/
+	
 	//cupe map texture
 	int reflectionuniloc = glGetUniformLocation(reflectionProgramID, "cubeMapTex");
 	if (reflectionuniloc >= 0)
@@ -478,6 +470,8 @@ void MeGlWindow::paintGL()
 	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
 
 
+
+	//------------------------------------BRICK PLANE------------------------------------------------
 	glUseProgram(programID);
 
 	// Set the catTex sampler uniform to texture unit0
@@ -492,8 +486,8 @@ void MeGlWindow::paintGL()
 		glUniform1i(uniloc, 2);
 
 	//Ambient Light
-	ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	//vec4 ambientLight(0.55f, 0.55f, 0.55f, 1.0f);
+	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
+	vec4 ambientLight(0.55f, 0.55f, 0.55f, 1.0f);
 	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 
 	//Specular Light
@@ -515,11 +509,10 @@ void MeGlWindow::paintGL()
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
-	//glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
-	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, planeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)planeNormalsIndexDataByteOffset);*/
+	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 
 
+	//------------------------------------GLASS CUBE------------------------------------------------
 	//Reflection cube
 	glUseProgram(reflectionProgramID);
 
@@ -538,7 +531,7 @@ void MeGlWindow::paintGL()
 
 	glBindVertexArray(cubeVertexArrayObjectID);
 	mat4 cubeModelToWorldMatrix =
-		glm::translate(10.0f, 0.0f, 0.0f) *
+		glm::translate(7.0f, 2.0f, 0.0f) *
 		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f) *
 		glm::scale(2.0f, 2.0f, 2.0f);
 
@@ -551,13 +544,14 @@ void MeGlWindow::paintGL()
 
 	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
 	
+
+	//------------------------------------SKYBOX------------------------------------------------
 	
 	//Skybox
 	glUseProgram(cubemapProgramID);
 
 	//disable rendering tris not facing the cam
 	glDisable(GL_CULL_FACE);
-
 
 	//glDepthMask(GL_FALSE);
 
