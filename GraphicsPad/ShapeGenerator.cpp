@@ -1,6 +1,7 @@
 #include "ShapeGenerator.h"
 #include <glm\glm.hpp>
 #include <Vertex.h>
+#define PI 3.14159265359
 using glm::vec2;
 using glm::vec3;
 using glm::mat4;
@@ -15,6 +16,7 @@ glm::vec3 randomColor()
 	ret.z = rand() / (float)RAND_MAX;
 	return ret;
 }
+
 
 ShapeData ShapeGenerator::makeTriangle()
 {
@@ -540,6 +542,45 @@ ShapeData ShapeGenerator::makePlane(uint dimensions)
 	ret.indices = ret2.indices;
 	return ret;
 }
+
+
+
+ShapeData ShapeGenerator::makeSphere(uint tesselation)
+{
+	ShapeData ret = makePlaneVerts(tesselation);
+	ShapeData ret2 = makePlaneIndices(tesselation);
+	ret.indices = ret2.indices;
+	ret.numIndices = ret2.numIndices;
+
+	uint dimensions = tesselation;
+	const float RADIUS = 1.0f;
+	const double CIRCLE = PI * 2;
+	const double SLICE_ANGLE = CIRCLE / (dimensions - 1);
+	for (size_t col = 0; col < dimensions; col++)
+	{
+		double phi = -SLICE_ANGLE * col;
+		for (size_t row = 0; row < dimensions; row++)
+		{
+			double theta = -(SLICE_ANGLE / 2.0) * row;
+			size_t vertIndex = col * dimensions + row;
+			Vertex& v = ret.vertices[vertIndex];
+			v.position.x = RADIUS * cos(phi) * sin(theta);
+			v.position.y = RADIUS * sin(phi) * sin(theta);
+			v.position.z = RADIUS * cos(theta);
+			v.normal = glm::normalize(v.position);
+			v.uv.x = ((float)row) / ((float)(dimensions - 1));
+			v.uv.y = ((float)col) / ((float)(dimensions - 1));
+			/*v.tangent.x = cos(theta) * sin(phi);
+			v.tangent.y = sin(theta) * sin(phi);
+			v.tangent.z = cos(phi);*/
+			v.tangent.x = -v.position.z;
+			v.tangent.y = 0;
+			v.tangent.z = v.position.x;
+		}
+	}
+	return ret;
+}
+
 
 ShapeData ShapeGenerator::makeTeapot(uint tesselation, const glm::mat4& lidTransform)
 {

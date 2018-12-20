@@ -23,7 +23,7 @@ protected:
 	void paintGL();
 	void mouseMoveEvent(QMouseEvent*);
 	void keyPressEvent(QKeyEvent*);
-	static const char* TexFile[];
+	//static const char* TexFile[];
 public:
 	~MeGlWindow();
 

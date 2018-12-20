@@ -2,14 +2,14 @@
 
 out vec4 daColor;
 
-in vec3 reflectDir; // The direction of the reflected ray
+//in vec3 reflectDir; // The direction of the reflected ray
 
 in vec3 uvFrag;
 
 uniform samplerCube cubeMapTex; 
-uniform bool drawSkyBox;
-uniform float reflectFactor;  // Amount of reflection
-uniform vec4 materialColor; // Color of the obj's "Tint"
+//uniform bool;
+//uniform float reflectFactor;  // Amount of reflection
+//uniform vec4 materialColor; // Color of the obj's "Tint"
 
 void main()
 {

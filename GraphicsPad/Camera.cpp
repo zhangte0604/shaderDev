@@ -1,7 +1,7 @@
 #include "Camera.h"
 #include <glm/gtx/transform.hpp>
 
-const float Camera::MOVEMENT_SPEED = 0.1f;
+const float Camera::MOVEMENT_SPEED = 0.5f;
 
 Camera::Camera():
 	viewDirection(0.108157814f, -0.129318893f, -0.769580841f),

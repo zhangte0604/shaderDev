@@ -30,17 +30,14 @@ void main()
 
 	gl_Position = modelToProjectionMatrix2 * vertexPositionModel;
 	
-
-	//theColor = vertexColor;
-
 	eyeVectorWorld = normalize(vertexPositionWorld.xyz - eyePositionWorld );
 
 	//reflection
-	reflectedVectorWorld = reflect(-eyeVectorWorld, normalize(-normalWorld)); 
+	reflectedVectorWorld = reflect(eyeVectorWorld, normalize(normalWorld)); 
 
 	//refraction
-	float refractionRatio = float(1.00 / 1.33);
-	refractedVectorWorld = refract(-eyeVectorWorld, normalize(-normalWorld), refractionRatio); //?????????????????????????why normal is negative?????????????
+	float refractionRatio = float(1.00 / 1.52);
+	refractedVectorWorld = refract(eyeVectorWorld, normalize(normalWorld), refractionRatio);
 
 	
 

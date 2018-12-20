@@ -46,12 +46,12 @@ void main()
 	//reflection
 	vec4 reflectedColor = texture(cubeMapTex, reflectedVectorWorld);
 	reflectedColor = mix(reflectedColor, solidColor, 0.5);
-	//daColor = vec4(reflectedColor.rgb, 1.0);
+	daColor = vec4(reflectedColor.rgb, 1.0);
 	//refraction
 	vec4 refractedColor = texture(cubeMapTex, refractedVectorWorld);
-	//daColor = vec4(refractedColor.rgb, 0.0);
+	//daColor = vec4(refractedColor.rgb, 1.0);
 
-	daColor = mix(reflectedColor, refractedColor, 0.8) +  clamp(specularLight, 0, 1);
+	//daColor = mix(reflectedColor, refractedColor, 0.5);
 	//!!!!!!!!!!!!!!!!!!!!!!!Remeber to add specular light?????????????????????????????????????????????
 	
 
