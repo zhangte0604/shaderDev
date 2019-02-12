@@ -55,15 +55,16 @@ void MeGlWindow::textureSetup()
 
 {
 	// Load texture file
+	
+	//diffuse map
 	const char * texName = "Texture/brick.png";
-	QImage timg =
-		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
+	QImage timg = QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
 
 	// Copy file to OpenGL
 	glActiveTexture(GL_TEXTURE0);
-	GLuint tid;
-	glGenTextures(1, &tid);
-	glBindTexture(GL_TEXTURE_2D, tid);
+	GLuint diffuseID;
+	glGenTextures(1, &diffuseID);
+	glBindTexture(GL_TEXTURE_2D, diffuseID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, timg.width(),
 		timg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
 		timg.bits());
@@ -72,12 +73,78 @@ void MeGlWindow::textureSetup()
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 		GL_LINEAR);
 
-	//// Set the Tex1 sampler uniform to refer to texture unit 0
-	//int loc = glGetUniformLocation(programHandle, "Tex1");
-	//if (loc >= 0)
-	//	glUniform1i(loc, 0);
-	//else
-	//	fprintf(stderr, "Uniform variable Tex1 not found!\n");
+	int uniloc = glGetUniformLocation(programID, "Tex0");
+	
+	glUniform1i(uniloc, 0);
+
+
+	//specular map
+	const char * texName1 = "Texture/brick-specular.png";
+	//texName = "Texture/brick-specular.png";
+	timg = QGLWidget::convertToGLFormat(QImage(texName1, "PNG"));
+
+	// Copy file to OpenGL
+	glActiveTexture(GL_TEXTURE1);
+	GLuint specularID;
+	glGenTextures(1, &specularID);
+	glBindTexture(GL_TEXTURE_2D, specularID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, timg.width(),
+		timg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		timg.bits());
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+		GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		GL_LINEAR);
+
+	GLuint newuniloc = glGetUniformLocation(programID, "Tex1");
+	//GLuint testLoc =  glGetUniformLocation(programID, "ambientLight");
+	glUniform1i(newuniloc, 1);
+	
+	
+
+	/*
+	GLuint texIDs[2];
+	glGenTextures(2, texIDs);
+	// Load cat texture file
+	const char * texName = "Texture/brick.png";
+	QImage brickImg =
+		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
+	// Copy cat texture to OpenGL
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texIDs[0]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, brickImg.width(),
+		brickImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		brickImg.bits());
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+		GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		GL_LINEAR);
+
+	// Set the catTex sampler uniform to texture unit0
+	int uniloc = glGetUniformLocation(programID, "Tex0");
+	if (uniloc >= 0)
+		glUniform1i(uniloc, 0);
+
+	// Load turkey texture file
+	texName = "Texture/brick-specular.png";
+	QImage mossImg =
+		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
+
+	// Copy turkey texture to OpenGL
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, texIDs[1]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mossImg.width(),
+		mossImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		mossImg.bits());
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+		GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		GL_LINEAR);
+
+	// Set the MossTex sampler uniform to texture unit 1
+	uniloc = glGetUniformLocation(programID, "Tex1");
+	if (uniloc >= 0)
+		glUniform1i(uniloc, 1);*/
 }
 
 void MeGlWindow::sendDataToOpenGL()
@@ -522,7 +589,7 @@ void MeGlWindow::installShaders()
 
 void MeGlWindow::initializeGL()
 {
-	setMinimumSize(1200, 500);
+	setMinimumSize(600, 600);
 	setMouseTracking(true);
 	glewInit();
 	//enable the buffer
