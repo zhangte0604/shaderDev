@@ -1,15 +1,12 @@
-﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(376,5): warning MSB8004: Intermediate Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Intermediate Directory.
-  MeGlWindow.cpp
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(376,5): warning MSB8004: Intermediate Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Intermediate Directory.
   ShapeGenerator.cpp
-c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\shapegenerator.cpp(486): warning C4018: '<': signed/unsigned mismatch
-c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\shapegenerator.cpp(488): warning C4018: '<': signed/unsigned mismatch
-c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\shapegenerator.cpp(491): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\shapegenerator.cpp(492): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
-c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\shapegenerator.cpp(517): warning C4018: '<': signed/unsigned mismatch
-c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\shapegenerator.cpp(519): warning C4018: '<': signed/unsigned mismatch
-c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\teapotdata.h(196): warning C4838: conversion from 'double' to 'float' requires a narrowing conversion
-c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\teapotdata.h(196): warning C4305: 'initializing': truncation from 'double' to 'float'
-c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\shapegenerator.cpp(799): warning C4018: '<': signed/unsigned mismatch
-c:\users\u0824445\desktop\graphics\shaderdev\graphicspad\shapegenerator.cpp(812): warning C4018: '<': signed/unsigned mismatch
-  Generating Code...
-  GraphicsPad.vcxproj -> C:\Users\u0824445\Desktop\Graphics\shaderDev\GraphicsPad\Debug\GraphicsPad.exe
+c:\users\tete\desktop\2018 fall\graphics\shaderdev\graphicspad\shapegenerator.cpp(486): warning C4018: '<': signed/unsigned mismatch
+c:\users\tete\desktop\2018 fall\graphics\shaderdev\graphicspad\shapegenerator.cpp(488): warning C4018: '<': signed/unsigned mismatch
+c:\users\tete\desktop\2018 fall\graphics\shaderdev\graphicspad\shapegenerator.cpp(491): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\tete\desktop\2018 fall\graphics\shaderdev\graphicspad\shapegenerator.cpp(492): warning C4244: '=': conversion from 'int' to 'float', possible loss of data
+c:\users\tete\desktop\2018 fall\graphics\shaderdev\graphicspad\shapegenerator.cpp(517): warning C4018: '<': signed/unsigned mismatch
+c:\users\tete\desktop\2018 fall\graphics\shaderdev\graphicspad\shapegenerator.cpp(519): warning C4018: '<': signed/unsigned mismatch
+c:\users\tete\desktop\2018 fall\graphics\shaderdev\graphicspad\teapotdata.h(196): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\tete\desktop\2018 fall\graphics\shaderdev\graphicspad\shapegenerator.cpp(802): warning C4018: '<': signed/unsigned mismatch
+c:\users\tete\desktop\2018 fall\graphics\shaderdev\graphicspad\shapegenerator.cpp(815): warning C4018: '<': signed/unsigned mismatch
+  GraphicsPad.vcxproj -> C:\Users\Tete\Desktop\2018 Fall\Graphics\shaderDev\GraphicsPad\Debug\GraphicsPad.exe

@@ -565,10 +565,13 @@ ShapeData ShapeGenerator::makeTeapot(uint tesselation, const glm::mat4& lidTrans
 		v.position.x = vertices[i * 3 + 0];
 		v.position.y = vertices[i * 3 + 1];
 		v.position.z = vertices[i * 3 + 2];
+		v.color = randomColor();
 		v.normal.x = normals[i * 3 + 0];
 		v.normal.y = normals[i * 3 + 1];
 		v.normal.z = normals[i * 3 + 2];
-		v.color = randomColor();
+		v.uv.x = textureCoordinates[i * 2 + 0];
+		v.uv.y = textureCoordinates[i * 2 + 1];
+
 		
 		//v.uv.x = TCs[i * 2 + 0];
 		//v.uv.y = TCs[i * 2 + 1];
