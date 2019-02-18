@@ -21,6 +21,7 @@ const uint NUM_FLOATS_PER_VERTICE = 14;
 const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 
 GLuint programID;
+GLuint planeProgramID;
 
 GLuint teapotNumIndices;
 GLuint teapotNormalsNumIndices;
@@ -423,15 +424,21 @@ void MeGlWindow::paintGL()
 
 	//Light position
 	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	glm::vec3 lightPositionWorld(5.0f, 2.0f, 0.0f);
+	glm::vec3 lightPositionWorld(0.0f, 5.0f, 0.0f);
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
+
+	glUseProgram(programID);
 
 	//Teapot
 	glBindVertexArray(teapotVertexArrayObjectID);
 	mat4 teapot1ModelToWorldMatrix =
 		glm::translate(vec3(0.0f, -1.0f, -1.0f)) *
 		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
+
+	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
+	GLint modelToWorldMatrixUniformLocation = glGetUniformLocation(programID, "modelToWorldMatrix");
 	modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
+
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
 	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
@@ -448,8 +455,7 @@ void MeGlWindow::paintGL()
 	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
 
 
-	GLint modelToWorldMatrixUniformLocation =
-		glGetUniformLocation(programID, "modelToWorldMatrix");
+	
 
 	//cube translated
 	glBindVertexArray(cubeVertexArrayObjectID);
@@ -474,14 +480,18 @@ void MeGlWindow::paintGL()
 	//glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
 
 	//Plane
+	glUseProgram(planeProgramID);
+
 	glBindVertexArray(planeVertexArrayObjectID);
-	mat4 planeModelToWorldMatrix;
+	mat4 planeModelToWorldMatrix = 
+		glm::translate(0.0f, -3.0f, 0.0f) *
+		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f) *
+		glm::scale(0.5f, 0.5f, 0.5f);
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
-		&planeModelToWorldMatrix[0][0]);
+	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
 	
-	//glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
+	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, planeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)planeNormalsIndexDataByteOffset);*/
 }
@@ -543,7 +553,8 @@ void MeGlWindow::installShaders()
 {
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-
+	
+	// Teapot shader
 	//define array of character pointers
 	const GLchar* adapter[1];
 	string temp = readShaderCode("TextureVertexShaderCode.glsl");
@@ -584,7 +595,35 @@ void MeGlWindow::installShaders()
 	glDeleteShader(vertexShaderID);
 	glDeleteShader(fragmentShaderID);
 
-	glUseProgram(programID);
+	
+	// plane shader
+	temp = readShaderCode("VertexShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(vertexShaderID, 1, adapter, 0);
+	temp = readShaderCode("FragmentShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(fragmentShaderID, 1, adapter, 0);
+
+	glCompileShader(vertexShaderID);
+	glCompileShader(fragmentShaderID);
+
+	////check if compile has error
+	//if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
+	//	return;
+
+	planeProgramID = glCreateProgram();
+	glAttachShader(planeProgramID, vertexShaderID);
+	glAttachShader(planeProgramID, fragmentShaderID);
+	//Linker decideds where the attributes are
+	glLinkProgram(planeProgramID);
+
+	////check if linker has error
+	//if (!checkProgramStatus(cubemapProgramID))
+	//	return;
+
+	//delete shader
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
 }
 
 void MeGlWindow::initializeGL()
@@ -607,7 +646,7 @@ void MeGlWindow::initializeGL()
 	sendDataToOpenGL();
 	installShaders();
 
-	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
+	
 
 }
 
