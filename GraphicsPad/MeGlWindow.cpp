@@ -3,6 +3,9 @@
 #include <fstream>
 #include <QtGui/qmouseevent>
 #include <QtGui/qkeyevent>
+#include <Qt\qapplication.h>
+#include <QtGui\qvboxlayout>
+#include <QtGui\qhboxlayout>
 #include <MeGlWindow.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -33,9 +36,12 @@ GLuint planeNumIndices;
 GLuint planeNormalsNumIndices;
 
 Camera camera;
+Camera renderCamera;
 GLuint fullTransformationUniformLocation;
 
 GLuint theBufferID;
+GLuint framebuffer;
+GLuint framebufferTexture;
 
 GLuint teapotVertexArrayObjectID;
 GLuint cubeVertexArrayObjectID;
@@ -52,14 +58,61 @@ GLuint teapotNormalsIndexDataByteOffset;
 GLuint cubeNormalsIndexDataByteOffset;
 GLuint planeNormalsIndexDataByteOffset;
 
+void MeGlWindow::setupFrameBuffer()
+{
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+	// The texture we are going to render to
+	glGenTextures(1, &framebufferTexture);
+	glActiveTexture(GL_TEXTURE2); // Use texture unit 2	
+	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+	// Give an empty image to opengl
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width(), height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glBindTexture(GL_TEXTURE_2D, 0); //bind back to default
+	
+	// Bind the texture to the FBO
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framebufferTexture, 0);
+	
+	// Create the depth buffer
+	GLuint depthrenderbuffer;
+	glGenRenderbuffers(1, &depthrenderbuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width(), height());
+	// Bind the depth buffer to the FBO
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+
+
+	// Set the target for the fragment shader outputs
+	GLenum drawBufs[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, drawBufs);
+
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+
+	// Unbind the framebuffer, and revert to default framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glActiveTexture(GL_TEXTURE0); // Bind back to default slot
+}
+
+QImage MeGlWindow::loadTexture(const char * texName)
+{
+	return QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
+}
+
 void MeGlWindow::textureSetup()
 
 {
 	// Load texture file
 	
 	//diffuse map
-	const char * texName = "Texture/brick.png";
-	QImage timg = QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
+	const char * diffuseName = "Texture/brick.png";
+	QImage timg = loadTexture(diffuseName);
 
 	// Copy file to OpenGL
 	glActiveTexture(GL_TEXTURE0);
@@ -74,78 +127,24 @@ void MeGlWindow::textureSetup()
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 		GL_LINEAR);
 
-	int uniloc = glGetUniformLocation(programID, "Tex0");
-	
-	glUniform1i(uniloc, 0);
 
 
 	//specular map
-	const char * texName1 = "Texture/brick-specular.png";
-	//texName = "Texture/brick-specular.png";
-	timg = QGLWidget::convertToGLFormat(QImage(texName1, "PNG"));
+	const char * specularName = "Texture/brick-specular.png";
+	QImage timg1 = loadTexture(specularName);
 
 	// Copy file to OpenGL
 	glActiveTexture(GL_TEXTURE1);
 	GLuint specularID;
 	glGenTextures(1, &specularID);
 	glBindTexture(GL_TEXTURE_2D, specularID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, timg.width(),
-		timg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-		timg.bits());
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, timg1.width(),
+		timg1.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		timg1.bits());
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
 		GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 		GL_LINEAR);
-
-	GLuint newuniloc = glGetUniformLocation(programID, "Tex1");
-	//GLuint testLoc =  glGetUniformLocation(programID, "ambientLight");
-	glUniform1i(newuniloc, 1);
-	
-	
-
-	/*
-	GLuint texIDs[2];
-	glGenTextures(2, texIDs);
-	// Load cat texture file
-	const char * texName = "Texture/brick.png";
-	QImage brickImg =
-		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
-	// Copy cat texture to OpenGL
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texIDs[0]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, brickImg.width(),
-		brickImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-		brickImg.bits());
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-		GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-		GL_LINEAR);
-
-	// Set the catTex sampler uniform to texture unit0
-	int uniloc = glGetUniformLocation(programID, "Tex0");
-	if (uniloc >= 0)
-		glUniform1i(uniloc, 0);
-
-	// Load turkey texture file
-	texName = "Texture/brick-specular.png";
-	QImage mossImg =
-		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
-
-	// Copy turkey texture to OpenGL
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, texIDs[1]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mossImg.width(),
-		mossImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-		mossImg.bits());
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-		GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-		GL_LINEAR);
-
-	// Set the MossTex sampler uniform to texture unit 1
-	uniloc = glGetUniformLocation(programID, "Tex1");
-	if (uniloc >= 0)
-		glUniform1i(uniloc, 1);*/
 }
 
 void MeGlWindow::sendDataToOpenGL()
@@ -188,22 +187,6 @@ void MeGlWindow::sendDataToOpenGL()
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, plane.indexBufferSize(), plane.indices);
 	currentOffset += plane.indexBufferSize();
 	
-	/*glBufferSubData(GL_ARRAY_BUFFER, currentOffset, teapotNormals.vertexBufferSize(), teapotNormals.vertices);
-	currentOffset += teapotNormals.vertexBufferSize();
-	teapotNormalsIndexDataByteOffset = currentOffset;
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, teapotNormals.indexBufferSize(), teapotNormals.indices);
-	currentOffset += teapotNormals.indexBufferSize();
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, cubeNormals.vertexBufferSize(), cubeNormals.vertices);
-	currentOffset += cubeNormals.vertexBufferSize();
-	cubeNormalsIndexDataByteOffset = currentOffset;
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, cubeNormals.indexBufferSize(), cubeNormals.indices);
-	currentOffset += cubeNormals.indexBufferSize();
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, planeNormals.vertexBufferSize(), planeNormals.vertices);
-	currentOffset += planeNormals.vertexBufferSize();
-	planeNormalsIndexDataByteOffset = currentOffset;
-	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, planeNormals.indexBufferSize(), planeNormals.indices);
-	currentOffset += planeNormals.indexBufferSize();*/
-	
 
 	teapotNumIndices = teapot.numIndices;
 	//teapotNormalsNumIndices = teapotNormals.numIndices;
@@ -212,37 +195,11 @@ void MeGlWindow::sendDataToOpenGL()
 	planeNumIndices = plane.numIndices;
 	//planeNormalsNumIndices = planeNormals.numIndices;
 
-	/*
-	//instancing
-
-	GLuint transformationMatrixBufferID;
-	glGenBuffers(1, &transformationMatrixBufferID);
-	glBindBuffer(GL_ARRAY_BUFFER, transformationMatrixBufferID);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(mat4) * 2, 0, GL_DYNAMIC_DRAW);
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 0));
-	glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 4));
-	glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 8));
-	glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, sizeof(mat4), (void*)(sizeof(float) * 12));
-	//enable the vertex attribute (TransformMatrix)
-	glEnableVertexAttribArray(2);
-	glEnableVertexAttribArray(3);
-	glEnableVertexAttribArray(4);
-	glEnableVertexAttribArray(5);
-	glVertexAttribDivisor(2, 1);
-	glVertexAttribDivisor(3, 1);
-	glVertexAttribDivisor(4, 1);
-	glVertexAttribDivisor(5, 1);
-	*/
 	
 	glGenVertexArrays(1, &teapotVertexArrayObjectID);
 	glGenVertexArrays(1, &cubeVertexArrayObjectID);
 	glGenVertexArrays(1, &planeVertexArrayObjectID);
 
-	/*glGenVertexArrays(1, &teapotNormalsVertexArrayObjectID);
-	glGenVertexArrays(1, &cubeNormalsVertexArrayObjectID);
-	glGenVertexArrays(1, &planeNormalsVertexArrayObjectID);
-	*/
 
 	//teapot
 	//where array object is activated
@@ -336,66 +293,120 @@ void MeGlWindow::sendDataToOpenGL()
 	cubeIndexDataByteOffset = cubeByteOffset + cube.vertexBufferSize();
 	planeIndexDataByteOffset = planeByteOffset + plane.vertexBufferSize();
 
-	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
-	GLuint teapotNormalsByteOffset = planeByteOffset + plane.vertexBufferSize() + plane.indexBufferSize();
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)teapotNormalsByteOffset);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(teapotNormalsByteOffset + sizeof(float) * 3));
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
-
-	glBindVertexArray(cubeNormalsVertexArrayObjectID);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
-	GLuint cubeNormalsByteOffset = teapotNormalsByteOffset + teapotNormals.vertexBufferSize() + teapotNormals.indexBufferSize();
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)cubeNormalsByteOffset);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(cubeNormalsByteOffset + sizeof(float) * 3));
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);
-
-	glBindVertexArray(planeNormalsVertexArrayObjectID);
-	glEnableVertexAttribArray(0);
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
-	GLuint planeNormalsByteOffset = cubeNormalsByteOffset + cubeNormals.vertexBufferSize() + cubeNormals.indexBufferSize();
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)planeNormalsByteOffset);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, VERTEX_BYTE_SIZE, (void*)(planeNormalsByteOffset + sizeof(float) * 3));
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, theBufferID);*/
+	
 
 	teapot.cleanup();
 	cube.cleanup();
 	plane.cleanup();
 }
 
+//Alt: control teapot
 void MeGlWindow::mouseMoveEvent(QMouseEvent* e)
 {
-	camera.mouseUpdate(glm::vec2(e->x(), e->y()));
+	if (IsAltPressing == true)
+	{
+		camera.mouseUpdate(glm::vec2(e->x(), e->y()));
+		repaint();
+	}
+	else if (IsAltPressing == false)
+	{
+		renderCamera.mouseUpdate(glm::vec2(e->x(), e->y()));
+		repaint();
+	}
+	
+}
+
+void  MeGlWindow::keyPressEvent(QKeyEvent* event)
+{
+	
+	switch (event->key())
+	{
+
+		case Qt::Key::Key_W:
+			if (IsAltPressing)
+			{
+				camera.moveForward();
+			}
+			else
+			{
+				renderCamera.moveForward();
+			}
+			
+			break;
+
+		case Qt::Key::Key_S:
+			if (IsAltPressing)
+			{
+				camera.moveBackward();
+			}
+			else
+			{
+				renderCamera.moveBackward();
+			}
+			
+			break;
+		case Qt::Key::Key_A:
+			if (IsAltPressing)
+			{
+				camera.strafeLeft();
+			}
+			else
+			{
+				renderCamera.strafeLeft();
+			}
+	
+			break;
+		case Qt::Key::Key_D:
+			if (IsAltPressing)
+			{
+				camera.strafeRight();
+			}
+			else
+			{
+				renderCamera.strafeRight();
+			}
+			
+			break;
+		case Qt::Key::Key_R:
+			if (IsAltPressing)
+			{
+				camera.moveUp();
+			}
+			else
+			{
+				renderCamera.moveUp();
+			}
+			
+			break;
+		case Qt::Key::Key_F:
+			if (IsAltPressing)
+			{
+				camera.moveDown();
+			}
+			else
+			{
+				renderCamera.moveDown();
+			}
+			break;
+		case Qt::Key::Key_Escape:
+			printf("esc");
+			QCoreApplication::quit();
+			break;
+	
+		case Qt::Key::Key_Alt:
+			printf("Alt Press");
+			IsAltPressing = true;
+			break;
+	}
 	repaint();
 }
 
-void  MeGlWindow::keyPressEvent(QKeyEvent* e)
+void  MeGlWindow::keyReleaseEvent(QKeyEvent* event)
 {
-	switch (e->key())
+	if (event->key() == Qt::Key_Alt)
 	{
-	case Qt::Key::Key_W:
-		camera.moveForward();
-		break;
-	case Qt::Key::Key_S:
-		camera.moveBackward();
-		break;
-	case Qt::Key::Key_A:
-		camera.strafeLeft();
-		break;
-	case Qt::Key::Key_D:
-		camera.strafeRight();
-		break;
-	case Qt::Key::Key_R:
-		camera.moveUp();
-		break;
-	case Qt::Key::Key_F:
-		camera.moveDown();
-		break;
+		printf("Alt Release");
+		IsAltPressing = false;
 	}
 	repaint();
 }
@@ -404,8 +415,14 @@ void  MeGlWindow::keyPressEvent(QKeyEvent* e)
 //run everytime you call
 void MeGlWindow::paintGL()
 {
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	glClearColor(0.5f, 0.0f, 0.0f, 1.0f); //color of plane
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
+	glEnable(GL_DEPTH_TEST);
+
+	//Teapot
+	glUseProgram(programID);
 
 	mat4 modelToProjectionMatrix;
 	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 20.0f);
@@ -427,73 +444,60 @@ void MeGlWindow::paintGL()
 	glm::vec3 lightPositionWorld(0.0f, 5.0f, 0.0f);
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 
-	glUseProgram(programID);
-
-	//Teapot
 	glBindVertexArray(teapotVertexArrayObjectID);
 	mat4 teapot1ModelToWorldMatrix =
-		glm::translate(vec3(0.0f, -1.0f, -1.0f)) *
+		glm::translate(vec3(0.0f, -1.0f, 0.0f)) *
 		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
 
 	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
 	GLint modelToWorldMatrixUniformLocation = glGetUniformLocation(programID, "modelToWorldMatrix");
 	modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
-
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+
+
+	GLuint diffuseMapUniformLocation = glGetUniformLocation(programID, "Tex0");
+	glUniform1i(diffuseMapUniformLocation, 0);
+	GLuint speculareMapUniformLocation = glGetUniformLocation(programID, "Tex1");
+	glUniform1i(speculareMapUniformLocation, 1);
+
+
 	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
-	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
-
-	glBindVertexArray(teapotVertexArrayObjectID);
-	mat4 teapot2ModelToWorldMatrix =
-		glm::translate(vec3(3.0f, 0.0f, -6.75f)) *
-		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
-	modelToProjectionMatrix = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
-	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
-	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
-
-
 	
 
-	//cube translated
-	glBindVertexArray(cubeVertexArrayObjectID);
-	mat4 cubeModelToWorldMatrix = 
-		glm::translate(0.0f, 2.0f, -3.0f) *
-		glm::rotate(-70.0f, 1.0f, 0.0f, 0.0f);
+	//Now use a simple plane to display the texture
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, width(), height());
+	glDisable(GL_DEPTH_TEST);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // the color of viewport
+	glClear(GL_COLOR_BUFFER_BIT);
 	
-	modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
-		&cubeModelToWorldMatrix[0][0]);
-	//glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
-	/*glBindVertexArray(cubeNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, cubeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)cubeNormalsIndexDataByteOffset);*/
-
-	//cube centered
-	cubeModelToWorldMatrix = mat4();
-	modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
-		&cubeModelToWorldMatrix[0][0]);
-	//glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
 
 	//Plane
 	glUseProgram(planeProgramID);
 
+	worldToViewMatrix = renderCamera.getWorldToViewMatrix();
+	worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
+
 	glBindVertexArray(planeVertexArrayObjectID);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+
 	mat4 planeModelToWorldMatrix = 
 		glm::translate(0.0f, -3.0f, 0.0f) *
 		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f) *
 		glm::scale(0.5f, 0.5f, 0.5f);
+
+	GLuint framebufferTextureUniformLoc = glGetUniformLocation(planeProgramID, "frameBufferTexture");
+	glUniform1i(framebufferTextureUniformLoc, 2);
+
+	fullTransformationUniformLocation = glGetUniformLocation(planeProgramID, "modelToProjectionMatrix");
+	modelToWorldMatrixUniformLocation = glGetUniformLocation(planeProgramID, "modelToWorldMatrix");
 	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
 	
 	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
-	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, planeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)planeNormalsIndexDataByteOffset);*/
+	
 }
 
 
@@ -634,7 +638,7 @@ void MeGlWindow::initializeGL()
 	//enable the buffer
 	glEnable(GL_DEPTH_TEST);
 	//disable rendering tris not facing the cam
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 
 	//Face Culling: choose which face you wanna cull
 	//glCullFace(GL_FRONT); //default is GL_BACK
@@ -644,6 +648,7 @@ void MeGlWindow::initializeGL()
 
 	//textureSetup();
 	sendDataToOpenGL();
+	setupFrameBuffer();
 	installShaders();
 
 	

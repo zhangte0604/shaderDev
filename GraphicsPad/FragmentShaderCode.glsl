@@ -2,12 +2,16 @@
 
 out vec4 daColor;
 
-in vec3 normalWorld;
-in vec3 vertexPositionWorld;
+in vec2 fragmentUV;
+
+//in vec3 normalWorld;
+//in vec3 vertexPositionWorld;
 
 //uniform vec3 lightPositionWorld;
 //uniform vec3 eyePositionWorld;
 //uniform vec4 ambientLight;
+
+uniform sampler2D frameBufferTexture;
 
 
 void main()
@@ -33,6 +37,7 @@ void main()
 	//Clamp: Don't wanna distract from diffuse light when adding ambient light
 	//daColor = clamp(diffuseLight, 0, 1) + ambientLight + clamp(specularLight, 0, 1);
 	//daColor = ambientLight + clamp(specularLight, 0, 1);
-	daColor = vec4(1.0, 0.0, 0.0, 1.0);
+	//daColor = vec4(1.0, 0.0, 0.0, 1.0);
+	daColor = vec4(vec3(texture(frameBufferTexture, fragmentUV)), 1.0);
 
 }

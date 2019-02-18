@@ -36,12 +36,11 @@ void main()
 	s = pow(s, 10);
 	vec4 specularLight = vec4(s, s, s, 1);
 
-
-
 	//Clamp: Don't wanna distract from diffuse light when adding ambient light
 	daColor = clamp(diffuseLight, 0, 1) * diffuseColor + ambientLight + clamp(specularLight, 0, 1) * specularColor;
-	
-	//daColor = ambientLight + clamp(specularLight, 0, 1);
+	//daColor = specularColor;
+	//daColor = clamp(specularLight, 0, 1);
 	//daColor = vec4(specularColor.x,0.0,0.0,0.0);
+
 
 }

@@ -17,13 +17,18 @@ class MeGlWindow : public QGLWidget
 	std::string readShaderCode(const char* fileName);
 	void installShaders();
 protected:
+	void setupFrameBuffer();
+	QImage loadTexture(const char * texName);
 	void textureSetup();
 	void initializeGL();
 	void paintGL();
 	void mouseMoveEvent(QMouseEvent*);
 	void keyPressEvent(QKeyEvent*);
+	void keyReleaseEvent(QKeyEvent*);
 public:
 	~MeGlWindow();
+private:
+	bool IsAltPressing;
 
 };
 

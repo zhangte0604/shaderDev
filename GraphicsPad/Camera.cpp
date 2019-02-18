@@ -4,8 +4,8 @@
 const float Camera::MOVEMENT_SPEED = 0.1f;
 
 Camera::Camera():
-	viewDirection(0.108157814f, -0.629318893f, -0.769580841f),
-	position(-1.02820563f, 4.88593626f, 3.66996455f),
+	viewDirection(0.0f, 0.0f, -1.0f),
+	position(0.0f, 0.0f, 10.0),
 	UP(0.0f, 1.0f, 0.0f)
 {
 }
@@ -19,7 +19,7 @@ void Camera::mouseUpdate(const glm::vec2& newMousePosition)
 		oldMousePosition = newMousePosition;
 		return;
 	}
-	const float ROTATIONAL_SPEED = 0.5f;
+	const float ROTATIONAL_SPEED = 0.1f;
 	strafeDirection = glm::cross(viewDirection, UP);
 
 	//Mouse horizontal rotation * Mouse vertical rotation
