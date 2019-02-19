@@ -12,6 +12,7 @@ uniform mat4 modelToWorldMatrix;
 
 out vec3 vertexPositionWorld;
 out vec3 normalWorld;
+//out vec3 normalModel1;
 out vec2 TexCoord;
 out mat4 tangentToModelTransform;
 
@@ -24,6 +25,7 @@ void main()
 
 	//Smooth Surface Normals: the vertex of intersection uses the same normal which is the vertexPositionModel normal
 	//normalWorld = vec3(modelToWorldMatrix * normalize(vertexPositionModel));
+	//normalModel1 = normalModel;
 	normalWorld = vec3(modelToWorldMatrix * vec4(normalModel, 0));
 	vertexPositionWorld = vec3(modelToWorldMatrix * vertexPositionModel);
 

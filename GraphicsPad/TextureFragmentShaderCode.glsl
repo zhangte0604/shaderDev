@@ -7,16 +7,19 @@ in vec3 normalWorld;
 in vec3 vertexPositionWorld;
 in vec2 TexCoord;
 in vec3 tangentToModelTransform;
+//in vec3 normalModel1;
 
 uniform vec3 lightPositionWorld;
 uniform vec3 eyePositionWorld;
 uniform vec4 ambientLight;
 uniform sampler2D Tex0;
 uniform sampler2D Tex1;
+uniform mat4 modelToWorldMatrix;
 
 
 void main()
 {
+	//vec3 NewnormalWorld = vec3(modelToWorldMatrix * vec4(normalModel1, 0));
 	vec4 diffuseColor = texture(Tex0, TexCoord);
 	vec4 specularColor = texture(Tex1, TexCoord);
 
@@ -38,7 +41,7 @@ void main()
 
 	//Clamp: Don't wanna distract from diffuse light when adding ambient light
 	daColor = clamp(diffuseLight, 0, 1) * diffuseColor + clamp(specularLight, 0, 1) * specularColor + ambientLight;
-	//daColor = specularColor;
+	//daColor = vec4(normalize(NewnormalWorld),1.0);
 	//daColor = clamp(specularLight, 0, 1);
 	//daColor = vec4(specularColor.x,0.0,0.0,0.0);
 
