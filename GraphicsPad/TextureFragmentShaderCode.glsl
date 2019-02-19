@@ -30,14 +30,14 @@ void main()
 
 
 	// Specular
-	vec3 reflectedLightVectorWorld = reflect(-lightVectorWorld, normalWorld);
+	vec3 reflectedLightVectorWorld = reflect(-lightVectorWorld, normalize(normalWorld));
 	vec3 eyeVectorWorld = normalize(eyePositionWorld - vertexPositionWorld);
 	float s = dot(reflectedLightVectorWorld, eyeVectorWorld);
 	s = pow(s, 10);
-	vec4 specularLight = vec4(s, s, s, 1);
+	vec4 specularLight = vec4(s, s, s, 1.0);
 
 	//Clamp: Don't wanna distract from diffuse light when adding ambient light
-	daColor = clamp(diffuseLight, 0, 1) * diffuseColor + ambientLight + clamp(specularLight, 0, 1) * specularColor;
+	daColor = clamp(diffuseLight, 0, 1) * diffuseColor + clamp(specularLight, 0, 1) * specularColor + ambientLight;
 	//daColor = specularColor;
 	//daColor = clamp(specularLight, 0, 1);
 	//daColor = vec4(specularColor.x,0.0,0.0,0.0);
