@@ -17,6 +17,7 @@ class MeGlWindow : public QGLWidget
 	std::string readShaderCode(const char* fileName);
 	void installShaders();
 protected:
+	void renderToTexture();
 	void textureSetup();
 	void cubeMapSetup();
 	void initializeGL();

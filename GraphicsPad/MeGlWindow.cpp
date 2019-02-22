@@ -3,6 +3,9 @@
 #include <fstream>
 #include <QtGui/qmouseevent>
 #include <QtGui/qkeyevent>
+#include <Qt\qapplication.h>
+#include <QtGui\qvboxlayout>
+#include <QtGui\qhboxlayout>
 #include <MeGlWindow.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -44,6 +47,8 @@ Light light;
 GLuint fullTransformationUniformLocation;
 
 GLuint theBufferID;
+GLuint framebuffer;
+GLuint framebufferTexture;
 
 GLuint teapotVertexArrayObjectID;
 GLuint cubeVertexArrayObjectID;
@@ -62,7 +67,56 @@ GLuint planeNormalsIndexDataByteOffset;
 
 glm::vec3 lightPositionWorld(0.0f, 5.0f, 0.0f);
 
-const char* MeGlWindow::TexFile[] = { "Texture/right.png","Texture/left.png","Texture/down.png","Texture/up.png","Texture/back.png","Texture/front.png" };
+//Desert scene
+//const char* MeGlWindow::TexFile[] = { "Texture/right.png","Texture/left.png","Texture/down.png","Texture/up.png","Texture/back.png","Texture/front.png"};
+
+//Park scene
+const char* MeGlWindow::TexFile[] = { "Texture/cubemap/cubemap_posx.png","Texture/cubemap/cubemap_negx.png",
+									  "Texture/cubemap/cubemap_negy.png","Texture/cubemap/cubemap_posy.png",
+									  "Texture/cubemap/cubemap_posz.png","Texture/cubemap/cubemap_negz.png" };
+
+void MeGlWindow::renderToTexture()
+{
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+	// The texture we are going to render to
+	glGenTextures(1, &framebufferTexture);
+	glActiveTexture(GL_TEXTURE2); // Use texture unit 2	
+	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+	// Give an empty image to opengl
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width(), height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	glBindTexture(GL_TEXTURE_2D, 0); //bind back to default
+
+									 // Bind the texture to the FBO
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framebufferTexture, 0);
+
+	// Create the depth buffer
+	GLuint depthrenderbuffer;
+	glGenRenderbuffers(1, &depthrenderbuffer);
+	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width(), height());
+	// Bind the depth buffer to the FBO
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+
+
+	// Set the target for the fragment shader outputs
+	GLenum drawBufs[] = { GL_COLOR_ATTACHMENT0 };
+	glDrawBuffers(1, drawBufs);
+
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+
+	// Unbind the framebuffer, and revert to default framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glActiveTexture(GL_TEXTURE0); // Bind back to default slot
+
+}
 
 void MeGlWindow::cubeMapSetup()
 {
@@ -102,6 +156,7 @@ void MeGlWindow::cubeMapSetup()
 	if (uniloc >= 0)
 		glUniform1i(uniloc, 0);
 }
+
 void MeGlWindow::textureSetup()
 {
 	// Brick and Moss
@@ -428,6 +483,11 @@ void MeGlWindow::paintGL()
 	//------------------------------------GLASS TEAPOT------------------------------------------------
 	glUseProgram(reflectionProgramID);
 
+	//Ambient Light
+	GLint ambientLightUniformLocation = glGetUniformLocation(reflectionProgramID, "ambientLight");
+	vec4 ambientLight(0.1f, 0.1f, 0.1f, 1.0f);
+	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
+
 	//Specular Light
 	GLint eyePositionUniformLocation = glGetUniformLocation(reflectionProgramID, "eyePositionWorld");
 	glm::vec3 eyePosition = camera.getPosition();
@@ -472,43 +532,67 @@ void MeGlWindow::paintGL()
 
 
 	//------------------------------------BRICK PLANE------------------------------------------------
-	glUseProgram(programID);
+	//glUseProgram(programID);
 
-	// Set the catTex sampler uniform to texture unit0
-	int uniloc = glGetUniformLocation(programID, "brickTex");
-	if (uniloc >= 0)
-		glUniform1i(uniloc, 0);
-	uniloc = glGetUniformLocation(programID, "mossTex");
-	if (uniloc >= 0)
-		glUniform1i(uniloc, 1);
-	uniloc = glGetUniformLocation(programID, "normalMapTex");
-	if (uniloc >= 0)
-		glUniform1i(uniloc, 2);
+	//// Set the catTex sampler uniform to texture unit0
+	//int uniloc = glGetUniformLocation(programID, "brickTex");
+	//if (uniloc >= 0)
+	//	glUniform1i(uniloc, 0);
+	//uniloc = glGetUniformLocation(programID, "mossTex");
+	//if (uniloc >= 0)
+	//	glUniform1i(uniloc, 1);
+	//uniloc = glGetUniformLocation(programID, "normalMapTex");
+	//if (uniloc >= 0)
+	//	glUniform1i(uniloc, 2);
 
-	//Ambient Light
-	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	vec4 ambientLight(0.55f, 0.55f, 0.55f, 1.0f);
-	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
+	////Ambient Light
+	//ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
+	//ambientLight = vec4(0.55f, 0.55f, 0.55f, 1.0f);
+	//glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 
-	//Specular Light
-	eyePositionUniformLocation = glGetUniformLocation(programID, "eyePositionWorld");
-	eyePosition = camera.getPosition();
-	glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
+	////Specular Light
+	//eyePositionUniformLocation = glGetUniformLocation(programID, "eyePositionWorld");
+	//eyePosition = camera.getPosition();
+	//glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
 
-	//Light position
-	lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	//glm::vec3 lightPositionWorld = light.getPosition();
-	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
+	////Light position
+	//lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
+	////glm::vec3 lightPositionWorld = light.getPosition();
+	//glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 
-	//Plane
+	//glUseProgram(reflectionProgramID);
+
+	////Ambient Light
+	//ambientLightUniformLocation = glGetUniformLocation(reflectionProgramID, "ambientLight");
+	//ambientLight = vec4(0.1f, 0.1f, 0.1f, 1.0f);
+	//glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
+
+	//eyePositionUniformLocation = glGetUniformLocation(reflectionProgramID, "eyePositionWorld");
+	//eyePosition = camera.getPosition();
+	//glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
+
+	////Light position
+	//lightPositionWorldUniformLocation = glGetUniformLocation(reflectionProgramID, "lightPositionWorld");
+	////glm::vec3 lightPositionWorld = light.getPosition();
+	//glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
+
+	//reflectionuniloc = glGetUniformLocation(reflectionProgramID, "cubeMapTex");
+	//if (reflectionuniloc >= 0)
+	//	glUniform1i(reflectionuniloc, 0);
+
 	glBindVertexArray(planeVertexArrayObjectID);
 	mat4 planeModelToWorldMatrix = 
-		glm::translate(0.0f, -2.0f, 0.0f) *
+		glm::translate(0.0f, 0.0f, 2.0f) *
 		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f)*
-		glm::scale(1.5f, 1.5f, 1.5f);
-	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
+		glm::scale(0.6f, 0.6f, 0.6f);
+
+	reflectionFullTransformationUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToProjectionMatrix2");
+	reflectionModelToWorldMatrixUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToWorldMatrix2");
+	reflectionModelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
+
+	//modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
+	glUniformMatrix4fv(reflectionFullTransformationUniformLocation, 1, GL_FALSE, &reflectionModelToProjectionMatrix[0][0]);
+	glUniformMatrix4fv(reflectionModelToWorldMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 
 
@@ -535,6 +619,8 @@ void MeGlWindow::paintGL()
 		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f) *
 		glm::scale(2.0f, 2.0f, 2.0f);
 
+
+
 	GLuint reflectionFullTransformationUniformLocation2 = glGetUniformLocation(reflectionProgramID, "modelToProjectionMatrix2");
 	GLint reflectionModelToWorldMatrixUniformLocation2 = glGetUniformLocation(reflectionProgramID, "modelToWorldMatrix2");
 	mat4 reflectionModelToProjectionMatrix2 = worldToProjectionMatrix * cubeModelToWorldMatrix;
@@ -542,7 +628,7 @@ void MeGlWindow::paintGL()
 	glUniformMatrix4fv(reflectionFullTransformationUniformLocation2, 1, GL_FALSE, &reflectionModelToProjectionMatrix2[0][0]);
 	glUniformMatrix4fv(reflectionModelToWorldMatrixUniformLocation2, 1, GL_FALSE, &cubeModelToWorldMatrix[0][0]);
 
-	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
+	//glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
 	
 
 	//------------------------------------SKYBOX------------------------------------------------
