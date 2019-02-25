@@ -43,6 +43,8 @@
     <None Include="CubeMapVertexShaderCode.glsl" />
     <None Include="ReflectionFragmentShaderCode.glsl" />
     <None Include="ReflectionVertexShaderCode.glsl" />
+    <None Include="RenderBufferFragmentShaderCode.glsl" />
+    <None Include="RenderBufferVertexShaderCode.glsl" />
     <None Include="TextureFragmentShaderCode.glsl" />
     <None Include="FragmentShaderCode.glsl" />
     <None Include="ShapeData.inl" />

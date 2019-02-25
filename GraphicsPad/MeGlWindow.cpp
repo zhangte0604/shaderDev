@@ -444,8 +444,13 @@ void  MeGlWindow::keyPressEvent(QKeyEvent* e)
 //run everytime you call
 void MeGlWindow::paintGL()
 {
+	//glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+	glClearColor(0.5, 0.0, 0.0, 1.0);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
+	glDisable(GL_DEPTH_TEST); //for cubemap
+	
 	
 	
 	
@@ -455,7 +460,7 @@ void MeGlWindow::paintGL()
 	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
-	glUseProgram(programID); //this must call before texture
+	//glUseProgram(programID); //this must call before texture
 	//initializeGL() is before paintGL()
 
 	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
@@ -482,6 +487,8 @@ void MeGlWindow::paintGL()
 
 	//------------------------------------GLASS TEAPOT------------------------------------------------
 	glUseProgram(reflectionProgramID);
+
+	glEnable(GL_DEPTH_TEST);//Enable this for object
 
 	//Ambient Light
 	GLint ambientLightUniformLocation = glGetUniformLocation(reflectionProgramID, "ambientLight");
@@ -516,8 +523,11 @@ void MeGlWindow::paintGL()
 	glUniformMatrix4fv(reflectionFullTransformationUniformLocation, 1, GL_FALSE, &reflectionModelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(reflectionModelToWorldMatrixUniformLocation, 1, GL_FALSE, &teapot1ModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
-	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
+	
+
+
+
+	// Second Teapot
 
 	//glBindVertexArray(teapotVertexArrayObjectID);
 	//mat4 teapot2ModelToWorldMatrix =
@@ -531,7 +541,7 @@ void MeGlWindow::paintGL()
 
 
 
-	//------------------------------------BRICK PLANE------------------------------------------------
+	//------------------------------------GLASS PLANE------------------------------------------------
 	//glUseProgram(programID);
 
 	//// Set the catTex sampler uniform to texture unit0
@@ -849,7 +859,7 @@ void MeGlWindow::initializeGL()
 	//Winding Order: make front face to be clockwise rather than counter clockwise
 	//glFrontFace(GL_CW); //default is GL_CCW
 
-	
+	renderToTexture();
 	sendDataToOpenGL();
 	textureSetup();
 	cubeMapSetup();
