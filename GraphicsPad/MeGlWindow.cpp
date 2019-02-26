@@ -43,6 +43,9 @@ GLuint planeNumIndices;
 GLuint planeNormalsNumIndices;
 
 Camera camera;
+Camera reflectCamera;
+
+
 Light light;
 
 GLuint fullTransformationUniformLocation;
@@ -453,6 +456,7 @@ void MeGlWindow::paintGL()
 	glViewport(0, 0, width(), height());
 	glDisable(GL_DEPTH_TEST); //for cubemap
 	
+	reflectCamera.UP = glm::vec3(0.0f, -1.0f, 0.0f);
 	
 	//Matrix setup
 	mat4 modelToProjectionMatrix;
@@ -609,6 +613,10 @@ void MeGlWindow::paintGL()
 
 	glEnable(GL_DEPTH_TEST);//Enable this for object
 
+	mat4 viewToProjectionMatrixTeapot = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 200.0f);
+	mat4 worldToViewMatrixTeapot = camera.getWorldToViewMatrix();
+	mat4 worldToProjectionMatrixTeapot = viewToProjectionMatrixTeapot * worldToViewMatrixTeapot;
+
 	//Ambient Light
 	ambientLightUniformLocation = glGetUniformLocation(reflectionProgramID, "ambientLight");
 	ambientLight = vec4(0.1f, 0.1f, 0.1f, 1.0f);
@@ -636,7 +644,7 @@ void MeGlWindow::paintGL()
 
 	reflectionFullTransformationUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToProjectionMatrix2");
 	reflectionModelToWorldMatrixUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToWorldMatrix2");
-	mat4 reflectionModelToProjectionMatrix3 = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
+	mat4 reflectionModelToProjectionMatrix3 = worldToProjectionMatrixTeapot * teapot2ModelToWorldMatrix;
 
 	//modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
 	glUniformMatrix4fv(reflectionFullTransformationUniformLocation, 1, GL_FALSE, &reflectionModelToProjectionMatrix3[0][0]);
