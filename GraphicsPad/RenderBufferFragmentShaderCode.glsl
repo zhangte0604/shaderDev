@@ -2,42 +2,27 @@
 
 out vec4 daColor;
 
-in vec2 fragmentUV;
-
-//in vec3 normalWorld;
-//in vec3 vertexPositionWorld;
-
-//uniform vec3 lightPositionWorld;
-//uniform vec3 eyePositionWorld;
-//uniform vec4 ambientLight;
+//in vec2 fragmentUV;
+in vec4 clipSpaceCoordinate;
 
 uniform sampler2D frameBufferTexture;
 
 
 void main()
 {
-	
-	// Diffuse
-	//vec3 lightVectorWorld = normalize(lightPositionWorld - vertexPositionWorld);
-	//float brightness = dot(lightVectorWorld, normalize(normalWorld));
-	//vec4 diffuseLight = vec4(brightness, brightness, brightness, 1.0);
-	//vec4 diffuseLight = vec4(brightness, brightness, brightness, 1);
-	
+	//screen space coordinate
+	//vec2 ndc = (clipSpaceCoordinate.xy / clipSpaceCoordinate.w) / 2.0 + 0.5;
+	vec2 ndc = vec2(gl_FragCoord.x / 1024 + 1, gl_FragCoord.y / 1024 + 1); //Map to (0,1);
+	vec2 reflectTexCoords = vec2(ndc.x, -ndc.y);
 
-	// Specular
-	//vec3 reflectedLightVectorWorld = reflect(-lightVectorWorld, normalWorld);
-	//vec3 eyeVectorWorld = normalize(eyePositionWorld - vertexPositionWorld);
-	//float s = dot(reflectedLightVectorWorld, eyeVectorWorld);
-	//s = pow(s, 10);
-	//vec4 specularLight = vec4(0, 0, s, 1);
-	
-	
-	
-	
+	//vec2 textureUV = vec2(gl_FragCoord.x / 1024 + 1, gl_FragCoord.y / 1024 + 1);
+	//textureUV = normalize(textureUV);
+	vec4 frameBufferColor = texture(frameBufferTexture, reflectTexCoords);
+
 	//Clamp: Don't wanna distract from diffuse light when adding ambient light
 	//daColor = clamp(diffuseLight, 0, 1) + ambientLight + clamp(specularLight, 0, 1);
 	//daColor = ambientLight + clamp(specularLight, 0, 1);
 	//daColor = vec4(1.0, 0.0, 0.0, 1.0);
-	daColor = vec4(vec3(texture(frameBufferTexture, fragmentUV)), 1.0);
+	daColor = frameBufferColor;
 
 }

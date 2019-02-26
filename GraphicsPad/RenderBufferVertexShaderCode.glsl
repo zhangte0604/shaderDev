@@ -6,21 +6,25 @@ in layout(location = 2) vec3 normalModel;
 in layout(location = 3) vec2 VertexTexCoord;
 in layout(location = 4) vec3 tangentModel;
 
-uniform mat4 modelToProjectionMatrix;
+uniform mat4 viewToProjectionMatrix;
+uniform mat4 worldToViewMatrix;
 uniform mat4 modelToWorldMatrix;
 
-//out vec3 vertexPositionWorld;
-//out vec3 normalWorld;
-out vec2 fragmentUV;
-//out mat4 tangentToModelTransform;
+//uniform mat4 modelToProjectionMatrix;
+
+out vec4 clipSpaceCoordinate;
+//out vec2 fragmentUV;
+
 
 
 void main()
 {
-	//vec4 v = vec4(vertexPositionModel, 1.0);
-	gl_Position = modelToProjectionMatrix * vertexPositionModel;
+	clipSpaceCoordinate = viewToProjectionMatrix * worldToViewMatrix * modelToWorldMatrix * vertexPositionModel;
+	
 
-	fragmentUV = VertexTexCoord;
+	gl_Position = clipSpaceCoordinate;
+
+	//fragmentUV = VertexTexCoord;
 
 	//Smooth Surface Normals: the vertex of intersection uses the same normal which is the vertexPositionModel normal
 	//normalWorld = vec3(modelToWorldMatrix * normalize(vertexPositionModel));

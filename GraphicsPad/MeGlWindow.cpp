@@ -31,6 +31,7 @@ const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 GLuint programID;
 GLuint cubemapProgramID;
 GLuint reflectionProgramID;
+GLuint planeProgramID;
 
 GLuint teapotNumIndices;
 GLuint teapotNormalsNumIndices;
@@ -444,14 +445,13 @@ void  MeGlWindow::keyPressEvent(QKeyEvent* e)
 //run everytime you call
 void MeGlWindow::paintGL()
 {
-	//glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	// Frame buffer for reflection on plane
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-	glClearColor(0.5, 0.0, 0.0, 1.0);
+	glClearColor(1.0, 0.0, 0.0, 1.0);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
 	glDisable(GL_DEPTH_TEST); //for cubemap
-	
-	
 	
 	
 	//Matrix setup
@@ -460,31 +460,9 @@ void MeGlWindow::paintGL()
 	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
-	//glUseProgram(programID); //this must call before texture
-	//initializeGL() is before paintGL()
-
 	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
 	GLint modelToWorldMatrixUniformLocation = glGetUniformLocation(programID, "modelToWorldMatrix");
-	//glUniform1i(modelToWorldMatrixUniformLocation, 1);
-	//mat4 modelToViewMatrix = worldToViewMatrix * modelToWorldMatrix;
-
-	////Ambient Light
-	//GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	//vec4 ambientLight(0.55f, 0.55f, 0.55f, 1.0f);
-	//glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
-
-	////Specular Light
-	//GLint eyePositionUniformLocation = glGetUniformLocation(programID, "eyePositionWorld");
-	//glm::vec3 eyePosition = camera.getPosition();
-	//glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
-
-	////Light position
-	//GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	////glm::vec3 lightPositionWorld = light.getPosition();
-	//glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
-
-
-
+	
 	//------------------------------------GLASS TEAPOT------------------------------------------------
 	glUseProgram(reflectionProgramID);
 
@@ -523,72 +501,10 @@ void MeGlWindow::paintGL()
 	glUniformMatrix4fv(reflectionFullTransformationUniformLocation, 1, GL_FALSE, &reflectionModelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(reflectionModelToWorldMatrixUniformLocation, 1, GL_FALSE, &teapot1ModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
-	
-
-
-
-	// Second Teapot
-
-	//glBindVertexArray(teapotVertexArrayObjectID);
-	//mat4 teapot2ModelToWorldMatrix =
-	//	glm::translate(vec3(3.0f, 0.0f, -6.75f)) *
-	//	glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
-	//modelToProjectionMatrix = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
-	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
-	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
-
 
 
 	//------------------------------------GLASS PLANE------------------------------------------------
-	//glUseProgram(programID);
-
-	//// Set the catTex sampler uniform to texture unit0
-	//int uniloc = glGetUniformLocation(programID, "brickTex");
-	//if (uniloc >= 0)
-	//	glUniform1i(uniloc, 0);
-	//uniloc = glGetUniformLocation(programID, "mossTex");
-	//if (uniloc >= 0)
-	//	glUniform1i(uniloc, 1);
-	//uniloc = glGetUniformLocation(programID, "normalMapTex");
-	//if (uniloc >= 0)
-	//	glUniform1i(uniloc, 2);
-
-	////Ambient Light
-	//ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	//ambientLight = vec4(0.55f, 0.55f, 0.55f, 1.0f);
-	//glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
-
-	////Specular Light
-	//eyePositionUniformLocation = glGetUniformLocation(programID, "eyePositionWorld");
-	//eyePosition = camera.getPosition();
-	//glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
-
-	////Light position
-	//lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	////glm::vec3 lightPositionWorld = light.getPosition();
-	//glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
-
-	//glUseProgram(reflectionProgramID);
-
-	////Ambient Light
-	//ambientLightUniformLocation = glGetUniformLocation(reflectionProgramID, "ambientLight");
-	//ambientLight = vec4(0.1f, 0.1f, 0.1f, 1.0f);
-	//glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
-
-	//eyePositionUniformLocation = glGetUniformLocation(reflectionProgramID, "eyePositionWorld");
-	//eyePosition = camera.getPosition();
-	//glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
-
-	////Light position
-	//lightPositionWorldUniformLocation = glGetUniformLocation(reflectionProgramID, "lightPositionWorld");
-	////glm::vec3 lightPositionWorld = light.getPosition();
-	//glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
-
-	//reflectionuniloc = glGetUniformLocation(reflectionProgramID, "cubeMapTex");
-	//if (reflectionuniloc >= 0)
-	//	glUniform1i(reflectionuniloc, 0);
+	//glUseProgram(programID)
 
 	glBindVertexArray(planeVertexArrayObjectID);
 	mat4 planeModelToWorldMatrix = 
@@ -603,7 +519,7 @@ void MeGlWindow::paintGL()
 	//modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
 	glUniformMatrix4fv(reflectionFullTransformationUniformLocation, 1, GL_FALSE, &reflectionModelToProjectionMatrix[0][0]);
 	glUniformMatrix4fv(reflectionModelToWorldMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
+	//glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 
 
 	//------------------------------------GLASS CUBE------------------------------------------------
@@ -677,6 +593,130 @@ void MeGlWindow::paintGL()
 	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
 	//	&cubeModelToWorldMatrix[0][0]); 
 	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
+
+
+	// End of drawing reflection on plane. This Frame Buffer is for real obj
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport(0, 0, width(), height());
+	glDisable(GL_DEPTH_TEST);//Disable this for cubemap
+	glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+	//============================================================================================================================================
+
+	//------------------------------------GLASS TEAPOT------------------------------------------------
+	glUseProgram(reflectionProgramID);
+
+	glEnable(GL_DEPTH_TEST);//Enable this for object
+
+	//Ambient Light
+	ambientLightUniformLocation = glGetUniformLocation(reflectionProgramID, "ambientLight");
+	ambientLight = vec4(0.1f, 0.1f, 0.1f, 1.0f);
+	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
+
+	//Specular Light
+	eyePositionUniformLocation = glGetUniformLocation(reflectionProgramID, "eyePositionWorld");
+	eyePosition = camera.getPosition();
+	glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
+
+	//Light position
+	lightPositionWorldUniformLocation = glGetUniformLocation(reflectionProgramID, "lightPositionWorld");
+	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
+
+	//cupe map texture
+	reflectionuniloc = glGetUniformLocation(reflectionProgramID, "cubeMapTex");
+	if (reflectionuniloc >= 0)
+		glUniform1i(reflectionuniloc, 0);
+
+	//Teapot
+	glBindVertexArray(teapotVertexArrayObjectID);
+	mat4 teapot2ModelToWorldMatrix =
+		glm::rotate(-90.0f, 1.0f, 0.0f, 0.0f)*
+		glm::translate(0.0f, -4.0f, 0.0f);
+
+	reflectionFullTransformationUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToProjectionMatrix2");
+	reflectionModelToWorldMatrixUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToWorldMatrix2");
+	mat4 reflectionModelToProjectionMatrix3 = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
+
+	//modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
+	glUniformMatrix4fv(reflectionFullTransformationUniformLocation, 1, GL_FALSE, &reflectionModelToProjectionMatrix3[0][0]);
+	glUniformMatrix4fv(reflectionModelToWorldMatrixUniformLocation, 1, GL_FALSE, &teapot1ModelToWorldMatrix[0][0]);
+	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
+
+
+	//------------------------------------GLASS PLANE------------------------------------------------
+	glUseProgram(planeProgramID);
+
+	glBindVertexArray(planeVertexArrayObjectID);
+
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+
+	mat4 plane2ModelToWorldMatrix =
+		glm::translate(0.0f, 0.0f, 2.0f) *
+		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f)*
+		glm::scale(0.6f, 0.6f, 0.6f);
+
+	mat4 worldToViewMatrixPlane = camera.getWorldToViewMatrix();
+	mat4 viewToProjectionMatrixPlane = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 200.0f);
+	//mat4 fullTransformMatrixPlane = viewToProjectionMatrixPlane * worldToViewMatrixPlane * plane2ModelToWorldMatrix;
+
+	GLuint framebufferTextureUniformLoc = glGetUniformLocation(planeProgramID, "frameBufferTexture");
+	glUniform1i(framebufferTextureUniformLoc, 3);
+
+	//reflectionFullTransformationUniformLocation = glGetUniformLocation(planeProgramID, "modelToProjectionMatrix");
+	GLuint modelToWorldMatrixPlaneUniformLocation = glGetUniformLocation(planeProgramID, "modelToWorldMatrix");
+	GLuint worldToViewMatrixPlaneUniformLocation = glGetUniformLocation(planeProgramID, "worldToViewMatrix");
+	GLuint viewToProjectionMatrixPlaneUniformLocation = glGetUniformLocation(planeProgramID, "viewToProjectionMatrix");
+
+	//mat4 reflectionModelToProjectionMatrix4 = worldToProjectionMatrix * plane2ModelToWorldMatrix;
+
+	//modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
+	glUniformMatrix4fv(modelToWorldMatrixPlaneUniformLocation, 1, GL_FALSE, &plane2ModelToWorldMatrix[0][0]);
+	glUniformMatrix4fv(worldToViewMatrixPlaneUniformLocation, 1, GL_FALSE, &worldToViewMatrixPlane[0][0]);
+	glUniformMatrix4fv(viewToProjectionMatrixPlaneUniformLocation, 1, GL_FALSE, &viewToProjectionMatrixPlane[0][0]);
+	
+	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
+
+
+	//------------------------------------SKYBOX------------------------------------------------
+
+	//Skybox
+	glUseProgram(cubemapProgramID);
+
+	//disable rendering tris not facing the cam
+	glDisable(GL_CULL_FACE);
+
+	//glDepthMask(GL_FALSE);
+
+	cubeuniloc = glGetUniformLocation(cubemapProgramID, "cubeMapTex");
+	if (cubeuniloc >= 0)
+		glUniform1i(cubeuniloc, 0);
+
+	glBindVertexArray(cubeVertexArrayObjectID);
+	skyboxModelToWorldMatrix =
+		glm::scale(70.0f, 70.0f, 70.0f);
+
+	//remove the translation part of the world to view matrix so movement doesn't affect the skybox's position vectors
+	//This removes any translation, but keeps all rotation transformations so the user can still look around the scene.
+	skyboxWorldToViewMatrix = mat4(mat3(camera.getWorldToViewMatrix()));
+	//mat4 skyboxWorldToViewMatrix = camera.getWorldToViewMatrix();
+	skyboxWorldToProjectionMatrix = viewToProjectionMatrix * skyboxWorldToViewMatrix;
+
+	////CubeMap doesn't move with camera
+	//worldToViewMatrix[3][0] = 0.0;
+	//worldToViewMatrix[3][1] = 0.0;
+	//worldToViewMatrix[3][2] = 0.0;
+
+	skyboxTransformMatrixUniformLocation = glGetUniformLocation(cubemapProgramID, "skyboxTransformMatrix");
+	skyboxTransformMatrix = skyboxWorldToProjectionMatrix * skyboxModelToWorldMatrix;
+	//modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
+	glUniformMatrix4fv(skyboxTransformMatrixUniformLocation, 1, GL_FALSE, &skyboxTransformMatrix[0][0]);
+	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
+	//	&cubeModelToWorldMatrix[0][0]); 
+	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
+
+
 	
 
 }
@@ -826,6 +866,35 @@ void MeGlWindow::installShaders()
 	glAttachShader(reflectionProgramID, fragmentShaderID);
 	//Linker decideds where the attributes are
 	glLinkProgram(reflectionProgramID);
+
+	////check if linker has error
+	//if (!checkProgramStatus(programID))
+	//	return;
+
+	//delete shader
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
+
+	//Plane Shader
+	temp = readShaderCode("RenderBufferVertexShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(vertexShaderID, 1, adapter, 0);
+	temp = readShaderCode("RenderBufferFragmentShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(fragmentShaderID, 1, adapter, 0);
+
+	glCompileShader(vertexShaderID);
+	glCompileShader(fragmentShaderID);
+
+	////check if compile has error
+	//if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
+	//	return;
+
+	planeProgramID = glCreateProgram();
+	glAttachShader(planeProgramID, vertexShaderID);
+	glAttachShader(planeProgramID, fragmentShaderID);
+	//Linker decideds where the attributes are
+	glLinkProgram(planeProgramID);
 
 	////check if linker has error
 	//if (!checkProgramStatus(programID))
