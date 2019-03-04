@@ -46,6 +46,18 @@
     <None Include="ReflectionVertexShaderCode.glsl" />
     <None Include="RenderBufferVertexShaderCode.glsl" />
     <None Include="RenderBufferFragmentShaderCode.glsl" />
+    <None Include="ShadowMapVertexShaderCode.glsl">
+      <Filter>Primitives</Filter>
+    </None>
+    <None Include="ShadowMapFragmentShaderCode.glsl">
+      <Filter>Primitives</Filter>
+    </None>
+    <None Include="PassThroughVertexShaderCode.glsl">
+      <Filter>Primitives</Filter>
+    </None>
+    <None Include="PassThroughFragmentShaderCode.glsl">
+      <Filter>Primitives</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Primitives">

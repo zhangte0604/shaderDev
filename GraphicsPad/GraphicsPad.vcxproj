@@ -41,10 +41,14 @@
   <ItemGroup>
     <None Include="CubeMapFragmentShaderCode.glsl" />
     <None Include="CubeMapVertexShaderCode.glsl" />
+    <None Include="PassThroughVertexShaderCode.glsl" />
+    <None Include="PassThroughFragmentShaderCode.glsl" />
     <None Include="ReflectionFragmentShaderCode.glsl" />
     <None Include="ReflectionVertexShaderCode.glsl" />
     <None Include="RenderBufferFragmentShaderCode.glsl" />
     <None Include="RenderBufferVertexShaderCode.glsl" />
+    <None Include="ShadowMapFragmentShaderCode.glsl" />
+    <None Include="ShadowMapVertexShaderCode.glsl" />
     <None Include="TextureFragmentShaderCode.glsl" />
     <None Include="FragmentShaderCode.glsl" />
     <None Include="ShapeData.inl" />

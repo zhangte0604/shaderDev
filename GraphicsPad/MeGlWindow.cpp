@@ -3,9 +3,6 @@
 #include <fstream>
 #include <QtGui/qmouseevent>
 #include <QtGui/qkeyevent>
-#include <Qt\qapplication.h>
-#include <QtGui\qvboxlayout>
-#include <QtGui\qhboxlayout>
 #include <MeGlWindow.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -31,7 +28,8 @@ const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 GLuint programID;
 GLuint cubemapProgramID;
 GLuint reflectionProgramID;
-GLuint planeProgramID;
+GLuint shadowProgramID;
+GLuint passThroughProgramID;
 
 GLuint teapotNumIndices;
 GLuint teapotNormalsNumIndices;
@@ -43,6 +41,7 @@ GLuint planeNumIndices;
 GLuint planeNormalsNumIndices;
 
 Camera camera;
+Camera renderCam;
 Light light;
 
 GLuint fullTransformationUniformLocation;
@@ -68,52 +67,33 @@ GLuint planeNormalsIndexDataByteOffset;
 
 glm::vec3 lightPositionWorld(0.0f, 5.0f, 0.0f);
 
-//Desert scene
-//const char* MeGlWindow::TexFile[] = { "Texture/right.png","Texture/left.png","Texture/down.png","Texture/up.png","Texture/back.png","Texture/front.png"};
+const char* MeGlWindow::TexFile[] = { "Texture/right.png","Texture/left.png","Texture/down.png","Texture/up.png","Texture/back.png","Texture/front.png" };
 
-//Park scene
-const char* MeGlWindow::TexFile[] = { "Texture/cubemap/cubemap_posx.png","Texture/cubemap/cubemap_negx.png",
-									  "Texture/cubemap/cubemap_negy.png","Texture/cubemap/cubemap_posy.png",
-									  "Texture/cubemap/cubemap_posz.png","Texture/cubemap/cubemap_negz.png" };
 
-void MeGlWindow::renderToTexture()
+void MeGlWindow::setupFrameBuffer()
 {
+
 	glGenFramebuffers(1, &framebuffer);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-	// The texture we are going to render to
-	glGenTextures(1, &framebufferTexture);
-	glActiveTexture(GL_TEXTURE2); // Use texture unit 2	
-	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
-	// Give an empty image to opengl
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width(), height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glGenerateMipmap(GL_TEXTURE_2D);
+	//To make framebuffer render to a texture I need to generate a texture object first
 
+
+	glGenTextures(1, &framebufferTexture);
+	glActiveTexture(GL_TEXTURE2); // Use texture unit 2
+	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0); //bind back to default
 
-									 // Bind the texture to the FBO
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framebufferTexture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, framebufferTexture, 0);
 
-	// Create the depth buffer
-	GLuint depthrenderbuffer;
-	glGenRenderbuffers(1, &depthrenderbuffer);
-	glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width(), height());
-	// Bind the depth buffer to the FBO
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
-
-
-	// Set the target for the fragment shader outputs
-	GLenum drawBufs[] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, drawBufs);
-
+	glDrawBuffer(GL_NONE); // No color buffer is drawn to.
 
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-
-	// Unbind the framebuffer, and revert to default framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	//glActiveTexture(GL_TEXTURE0); // Bind back to default slot
 
@@ -142,7 +122,7 @@ void MeGlWindow::cubeMapSetup()
 		//	"_" + suffixes[i] + ".png";
 		QImage img = QGLWidget::convertToGLFormat(QImage(TexFile[i], "PNG"));
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA,
-			img.width(), img.height(),0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
+			img.width(), img.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, img.bits());
 	}
 
 	// Typical cube map settings
@@ -157,7 +137,6 @@ void MeGlWindow::cubeMapSetup()
 	if (uniloc >= 0)
 		glUniform1i(uniloc, 0);
 }
-
 void MeGlWindow::textureSetup()
 {
 	// Brick and Moss
@@ -228,7 +207,7 @@ void MeGlWindow::textureSetup()
 
 void MeGlWindow::sendDataToOpenGL()
 {
-	
+
 	//Teapot + cube
 	ShapeData teapot = ShapeGenerator::makeTeapot();
 	//ShapeData teapotNormals = ShapeGenerator::generateNormals(teapot);
@@ -243,17 +222,17 @@ void MeGlWindow::sendDataToOpenGL()
 	//bind the buffer to the binding point 
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	//send the data down to the openGL
-	glBufferData(GL_ARRAY_BUFFER, 
+	glBufferData(GL_ARRAY_BUFFER,
 		teapot.vertexBufferSize() + teapot.indexBufferSize() +
 		cube.vertexBufferSize() + cube.indexBufferSize() +
 		plane.vertexBufferSize() + plane.indexBufferSize(), 0, GL_STATIC_DRAW);
-	
+
 	GLsizeiptr currentOffset = 0;
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, teapot.vertexBufferSize(), teapot.vertices);
 	currentOffset += teapot.vertexBufferSize();
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, teapot.indexBufferSize(), teapot.indices);
 	currentOffset += teapot.indexBufferSize();
-	
+
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, cube.vertexBufferSize(), cube.vertices);
 	currentOffset += cube.vertexBufferSize();
 	glBufferSubData(GL_ARRAY_BUFFER, currentOffset, cube.indexBufferSize(), cube.indices);
@@ -347,7 +326,7 @@ void MeGlWindow::sendDataToOpenGL()
 	glEnableVertexAttribArray(3);
 	//enable the tangent attribute (tangent)
 	glEnableVertexAttribArray(4);
-	
+
 	//rebind cube vertex bufferID back
 	glBindBuffer(GL_ARRAY_BUFFER, theBufferID);
 	GLuint planeByteOffset = cubeByteOffset + cube.vertexBufferSize() + cube.indexBufferSize();
@@ -384,7 +363,7 @@ void  MeGlWindow::keyPressEvent(QKeyEvent* e)
 {
 	switch (e->key())
 	{
-	// Camera
+		// Camera
 	case Qt::Key::Key_W:
 		camera.moveForward();
 		break;
@@ -404,8 +383,8 @@ void  MeGlWindow::keyPressEvent(QKeyEvent* e)
 		camera.moveDown();
 		break;
 
-	
-	// Light
+
+		// Light
 	case Qt::Key::Key_2:
 		lightPositionWorld += glm::vec3(0.0, 0.0, -0.2);
 		break;
@@ -425,18 +404,18 @@ void  MeGlWindow::keyPressEvent(QKeyEvent* e)
 		lightPositionWorld += glm::vec3(0.0, -0.2, 0.0);
 		break;
 
-	/*case Qt::Key::Key_Up:
-		light.moveUp();
-		break;
-	case Qt::Key::Key_Down:
-		light.moveDown();
-		break;
-	case Qt::Key::Key_Left:
-		light.strafeLeft();
-		break;
-	case Qt::Key::Key_Right:
-		light.strafeRight();
-		break;*/
+		/*case Qt::Key::Key_Up:
+			light.moveUp();
+			break;
+		case Qt::Key::Key_Down:
+			light.moveDown();
+			break;
+		case Qt::Key::Key_Left:
+			light.strafeLeft();
+			break;
+		case Qt::Key::Key_Right:
+			light.strafeRight();
+			break;*/
 	}
 	repaint();
 }
@@ -445,83 +424,120 @@ void  MeGlWindow::keyPressEvent(QKeyEvent* e)
 //run everytime you call
 void MeGlWindow::paintGL()
 {
-	// Frame buffer for reflection on plane
-	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-	glClearColor(1.0, 0.0, 0.0, 1.0);
+	//In here render to my new frame Buffer 
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+	glCullFace(GL_FRONT);
+	glClearColor(0.05, 0.3, 0.05, 0.0);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
-	glDisable(GL_DEPTH_TEST); //for cubemap
-	
-	
+	glEnable(GL_DEPTH_TEST);
+	glUseProgram(shadowProgramID);
+
+	//------------------------------------TEAPOT------------------------------------------------
 	//Matrix setup
-	mat4 modelToProjectionMatrix;
-	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 200.0f);
-	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
+	mat4 modelToWorldMatrix =
+		glm::rotate(-90.0f, 1.0f, 0.0f, 0.0f)*
+		glm::translate(0.0f, -4.0f, 0.0f) * 
+		glm::scale(1.0f, 1.0f, 1.0f);
+	mat4 worldToViewMatrix = light.getWorldToViewMatrix();
+	//mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 200.0f);
+	mat4 viewToProjectionMatrix = glm::ortho<float>(-10, -10, -10, -10, -10, 50);
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
+	mat4 modelToProjectionMatrix = worldToProjectionMatrix * modelToWorldMatrix;
 
-	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
-	GLint modelToWorldMatrixUniformLocation = glGetUniformLocation(programID, "modelToWorldMatrix");
-	
-	//------------------------------------GLASS TEAPOT------------------------------------------------
-	glUseProgram(reflectionProgramID);
-
-	glEnable(GL_DEPTH_TEST);//Enable this for object
-
-	//Ambient Light
-	GLint ambientLightUniformLocation = glGetUniformLocation(reflectionProgramID, "ambientLight");
-	vec4 ambientLight(0.1f, 0.1f, 0.1f, 1.0f);
-	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
-
-	//Specular Light
-	GLint eyePositionUniformLocation = glGetUniformLocation(reflectionProgramID, "eyePositionWorld");
-	glm::vec3 eyePosition = camera.getPosition();
-	glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
-	
-	//Light position
-	GLint lightPositionWorldUniformLocation = glGetUniformLocation(reflectionProgramID, "lightPositionWorld");
-	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
-	
-	//cupe map texture
-	int reflectionuniloc = glGetUniformLocation(reflectionProgramID, "cubeMapTex");
-	if (reflectionuniloc >= 0)
-		glUniform1i(reflectionuniloc, 0);
+	fullTransformationUniformLocation = glGetUniformLocation(shadowProgramID, "modelToProjectionMatrix");
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
 
 	//Teapot
 	glBindVertexArray(teapotVertexArrayObjectID);
-	mat4 teapot1ModelToWorldMatrix =
-		glm::rotate(-90.0f, 1.0f, 0.0f, 0.0f)*
-		glm::translate(0.0f, -4.0f, 0.0f);
+	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
+	
 
-	GLuint reflectionFullTransformationUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToProjectionMatrix2");
-	GLint reflectionModelToWorldMatrixUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToWorldMatrix2");
-	mat4 reflectionModelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
+	//------------------------------------PLANE------------------------------------------------
 
-	//modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
-	glUniformMatrix4fv(reflectionFullTransformationUniformLocation, 1, GL_FALSE, &reflectionModelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(reflectionModelToWorldMatrixUniformLocation, 1, GL_FALSE, &teapot1ModelToWorldMatrix[0][0]);
+	//Matrix setup
+	modelToWorldMatrix =
+		glm::translate(0.0f, -2.0f, 0.0f) *
+		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f)*
+		glm::scale(1.0f, 1.0f, 1.0f);
+	worldToViewMatrix = light.getWorldToViewMatrix();
+	viewToProjectionMatrix = glm::ortho<float>(-10, -10, -10, -10, -10, 50);
+	worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
+	modelToProjectionMatrix = worldToProjectionMatrix * modelToWorldMatrix;
+
+	fullTransformationUniformLocation = glGetUniformLocation(shadowProgramID, "modelToProjectionMatrix");
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+
+	//Plane
+	glBindVertexArray(planeVertexArrayObjectID);
+	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
+
+	//------------------------------------SHADOW------------------------------------------------
+	glViewport(0, 0, width(), height());
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+	glUseProgram(passThroughProgramID);
+
+	//Matrix setup
+	renderCam.position = glm::vec3(0.0f, 0.0f, 1.0f);
+	modelToWorldMatrix =
+		glm::translate(0.0f, 0.0f, 0.0f) *
+		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f)*
+		glm::scale(1.0f, 1.0f, 1.0f);
+	worldToViewMatrix = renderCam.getWorldToViewMatrix();
+	viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.01f, 50.0f);
+	mat4 renderModelToProjectionMatrix = worldToProjectionMatrix * modelToWorldMatrix;
+
+	glm::mat4 biasMatrix(
+		0.5, 0.0, 0.0, 0.0,
+		0.0, 0.5, 0.0, 0.0,
+		0.0, 0.0, 0.5, 0.0,
+		0.5, 0.5, 0.5, 1.0
+	);
+
+	glm::mat4 DepthBiasFullTransformMatrix = biasMatrix * modelToProjectionMatrix;
+
+	//Lights
+	glm::vec3 ambientAmount = glm::vec3(0.05f, 0.05f, 0.05f);
+	glm::vec3 pointLightPosition = glm::vec3(0.00f, 5.00f, 3.25f);
+	float pointLightIntensity = 1.0f;
+	glm::vec3 cameraPosition = camera.getPosition();
+
+	fullTransformationUniformLocation = glGetUniformLocation(passThroughProgramID, "modelToProjectionMatrix");
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	GLint BiasMVPUniformLocation = glGetUniformLocation(passThroughProgramID, "biasModelToProjectMatrix");
+	glUniformMatrix4fv(BiasMVPUniformLocation, 1, GL_FALSE, &DepthBiasFullTransformMatrix[0][0]);
+	GLint modelToWorldMatrixUniformLocation = glGetUniformLocation(passThroughProgramID, "modelToWorldMatrix");
+	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &modelToWorldMatrix[0][0]);
+	GLint ambientUniformLocation = glGetUniformLocation(passThroughProgramID, "ambientLightUniform");
+	glUniform3fv(ambientUniformLocation, 1, &ambientAmount[0]);
+	GLint LightPositionUniformLocation = glGetUniformLocation(passThroughProgramID, "pointLightPosition");
+	glUniform3fv(LightPositionUniformLocation, 1, &pointLightPosition[0]);
+	GLint LightIntensityUniformLocation = glGetUniformLocation(passThroughProgramID, "pointLightIntensity");
+	glUniform1f(LightPositionUniformLocation, pointLightIntensity);
+	GLuint cameraUniformLocation = glGetUniformLocation(passThroughProgramID, "cameraPositionWorld");
+	glUniform3fv(cameraUniformLocation, 1, &cameraPosition[0]);
+	GLuint diffuseMapUniformLocation = glGetUniformLocation(passThroughProgramID, "diffuseTexture");
+	glUniform1i(diffuseMapUniformLocation, 0);
+	GLuint speculareMapUniformLocation = glGetUniformLocation(passThroughProgramID, "specularTexture");
+	glUniform1i(speculareMapUniformLocation, 1);
+
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+	GLuint framebufferTextureUniformLoc = glGetUniformLocation(passThroughProgramID, "frameBufferTexture");
+	glUniform1i(framebufferTextureUniformLoc, 2);
+
+	glBindVertexArray(teapotVertexArrayObjectID);
 	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
 
-
-	//------------------------------------GLASS PLANE------------------------------------------------
-	//glUseProgram(programID)
-
 	glBindVertexArray(planeVertexArrayObjectID);
-	mat4 planeModelToWorldMatrix = 
-		glm::translate(0.0f, 0.0f, 2.0f) *
-		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f)*
-		glm::scale(0.6f, 0.6f, 0.6f);
-
-	reflectionFullTransformationUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToProjectionMatrix2");
-	reflectionModelToWorldMatrixUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToWorldMatrix2");
-	reflectionModelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
-
-	//modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
-	glUniformMatrix4fv(reflectionFullTransformationUniformLocation, 1, GL_FALSE, &reflectionModelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(reflectionModelToWorldMatrixUniformLocation, 1, GL_FALSE, &planeModelToWorldMatrix[0][0]);
-	//glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
+	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 
 
+	/*
 	//------------------------------------GLASS CUBE------------------------------------------------
 	//Reflection cube
 	glUseProgram(reflectionProgramID);
@@ -545,8 +561,6 @@ void MeGlWindow::paintGL()
 		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f) *
 		glm::scale(2.0f, 2.0f, 2.0f);
 
-
-
 	GLuint reflectionFullTransformationUniformLocation2 = glGetUniformLocation(reflectionProgramID, "modelToProjectionMatrix2");
 	GLint reflectionModelToWorldMatrixUniformLocation2 = glGetUniformLocation(reflectionProgramID, "modelToWorldMatrix2");
 	mat4 reflectionModelToProjectionMatrix2 = worldToProjectionMatrix * cubeModelToWorldMatrix;
@@ -555,10 +569,10 @@ void MeGlWindow::paintGL()
 	glUniformMatrix4fv(reflectionModelToWorldMatrixUniformLocation2, 1, GL_FALSE, &cubeModelToWorldMatrix[0][0]);
 
 	//glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
-	
+
 
 	//------------------------------------SKYBOX------------------------------------------------
-	
+
 	//Skybox
 	glUseProgram(cubemapProgramID);
 
@@ -570,7 +584,7 @@ void MeGlWindow::paintGL()
 	int cubeuniloc = glGetUniformLocation(cubemapProgramID, "cubeMapTex");
 	if (cubeuniloc >= 0)
 		glUniform1i(cubeuniloc, 0);
-	
+
 	glBindVertexArray(cubeVertexArrayObjectID);
 	mat4 skyboxModelToWorldMatrix =
 		glm::scale(70.0f, 70.0f, 70.0f);
@@ -593,131 +607,7 @@ void MeGlWindow::paintGL()
 	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
 	//	&cubeModelToWorldMatrix[0][0]); 
 	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
-
-
-	// End of drawing reflection on plane. This Frame Buffer is for real obj
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glViewport(0, 0, width(), height());
-	glDisable(GL_DEPTH_TEST);//Disable this for cubemap
-	glClearColor(0.0f, 1.0f, 0.0f, 1.0f);
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-	//============================================================================================================================================
-
-	//------------------------------------GLASS TEAPOT------------------------------------------------
-	glUseProgram(reflectionProgramID);
-
-	glEnable(GL_DEPTH_TEST);//Enable this for object
-
-	//Ambient Light
-	ambientLightUniformLocation = glGetUniformLocation(reflectionProgramID, "ambientLight");
-	ambientLight = vec4(0.1f, 0.1f, 0.1f, 1.0f);
-	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
-
-	//Specular Light
-	eyePositionUniformLocation = glGetUniformLocation(reflectionProgramID, "eyePositionWorld");
-	eyePosition = camera.getPosition();
-	glUniform3fv(eyePositionUniformLocation, 1, &eyePosition[0]);
-
-	//Light position
-	lightPositionWorldUniformLocation = glGetUniformLocation(reflectionProgramID, "lightPositionWorld");
-	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
-
-	//cupe map texture
-	reflectionuniloc = glGetUniformLocation(reflectionProgramID, "cubeMapTex");
-	if (reflectionuniloc >= 0)
-		glUniform1i(reflectionuniloc, 0);
-
-	//Teapot
-	glBindVertexArray(teapotVertexArrayObjectID);
-	mat4 teapot2ModelToWorldMatrix =
-		glm::rotate(-90.0f, 1.0f, 0.0f, 0.0f)*
-		glm::translate(0.0f, -4.0f, 0.0f);
-
-	reflectionFullTransformationUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToProjectionMatrix2");
-	reflectionModelToWorldMatrixUniformLocation = glGetUniformLocation(reflectionProgramID, "modelToWorldMatrix2");
-	mat4 reflectionModelToProjectionMatrix3 = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
-
-	//modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
-	glUniformMatrix4fv(reflectionFullTransformationUniformLocation, 1, GL_FALSE, &reflectionModelToProjectionMatrix3[0][0]);
-	glUniformMatrix4fv(reflectionModelToWorldMatrixUniformLocation, 1, GL_FALSE, &teapot1ModelToWorldMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
-
-
-	//------------------------------------GLASS PLANE------------------------------------------------
-	glUseProgram(planeProgramID);
-
-	glBindVertexArray(planeVertexArrayObjectID);
-
-	glActiveTexture(GL_TEXTURE3);
-	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
-
-	mat4 plane2ModelToWorldMatrix =
-		glm::translate(0.0f, 0.0f, 2.0f) *
-		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f)*
-		glm::scale(0.6f, 0.6f, 0.6f);
-
-	mat4 worldToViewMatrixPlane = camera.getWorldToViewMatrix();
-	mat4 viewToProjectionMatrixPlane = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 200.0f);
-	//mat4 fullTransformMatrixPlane = viewToProjectionMatrixPlane * worldToViewMatrixPlane * plane2ModelToWorldMatrix;
-
-	GLuint framebufferTextureUniformLoc = glGetUniformLocation(planeProgramID, "frameBufferTexture");
-	glUniform1i(framebufferTextureUniformLoc, 3);
-
-	//reflectionFullTransformationUniformLocation = glGetUniformLocation(planeProgramID, "modelToProjectionMatrix");
-	GLuint modelToWorldMatrixPlaneUniformLocation = glGetUniformLocation(planeProgramID, "modelToWorldMatrix");
-	GLuint worldToViewMatrixPlaneUniformLocation = glGetUniformLocation(planeProgramID, "worldToViewMatrix");
-	GLuint viewToProjectionMatrixPlaneUniformLocation = glGetUniformLocation(planeProgramID, "viewToProjectionMatrix");
-
-	//mat4 reflectionModelToProjectionMatrix4 = worldToProjectionMatrix * plane2ModelToWorldMatrix;
-
-	//modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
-	glUniformMatrix4fv(modelToWorldMatrixPlaneUniformLocation, 1, GL_FALSE, &plane2ModelToWorldMatrix[0][0]);
-	glUniformMatrix4fv(worldToViewMatrixPlaneUniformLocation, 1, GL_FALSE, &worldToViewMatrixPlane[0][0]);
-	glUniformMatrix4fv(viewToProjectionMatrixPlaneUniformLocation, 1, GL_FALSE, &viewToProjectionMatrixPlane[0][0]);
-	
-	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
-
-
-	//------------------------------------SKYBOX------------------------------------------------
-
-	//Skybox
-	glUseProgram(cubemapProgramID);
-
-	//disable rendering tris not facing the cam
-	glDisable(GL_CULL_FACE);
-
-	//glDepthMask(GL_FALSE);
-
-	cubeuniloc = glGetUniformLocation(cubemapProgramID, "cubeMapTex");
-	if (cubeuniloc >= 0)
-		glUniform1i(cubeuniloc, 0);
-
-	glBindVertexArray(cubeVertexArrayObjectID);
-	skyboxModelToWorldMatrix =
-		glm::scale(70.0f, 70.0f, 70.0f);
-
-	//remove the translation part of the world to view matrix so movement doesn't affect the skybox's position vectors
-	//This removes any translation, but keeps all rotation transformations so the user can still look around the scene.
-	skyboxWorldToViewMatrix = mat4(mat3(camera.getWorldToViewMatrix()));
-	//mat4 skyboxWorldToViewMatrix = camera.getWorldToViewMatrix();
-	skyboxWorldToProjectionMatrix = viewToProjectionMatrix * skyboxWorldToViewMatrix;
-
-	////CubeMap doesn't move with camera
-	//worldToViewMatrix[3][0] = 0.0;
-	//worldToViewMatrix[3][1] = 0.0;
-	//worldToViewMatrix[3][2] = 0.0;
-
-	skyboxTransformMatrixUniformLocation = glGetUniformLocation(cubemapProgramID, "skyboxTransformMatrix");
-	skyboxTransformMatrix = skyboxWorldToProjectionMatrix * skyboxModelToWorldMatrix;
-	//modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
-	glUniformMatrix4fv(skyboxTransformMatrixUniformLocation, 1, GL_FALSE, &skyboxTransformMatrix[0][0]);
-	//glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
-	//	&cubeModelToWorldMatrix[0][0]); 
-	glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
-
-
-	
+	*/
 
 }
 
@@ -786,7 +676,7 @@ void MeGlWindow::installShaders()
 	string temp = readShaderCode("TextureVertexShaderCode.glsl");
 	adapter[0] = temp.c_str();
 	glShaderSource(vertexShaderID, 1, adapter, 0);
-	temp = readShaderCode("TextureFragmentShaderCode.glsl");	
+	temp = readShaderCode("TextureFragmentShaderCode.glsl");
 	adapter[0] = temp.c_str();
 	glShaderSource(fragmentShaderID, 1, adapter, 0);
 
@@ -796,7 +686,7 @@ void MeGlWindow::installShaders()
 	////check if compile has error
 	//if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
 	//	return;
-	
+
 	programID = glCreateProgram();
 	glAttachShader(programID, vertexShaderID);
 	glAttachShader(programID, fragmentShaderID);
@@ -811,12 +701,7 @@ void MeGlWindow::installShaders()
 	glDeleteShader(vertexShaderID);
 	glDeleteShader(fragmentShaderID);
 
-	//glUseProgram(programID);
 
-
-	//GLuint cubemapVertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-	//GLuint cubemapFragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-	
 	//Cubemap Shader
 	temp = readShaderCode("CubeMapVertexShaderCode.glsl");
 	adapter[0] = temp.c_str();
@@ -875,35 +760,48 @@ void MeGlWindow::installShaders()
 	glDeleteShader(vertexShaderID);
 	glDeleteShader(fragmentShaderID);
 
-	//Plane Shader
-	temp = readShaderCode("RenderBufferVertexShaderCode.glsl");
+	//Shadow Shader
+	temp = readShaderCode("ShadowMapVertexShaderCode.glsl");
 	adapter[0] = temp.c_str();
 	glShaderSource(vertexShaderID, 1, adapter, 0);
-	temp = readShaderCode("RenderBufferFragmentShaderCode.glsl");
+	temp = readShaderCode("ShadowMapFragmentShaderCode.glsl");
 	adapter[0] = temp.c_str();
 	glShaderSource(fragmentShaderID, 1, adapter, 0);
 
 	glCompileShader(vertexShaderID);
 	glCompileShader(fragmentShaderID);
 
-	////check if compile has error
-	//if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
-	//	return;
-
-	planeProgramID = glCreateProgram();
-	glAttachShader(planeProgramID, vertexShaderID);
-	glAttachShader(planeProgramID, fragmentShaderID);
+	shadowProgramID = glCreateProgram();
+	glAttachShader(shadowProgramID, vertexShaderID);
+	glAttachShader(shadowProgramID, fragmentShaderID);
 	//Linker decideds where the attributes are
-	glLinkProgram(planeProgramID);
-
-	////check if linker has error
-	//if (!checkProgramStatus(programID))
-	//	return;
+	glLinkProgram(shadowProgramID);
 
 	//delete shader
 	glDeleteShader(vertexShaderID);
 	glDeleteShader(fragmentShaderID);
-	
+
+	//passThrough Shader
+	temp = readShaderCode("PassThroughVertexShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(vertexShaderID, 1, adapter, 0);
+	temp = readShaderCode("PassThroughFragmentShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(fragmentShaderID, 1, adapter, 0);
+
+	glCompileShader(vertexShaderID);
+	glCompileShader(fragmentShaderID);
+
+	passThroughProgramID = glCreateProgram();
+	glAttachShader(passThroughProgramID, vertexShaderID);
+	glAttachShader(passThroughProgramID, fragmentShaderID);
+	//Linker decideds where the attributes are
+	glLinkProgram(passThroughProgramID);
+
+	//delete shader
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
+
 }
 
 void MeGlWindow::initializeGL()
@@ -911,11 +809,11 @@ void MeGlWindow::initializeGL()
 	setMinimumSize(1200, 900);
 	setMouseTracking(true);
 	glewInit();
-	
+
 
 	//enable the buffer
 	glEnable(GL_DEPTH_TEST);
-	
+
 	//disable rendering tris not facing the cam
 	//glEnable(GL_CULL_FACE);
 
@@ -928,10 +826,11 @@ void MeGlWindow::initializeGL()
 	//Winding Order: make front face to be clockwise rather than counter clockwise
 	//glFrontFace(GL_CW); //default is GL_CCW
 
-	renderToTexture();
+
 	sendDataToOpenGL();
 	textureSetup();
 	cubeMapSetup();
+	setupFrameBuffer();
 	installShaders();
 
 }

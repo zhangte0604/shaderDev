@@ -8,7 +8,7 @@ in vec2 uvFrag;
 in mat3 tangentToModelMatrix;
 
 uniform vec3 lightPositionWorld;
-uniform mat4 modelToWorldMatrix; //??????? where to define this matrix
+uniform mat4 modelToWorldMatrix; 
 uniform vec3 eyePositionWorld;
 uniform vec4 ambientLight;
 uniform sampler2D normalMapTex;
