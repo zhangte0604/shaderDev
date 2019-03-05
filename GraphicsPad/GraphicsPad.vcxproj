@@ -25,6 +25,7 @@
     <ClCompile Include="MeGlWindow.cpp" />
     <ClCompile Include="MeShaderCode.cpp" />
     <ClCompile Include="MeWidget.cpp" />
+    <ClCompile Include="RenderCam.cpp" />
     <ClCompile Include="ShapeGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -32,6 +33,7 @@
     <ClInclude Include="Light.h" />
     <ClInclude Include="MeGlWindow.h" />
     <ClInclude Include="MeWidget.h" />
+    <ClInclude Include="RenderCam.h" />
     <ClInclude Include="ShapeData.h" />
     <ClInclude Include="ShapeGenerator.h" />
     <ClInclude Include="TeapotData.h" />
@@ -41,6 +43,8 @@
   <ItemGroup>
     <None Include="CubeMapFragmentShaderCode.glsl" />
     <None Include="CubeMapVertexShaderCode.glsl" />
+    <None Include="LightFragmentShaderCode.glsl" />
+    <None Include="LightVertexShaderCode.glsl" />
     <None Include="PassThroughVertexShaderCode.glsl" />
     <None Include="PassThroughFragmentShaderCode.glsl" />
     <None Include="ReflectionFragmentShaderCode.glsl" />

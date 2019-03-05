@@ -17,9 +17,12 @@ out vec4 shadowCoord;
 
 void main()
 {
+	// the position of the vertex as seen from the current camera
 	gl_Position = modelToProjectionMatrix * vertexPositionModel;
+	//the position of the vertex as seen in light's view matrix
+	shadowCoord = biasModelToProjectMatrix * vertexPositionModel;
+
 	normalWorld = vec3(modelToWorldMatrix * vec4(normalModel, 0));
 	uvFragment = vec2(uvModel.x, uvModel.y);
-	shadowCoord = biasModelToProjectMatrix * vertexPositionWorld;
 	vertexPositionWorld = modelToWorldMatrix * vertexPositionModel;
 }

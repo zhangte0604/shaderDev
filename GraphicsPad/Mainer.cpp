@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
 	//meWidg.show();
 
 	MeGlWindow meWindow;
-	//meWindow.setFixedSize(1024, 1024);
+	meWindow.setFixedSize(1024, 1024);
 	meWindow.show();
 
 	return app.exec();

@@ -4,9 +4,9 @@
 const float Light::MOVEMENT_SPEED = 0.1f;
 
 Light::Light() :
-	viewDirection(-0.00f, -5.00f, -3.25f),
-	position(0.00f, 5.00f, 3.25f),
-	UP(0.0f, -1.0f, 0.0f)
+	viewDirection(-0.5f, -2, -2),
+	position(0.5f, 2, 2),
+	UP(0.0f, 1.0f, 0.0f)
 {
 }
 

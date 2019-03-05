@@ -1,8 +1,4 @@
 ﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(376,5): warning MSB8004: Intermediate Directory does not end with a trailing slash.  This build instance will add the slash as it is required to allow proper evaluation of the Intermediate Directory.
-  Camera.cpp
-  Mainer.cpp
   MeGlWindow.cpp
-c:\users\tete\desktop\2018 fall\graphics\shaderdev\graphicspad\meglwindow.cpp(431): warning C4305: 'argument': truncation from 'double' to 'GLclampf'
-  MeWidget.cpp
-  Generating Code...
+c:\users\tete\desktop\2018 fall\graphics\shaderdev\graphicspad\meglwindow.cpp(455): warning C4305: 'argument': truncation from 'double' to 'GLclampf'
   GraphicsPad.vcxproj -> C:\Users\Tete\Desktop\2018 Fall\Graphics\shaderDev\GraphicsPad\Debug\GraphicsPad.exe

@@ -10,6 +10,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="MeWidget.cpp" />
     <ClCompile Include="Light.cpp" />
+    <ClCompile Include="RenderCam.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MeGlWindow.h" />
@@ -31,6 +32,7 @@
       <Filter>Primitives</Filter>
     </ClInclude>
     <ClInclude Include="Light.h" />
+    <ClInclude Include="RenderCam.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="VertexShaderCode.glsl" />
@@ -46,18 +48,12 @@
     <None Include="ReflectionVertexShaderCode.glsl" />
     <None Include="RenderBufferVertexShaderCode.glsl" />
     <None Include="RenderBufferFragmentShaderCode.glsl" />
-    <None Include="ShadowMapVertexShaderCode.glsl">
-      <Filter>Primitives</Filter>
-    </None>
-    <None Include="ShadowMapFragmentShaderCode.glsl">
-      <Filter>Primitives</Filter>
-    </None>
-    <None Include="PassThroughVertexShaderCode.glsl">
-      <Filter>Primitives</Filter>
-    </None>
-    <None Include="PassThroughFragmentShaderCode.glsl">
-      <Filter>Primitives</Filter>
-    </None>
+    <None Include="PassThroughFragmentShaderCode.glsl" />
+    <None Include="PassThroughVertexShaderCode.glsl" />
+    <None Include="ShadowMapFragmentShaderCode.glsl" />
+    <None Include="ShadowMapVertexShaderCode.glsl" />
+    <None Include="LightVertexShaderCode.glsl" />
+    <None Include="LightFragmentShaderCode.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Primitives">
