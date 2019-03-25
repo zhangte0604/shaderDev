@@ -32,6 +32,7 @@ GLuint reflectionProgramID;
 GLuint shadowProgramID;
 GLuint passThroughProgramID;
 GLuint lightProgramID;
+GLuint outlineProgramID;
 
 GLuint teapotNumIndices;
 GLuint teapotNormalsNumIndices;
@@ -82,7 +83,7 @@ void MeGlWindow::setupFrameBuffer()
 
 
 	glGenTextures(1, &framebufferTexture);
-	//glActiveTexture(GL_TEXTURE0); // Use texture unit 2
+	glActiveTexture(GL_TEXTURE0); // Use texture unit 2
 	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -90,7 +91,7 @@ void MeGlWindow::setupFrameBuffer()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	//glGenerateMipmap(GL_TEXTURE_2D);
-	//glBindTexture(GL_TEXTURE_2D, 0); //bind back to default
+	glBindTexture(GL_TEXTURE_2D, 0); //bind back to default
 
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, framebufferTexture, 0);
 
@@ -511,7 +512,7 @@ void MeGlWindow::paintGL()
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-	glUseProgram(passThroughProgramID);
+	glUseProgram(outlineProgramID);
 
 	//Matrix setup
 	modelToWorldMatrix =
@@ -539,6 +540,12 @@ void MeGlWindow::paintGL()
 	float pointLightIntensity = 1.0f;
 	glm::vec3 cameraPosition = camera.getPosition();
 
+	fullTransformationUniformLocation = glGetUniformLocation(outlineProgramID, "modelToProjectionMatrix");
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &renderModelToProjectionMatrix[0][0]);
+	GLint tessellationLevelUniformLocation = glGetUniformLocation(outlineProgramID, "TessLevel");
+	glUniform1i(tessellationLevelUniformLocation, 1);
+
+	glUseProgram(passThroughProgramID);
 	fullTransformationUniformLocation = glGetUniformLocation(passThroughProgramID, "modelToProjectionMatrix");
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &renderModelToProjectionMatrix[0][0]);
 	GLint BiasMVPUniformLocation = glGetUniformLocation(passThroughProgramID, "biasModelToProjectMatrix");
@@ -555,18 +562,22 @@ void MeGlWindow::paintGL()
 
 	GLuint cameraUniformLocation = glGetUniformLocation(passThroughProgramID, "cameraPositionWorld");
 	glUniform3fv(cameraUniformLocation, 1, &cameraPosition[0]);
-	//GLuint diffuseMapUniformLocation = glGetUniformLocation(passThroughProgramID, "diffuseTexture");
-	//glUniform1i(diffuseMapUniformLocation, 0);
-	//GLuint speculareMapUniformLocation = glGetUniformLocation(passThroughProgramID, "specularTexture");
-	//glUniform1i(speculareMapUniformLocation, 1);
+
+	GLuint diffuseMapUniformLocation = glGetUniformLocation(passThroughProgramID, "diffuseTexture");
+	glUniform1i(diffuseMapUniformLocation, 0);
+	GLuint speculareMapUniformLocation = glGetUniformLocation(passThroughProgramID, "specularTexture");
+	glUniform1i(speculareMapUniformLocation, 1);
+	GLuint normalMapUniformLocation = glGetUniformLocation(passThroughProgramID, "normalTexture");
+	glUniform1i(normalMapUniformLocation, 4);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
 	GLuint framebufferTextureUniformLoc = glGetUniformLocation(passThroughProgramID, "frameBufferTexture");
 	glUniform1i(framebufferTextureUniformLoc, 0);
 
-	glBindVertexArray(teapotVertexArrayObjectID);
-	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
+	glBindVertexArray(planeVertexArrayObjectID);
+	glPatchParameteri(GL_PATCH_VERTICES, 4);
+	glDrawElements(GL_PATCHES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
 
 
 	//Plane
@@ -744,6 +755,10 @@ void MeGlWindow::installShaders()
 {
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+	GLuint geometryShaderID = glCreateShader(GL_GEOMETRY_SHADER);
+	GLuint TessellationControlShaderID = glCreateShader(GL_TESS_CONTROL_SHADER);
+	GLuint TessellationEvaluationShaderID = glCreateShader(GL_TESS_EVALUATION_SHADER);
+
 
 	//define array of character pointers
 	const GLchar* adapter[1];
@@ -899,6 +914,46 @@ void MeGlWindow::installShaders()
 	//delete shader
 	glDeleteShader(vertexShaderID);
 	glDeleteShader(fragmentShaderID);
+
+	//Outline Shader
+	temp = readShaderCode("OutlineVertexShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(vertexShaderID, 1, adapter, 0);
+	temp = readShaderCode("OutlineFragmentShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(fragmentShaderID, 1, adapter, 0);
+	temp = readShaderCode("OutlineGeometryShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(geometryShaderID, 1, adapter, 0);
+	temp = readShaderCode("TessellationControlShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(TessellationControlShaderID, 1, adapter, 0);
+	temp = readShaderCode("TessellationEvaluationShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(TessellationEvaluationShaderID, 1, adapter, 0);
+
+	glCompileShader(vertexShaderID);
+	glCompileShader(fragmentShaderID);
+	glCompileShader(geometryShaderID);
+	glCompileShader(TessellationControlShaderID);
+	glCompileShader(TessellationEvaluationShaderID);
+
+
+	outlineProgramID = glCreateProgram();
+	glAttachShader(outlineProgramID, vertexShaderID);
+	glAttachShader(outlineProgramID, fragmentShaderID);
+	glAttachShader(outlineProgramID, geometryShaderID);
+	glAttachShader(outlineProgramID, TessellationControlShaderID);
+	glAttachShader(outlineProgramID, TessellationEvaluationShaderID);
+	//Linker decideds where the attributes are
+	glLinkProgram(outlineProgramID);
+
+	//delete shader
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
+	glDeleteShader(geometryShaderID);
+	glDeleteShader(TessellationControlShaderID);
+	glDeleteShader(TessellationEvaluationShaderID);
 
 }
 

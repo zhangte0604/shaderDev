@@ -12,22 +12,24 @@ uniform float pointLightIntensity;
 uniform vec3 ambientLightUniform;
 uniform vec3 cameraPositionWorld;
 
-//uniform sampler2D diffuseTexture;
-//uniform sampler2D specularTexture;
+uniform sampler2D diffuseTexture;
+uniform sampler2D specularTexture;
+uniform sampler2D normalTexture;
 uniform sampler2D frameBufferTexture;
 
 void main()
 {
-	//vec4 diffuseColor = texture(diffuseTexture, uvFragment);
+	vec4 diffuseColor = texture(diffuseTexture, uvFragment);
+	vec3 normalObj = texture(normalTexture, uvFragment).xyz * 2 - 1;
 	//vec4 specularColor = texture(specularTexture, uvFragment);
 
 	// diffuse
 	vec3 lightVectorWorld = normalize(pointLightPosition - vec3(vertexPositionWorld));
-	float diffuseIntensity = dot(lightVectorWorld, normalize(normalWorld));
-	vec4 diffuseLight = vec4(diffuseIntensity, diffuseIntensity, diffuseIntensity, 1.0);
+	float diffuseIntensity = dot(lightVectorWorld, normalize(normalObj));
+	vec4 diffuseLight = vec4(diffuseIntensity, diffuseIntensity, diffuseIntensity, 1.0) * diffuseColor;
 
 	//specular
-	vec3 reflectedLightVectorWorld = reflect(-lightVectorWorld, normalize(normalWorld));
+	vec3 reflectedLightVectorWorld = reflect(-lightVectorWorld, normalize(normalObj));
 	vec3 cameraToWorld = normalize(cameraPositionWorld - vec3(vertexPositionWorld));
 	float SpecIntensity =  dot(cameraToWorld, reflectedLightVectorWorld);
 	SpecIntensity = pow(SpecIntensity, 10);
@@ -47,11 +49,11 @@ void main()
 	float visibility = 1.0;
 
 	//compare z value
-	for (int i=0;i<4;i++){
-		if ( texture( frameBufferTexture, shadowCoord.xy + poissonDisk[i]/700.0 ).z  <  shadowCoord.z-bias ){
-			visibility-=0.2;
-		}
-	}
+//	for (int i=0;i<4;i++){
+//		if ( texture( frameBufferTexture, shadowCoord.xy + poissonDisk[i]/700.0 ).z  <  shadowCoord.z-bias ){
+//			visibility-=0.2;
+//		}
+//	}
 
 	vec4 Color = vec4(1.0, 0.0, 0.0, 1.0);
 

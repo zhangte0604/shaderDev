@@ -45,6 +45,9 @@
     <None Include="CubeMapVertexShaderCode.glsl" />
     <None Include="LightFragmentShaderCode.glsl" />
     <None Include="LightVertexShaderCode.glsl" />
+    <None Include="OutlineFragmentShaderCode.glsl" />
+    <None Include="OutlineGeometryShaderCode.glsl" />
+    <None Include="OutlineVertexShaderCode.glsl" />
     <None Include="PassThroughVertexShaderCode.glsl" />
     <None Include="PassThroughFragmentShaderCode.glsl" />
     <None Include="ReflectionFragmentShaderCode.glsl" />
@@ -53,6 +56,8 @@
     <None Include="RenderBufferVertexShaderCode.glsl" />
     <None Include="ShadowMapFragmentShaderCode.glsl" />
     <None Include="ShadowMapVertexShaderCode.glsl" />
+    <None Include="TessellationControlShaderCode.glsl" />
+    <None Include="TessellationEvaluationShaderCode.glsl" />
     <None Include="TextureFragmentShaderCode.glsl" />
     <None Include="FragmentShaderCode.glsl" />
     <None Include="ShapeData.inl" />

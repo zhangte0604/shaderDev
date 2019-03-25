@@ -54,6 +54,11 @@
     <None Include="ShadowMapVertexShaderCode.glsl" />
     <None Include="LightVertexShaderCode.glsl" />
     <None Include="LightFragmentShaderCode.glsl" />
+    <None Include="OutlineVertexShaderCode.glsl" />
+    <None Include="OutlineGeometryShaderCode.glsl" />
+    <None Include="OutlineFragmentShaderCode.glsl" />
+    <None Include="TessellationControlShaderCode.glsl" />
+    <None Include="TessellationEvaluationShaderCode.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Primitives">
