@@ -40,6 +40,11 @@
     </None>
     <None Include="TextureVertexShaderCode.glsl" />
     <None Include="TextureFragmentShaderCode.glsl" />
+    <None Include="OutlineVertexShaderCode.glsl" />
+    <None Include="OutlineFragmentShaderCode.glsl" />
+    <None Include="OutlineGeometryShaderCode.glsl" />
+    <None Include="TessellationControlShaderCode.glsl" />
+    <None Include="TessellationEvaluationShaderCode.glsl" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Primitives">

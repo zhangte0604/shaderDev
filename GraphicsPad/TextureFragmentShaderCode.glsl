@@ -43,6 +43,7 @@ void main()
 	specIntensity = pow(specIntensity, 100);
 	vec4 specularLight = vec4(specIntensity, specIntensity, specIntensity, 1);
 
-	daColor = clamp(diffuseLight, 0, 1) * texColor + ambientLight * texColor;
-	//daColor = clamp(diffuseLight, 0, 1) * texColor + clamp(specularLight, 0, 1) + ambientLight * texColor;
+	daColor = clamp(diffuseLight, 0, 1) + ambientLight + clamp(specularLight, 0, 1);
+	//daColor = clamp(diffuseLight, 0, 1) * texColor + ambientLight * texColor;
+	
 }

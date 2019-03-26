@@ -39,6 +39,11 @@
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="OutlineFragmentShaderCode.glsl" />
+    <None Include="OutlineGeometryShaderCode.glsl" />
+    <None Include="OutlineVertexShaderCode.glsl" />
+    <None Include="TessellationControlShaderCode.glsl" />
+    <None Include="TessellationEvaluationShaderCode.glsl" />
     <None Include="TextureFragmentShaderCode.glsl" />
     <None Include="FragmentShaderCode.glsl" />
     <None Include="ShapeData.inl" />

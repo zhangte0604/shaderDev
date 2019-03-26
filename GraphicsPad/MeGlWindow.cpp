@@ -22,6 +22,11 @@ const uint NUM_FLOATS_PER_VERTICE = 14;
 const uint VERTEX_BYTE_SIZE = NUM_FLOATS_PER_VERTICE * sizeof(float);
 
 GLuint programID;
+GLuint outlineProgramID;
+
+GLuint theBufferID;
+GLuint framebuffer;
+GLuint framebufferTexture;
 
 GLuint teapotNumIndices;
 GLuint teapotNormalsNumIndices;
@@ -36,8 +41,6 @@ Camera camera;
 Light light;
 
 GLuint fullTransformationUniformLocation;
-
-GLuint theBufferID;
 
 GLuint teapotVertexArrayObjectID;
 GLuint cubeVertexArrayObjectID;
@@ -56,89 +59,121 @@ GLuint planeNormalsIndexDataByteOffset;
 
 glm::vec3 lightPositionWorld(0.0f, 5.0f, 0.0f);
 
+
+void MeGlWindow::setupFrameBuffer()
+{
+
+	glGenFramebuffers(1, &framebuffer);
+	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+	//To make framebuffer render to a texture I need to generate a texture object first
+
+
+	glGenTextures(1, &framebufferTexture);
+	//glActiveTexture(GL_TEXTURE0); // Use texture unit 2
+	glBindTexture(GL_TEXTURE_2D, framebufferTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	//glGenerateMipmap(GL_TEXTURE_2D);
+	//glBindTexture(GL_TEXTURE_2D, 0); //bind back to default
+
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, framebufferTexture, 0);
+
+	glDrawBuffer(GL_NONE); // No color buffer is drawn to.
+
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//glActiveTexture(GL_TEXTURE0); // Bind back to default slot
+
+}
+
 void MeGlWindow::textureSetup()
 
 {
-	GLuint texIDs[3];
-	glGenTextures(3, texIDs);
-	// Load cat texture file
-	const char * texName = "Texture/brick.png";
-	QImage brickImg =
-		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
-	// Copy cat texture to OpenGL
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texIDs[0]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, brickImg.width(),
-		brickImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-		brickImg.bits());
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-		GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-		GL_LINEAR);
-
-	// Set the catTex sampler uniform to texture unit0
-	int uniloc = glGetUniformLocation(programID, "brickTex");
-	if (uniloc >= 0)
-		glUniform1i(uniloc, 0);
-
-	// Load turkey texture file
-	texName = "Texture/moss2.png";
-	QImage mossImg =
-		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
-
-	// Copy turkey texture to OpenGL
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_2D, texIDs[1]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mossImg.width(),
-		mossImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-		mossImg.bits());
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-		GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-		GL_LINEAR);
-
-	// Set the MossTex sampler uniform to texture unit 1
-	uniloc = glGetUniformLocation(programID, "mossTex");
-	if (uniloc >= 0)
-		glUniform1i(uniloc, 1);
-
-	// load normal map file
-	texName = "Texture/brickNormal.png";
-	QImage normalImg =
-		QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
-
-	// Copy normal texture to OpenGL
-	glActiveTexture(GL_TEXTURE2);
-	glBindTexture(GL_TEXTURE_2D, texIDs[2]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, normalImg.width(),
-		normalImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-		normalImg.bits());
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
-		GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-		GL_LINEAR);
-
-	// Set the MossTex sampler uniform to texture unit 2
-	uniloc = glGetUniformLocation(programID, "normalMapTex");
-	if (uniloc >= 0)
-		glUniform1i(uniloc, 2);
-
-	////Cat Normal Map
-	//const char * normalMapName = "Texture/normal.png";
-	//QImage catNormalImg =
-	//	QGLWidget::convertToGLFormat(QImage(normalMapName, "PNG"));
-	//// send Normal Image to OpenGL
+	//GLuint texIDs[3];
+	//glGenTextures(3, texIDs);
+	//// Load cat texture file
+	//const char * texName = "Texture/brick.png";
+	//QImage brickImg =
+	//	QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
+	//// Copy cat texture to OpenGL
 	//glActiveTexture(GL_TEXTURE0);
-	//GLuint NormalID;
-	//glGenTextures(1, &NormalID);
-	//glBindTexture(GL_TEXTURE_2D, NormalID);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, catNormalImg.width(),
-	//	catNormalImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-	//	catNormalImg.bits());
+	//glBindTexture(GL_TEXTURE_2D, texIDs[0]);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, brickImg.width(),
+	//	brickImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+	//	brickImg.bits());
 	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
 	//	GL_LINEAR);
 	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 	//	GL_LINEAR);
+
+	//// Set the catTex sampler uniform to texture unit0
+	//int uniloc = glGetUniformLocation(programID, "brickTex");
+	//if (uniloc >= 0)
+	//	glUniform1i(uniloc, 0);
+
+	//// Load turkey texture file
+	//texName = "Texture/moss2.png";
+	//QImage mossImg =
+	//	QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
+
+	//// Copy turkey texture to OpenGL
+	//glActiveTexture(GL_TEXTURE1);
+	//glBindTexture(GL_TEXTURE_2D, texIDs[1]);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, mossImg.width(),
+	//	mossImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+	//	mossImg.bits());
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+	//	GL_LINEAR);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+	//	GL_LINEAR);
+
+	//// Set the MossTex sampler uniform to texture unit 1
+	//uniloc = glGetUniformLocation(programID, "mossTex");
+	//if (uniloc >= 0)
+	//	glUniform1i(uniloc, 1);
+
+	//// load normal map file
+	//texName = "Texture/teapot_normal.png";
+	//QImage normalImg =
+	//	QGLWidget::convertToGLFormat(QImage(texName, "PNG"));
+
+	//// Copy normal texture to OpenGL
+	//glActiveTexture(GL_TEXTURE2);
+	//glBindTexture(GL_TEXTURE_2D, texIDs[2]);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, normalImg.width(),
+	//	normalImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+	//	normalImg.bits());
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+	//	GL_LINEAR);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+	//	GL_LINEAR);
+
+	//// Set the MossTex sampler uniform to texture unit 2
+	//uniloc = glGetUniformLocation(programID, "normalMapTex");
+	//if (uniloc >= 0)
+	//	glUniform1i(uniloc, 2);
+
+	//Cat Normal Map
+	const char * normalMapName = "Texture/teapot_normal.png";
+	QImage catNormalImg =
+		QGLWidget::convertToGLFormat(QImage(normalMapName, "PNG"));
+	// send Normal Image to OpenGL
+	glActiveTexture(GL_TEXTURE0);
+	GLuint NormalID;
+	glGenTextures(1, &NormalID);
+	glBindTexture(GL_TEXTURE_2D, NormalID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, catNormalImg.width(),
+		catNormalImg.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
+		catNormalImg.bits());
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+		GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		GL_LINEAR);
 
 	////Cat Texture
 	//const char * texName = "Texture/cat.png";
@@ -455,13 +490,25 @@ void MeGlWindow::paintGL()
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	glViewport(0, 0, width(), height());
 
-	mat4 modelToProjectionMatrix;
-	//mat4 modelToWorldMatrix;
-	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 200.0f);
-	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
-	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
-	//mat4 modelToViewMatrix = worldToViewMatrix * modelToWorldMatrix;
 
+	glUseProgram(programID);
+
+	//Matrix setup
+	mat4 modelToWorldMatrix =
+		glm::translate(0.0f, 0.0f, 0.0f) *
+		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f)*
+		glm::scale(1.0f, 1.0f, 1.0f);
+	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
+	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 200.0f);
+	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
+	mat4 modelToProjectionMatrix = worldToProjectionMatrix * modelToWorldMatrix;
+	
+	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+	GLint modelToWorldMatrixUniformLocation = glGetUniformLocation(programID, "modelToWorldMatrix");
+	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, &modelToWorldMatrix[0][0]);
+	
+	
 	//Ambient Light
 	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
 	vec4 ambientLight(0.05f, 0.05f, 0.05f, 1.0f);
@@ -475,81 +522,34 @@ void MeGlWindow::paintGL()
 	
 	//Light position
 	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	
-	//glm::vec3 lightPositionWorld = light.getPosition();
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
-	
-	/*
-	//Light position in space
-	GLint lightPositionTangentUniformLocation = glGetUniformLocation(programID, "Light.Position.xyz");
-	glm::vec3 lightPositionTangent(5.0f, 2.0f, 0.0f);
-	glUniform3fv(lightPositionTangentUniformLocation, 1, &lightPositionTangent[0]);
-	*/
 
-	//Teapot
-	glBindVertexArray(teapotVertexArrayObjectID);
-	mat4 teapot1ModelToWorldMatrix =
-		glm::translate(vec3(0.0f, -1.0f, -1.0f)) *
-		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
-	modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
-	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
-
-	glBindVertexArray(teapotVertexArrayObjectID);
-	mat4 teapot2ModelToWorldMatrix =
-		glm::translate(vec3(3.0f, 0.0f, -6.75f)) *
-		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
-	modelToProjectionMatrix = worldToProjectionMatrix * teapot2ModelToWorldMatrix;
-	//glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
-	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
-
-
-	GLint modelToWorldMatrixUniformLocation =
-		glGetUniformLocation(programID, "modelToWorldMatrix");
-
-	GLint worldToViewMatrixUniformLocation =
-		glGetUniformLocation(programID, "worldToViewMatrix");
-	glUniformMatrix4fv(worldToViewMatrixUniformLocation, 1, GL_FALSE, &worldToViewMatrix[0][0]);
-
-	//cube translated
-	glBindVertexArray(cubeVertexArrayObjectID);
-	mat4 cubeModelToWorldMatrix = 
-		glm::translate(0.0f, 2.0f, -3.0f) *
-		glm::rotate(-70.0f, 1.0f, 0.0f, 0.0f);
-	
-	modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE, 
-		&cubeModelToWorldMatrix[0][0]);
-	//glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
-	/*glBindVertexArray(cubeNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, cubeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)cubeNormalsIndexDataByteOffset);*/
-
-	//cube centered
-	cubeModelToWorldMatrix = mat4();
-	modelToProjectionMatrix = worldToProjectionMatrix * cubeModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
-		&cubeModelToWorldMatrix[0][0]); 
-	//glDrawElements(GL_TRIANGLES, cubeNumIndices, GL_UNSIGNED_SHORT, (void*)cubeIndexDataByteOffset);
-
-	//Plane
 	glBindVertexArray(planeVertexArrayObjectID);
-	mat4 planeModelToWorldMatrix = 
-	
-		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f);
-
-	modelToProjectionMatrix = worldToProjectionMatrix * planeModelToWorldMatrix;
-	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glUniformMatrix4fv(modelToWorldMatrixUniformLocation, 1, GL_FALSE,
-		&planeModelToWorldMatrix[0][0]);
 	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
-	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
-	glDrawElements(GL_LINES, planeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)planeNormalsIndexDataByteOffset);*/
+
+	//outline on the plane
+	glUseProgram(outlineProgramID);
+
+	//Matrix setup
+	modelToWorldMatrix =
+		glm::translate(0.0f, 0.0f, 0.0f) *
+		glm::rotate(0.0f, 1.0f, 0.0f, 0.0f)*
+		glm::scale(1.0f, 1.0f, 1.0f);
+	worldToViewMatrix = camera.getWorldToViewMatrix();
+	viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 200.0f);
+	worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
+	modelToProjectionMatrix = worldToProjectionMatrix * modelToWorldMatrix;
+
+	fullTransformationUniformLocation = glGetUniformLocation(outlineProgramID, "modelToProjectionMatrix");
+	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
+
+	//GLint tessellationLevelUniformLocation = glGetUniformLocation(outlineProgramID, "TessLevel");
+	//glUniform1i(tessellationLevelUniformLocation, 1);
+
+	glBindVertexArray(planeVertexArrayObjectID);
+	//glPatchParameteri(GL_PATCH_VERTICES, 4);
+	glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
+	
 }
 
 
@@ -609,7 +609,11 @@ void MeGlWindow::installShaders()
 {
 	GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
 	GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+	GLuint geometryShaderID = glCreateShader(GL_GEOMETRY_SHADER);
+	//GLuint TessellationControlShaderID = glCreateShader(GL_TESS_CONTROL_SHADER);
+	//GLuint TessellationEvaluationShaderID = glCreateShader(GL_TESS_EVALUATION_SHADER);
 
+	//normal map shader
 	//define array of character pointers
 	const GLchar* adapter[1];
 	string temp = readShaderCode("TextureVertexShaderCode.glsl");
@@ -626,7 +630,6 @@ void MeGlWindow::installShaders()
 	if (!checkShaderStatus(vertexShaderID) || !checkShaderStatus(fragmentShaderID))
 		return;
 
-	
 	programID = glCreateProgram();
 	glAttachShader(programID, vertexShaderID);
 	glAttachShader(programID, fragmentShaderID);
@@ -639,18 +642,52 @@ void MeGlWindow::installShaders()
 	if (!checkProgramStatus(programID))
 		return;
 
-	/*
-	//Where are these attributes automatically
-	GLint positionLocation = glGetAttribLocation(programID, "position");
-	GLint colorLocation = glGetAttribLocation(programID, "vertexColor");
-	GLint transformLocation = glGetAttribLocation(programID, "modelToProjectionMatrix");
-	*/
-
 	//delete shader
 	glDeleteShader(vertexShaderID);
 	glDeleteShader(fragmentShaderID);
 
-	glUseProgram(programID);
+	//Outline Shader
+	temp = readShaderCode("OutlineVertexShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(vertexShaderID, 1, adapter, 0);
+	temp = readShaderCode("OutlineFragmentShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(fragmentShaderID, 1, adapter, 0);
+	temp = readShaderCode("OutlineGeometryShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(geometryShaderID, 1, adapter, 0);
+
+	/*temp = readShaderCode("TessellationControlShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(TessellationControlShaderID, 1, adapter, 0);
+	temp = readShaderCode("TessellationEvaluationShaderCode.glsl");
+	adapter[0] = temp.c_str();
+	glShaderSource(TessellationEvaluationShaderID, 1, adapter, 0);*/
+
+	glCompileShader(vertexShaderID);
+	glCompileShader(fragmentShaderID);
+	glCompileShader(geometryShaderID);
+	//glCompileShader(TessellationControlShaderID);
+	//glCompileShader(TessellationEvaluationShaderID);
+
+	outlineProgramID = glCreateProgram();
+	glAttachShader(outlineProgramID, vertexShaderID);
+	glAttachShader(outlineProgramID, fragmentShaderID);
+	glAttachShader(outlineProgramID, geometryShaderID);
+	//glAttachShader(outlineProgramID, TessellationControlShaderID);
+	//glAttachShader(outlineProgramID, TessellationEvaluationShaderID);
+
+	//Linker decideds where the attributes are
+	glLinkProgram(outlineProgramID);
+
+	//delete shader
+	glDeleteShader(vertexShaderID);
+	glDeleteShader(fragmentShaderID);
+	glDeleteShader(geometryShaderID);
+	//glDeleteShader(TessellationControlShaderID);
+	//glDeleteShader(TessellationEvaluationShaderID);
+
+
 }
 
 void MeGlWindow::initializeGL()
@@ -674,7 +711,7 @@ void MeGlWindow::initializeGL()
 	sendDataToOpenGL();
 	
 
-	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
+	
 
 }
 
