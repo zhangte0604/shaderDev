@@ -41,6 +41,8 @@
     <None Include="FragmentShaderCode.glsl" />
     <None Include="ShapeData.inl" />
     <None Include="TextureVertexShaderCode.glsl" />
+    <None Include="ToonFragmentShaderCode.glsl" />
+    <None Include="ToonVertexShaderCode.glsl" />
     <None Include="VertexShaderCode.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

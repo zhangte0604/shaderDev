@@ -413,7 +413,7 @@ void MeGlWindow::paintGL()
 
 	//Ambient Light
 	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	vec4 ambientLight(0.01f, 0.01f, 0.01f, 1.0f);
+	vec4 ambientLight(0.1f, 0.1f, 0.1f, 1.0f);
 	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 
 	//Specular Light
@@ -423,13 +423,13 @@ void MeGlWindow::paintGL()
 
 	//Light position
 	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	glm::vec3 lightPositionWorld(5.0f, 2.0f, 0.0f);
+	glm::vec3 lightPositionWorld(10.0f, 10.0f, 10.0f);
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 
 	//Teapot
 	glBindVertexArray(teapotVertexArrayObjectID);
 	mat4 teapot1ModelToWorldMatrix =
-		glm::translate(vec3(0.0f, -1.0f, -1.0f)) *
+		glm::translate(vec3(0.0f, 0.0f, 0.0f)) *
 		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
 	modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
@@ -546,10 +546,10 @@ void MeGlWindow::installShaders()
 
 	//define array of character pointers
 	const GLchar* adapter[1];
-	string temp = readShaderCode("TextureVertexShaderCode.glsl");
+	string temp = readShaderCode("ToonVertexShaderCode.glsl");
 	adapter[0] = temp.c_str();
 	glShaderSource(vertexShaderID, 1, adapter, 0);
-	temp = readShaderCode("TextureFragmentShaderCode.glsl");	
+	temp = readShaderCode("ToonFragmentShaderCode.glsl");	
 	adapter[0] = temp.c_str();
 	glShaderSource(fragmentShaderID, 1, adapter, 0);
 
