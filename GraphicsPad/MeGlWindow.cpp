@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_DEPRECATE
 #include <gl\glew.h>
 #include <iostream>
 #include <fstream>
@@ -10,6 +11,9 @@
 #include <Vertex.h>
 #include <ShapeGenerator.h>
 #include "Camera.h"
+
+#include <cstdio>
+#include "stdafx.h"
 
 using namespace std;
 using glm::vec3;
@@ -50,6 +54,13 @@ GLuint planeNormalsVertexArrayObjectID;
 GLuint teapotNormalsIndexDataByteOffset;
 GLuint cubeNormalsIndexDataByteOffset;
 GLuint planeNormalsIndexDataByteOffset;
+
+// Terrain
+const char heightmapFilename[] = "Texture/heightmap02.raw";
+const float MAX_HEIGHT = 30.0f;
+const float SCALE_FACTOR = 256.0f / MAX_HEIGHT;
+const float WATER_HEIGHT = 2.0f;
+
 
 void MeGlWindow::textureSetup()
 
@@ -399,6 +410,24 @@ void  MeGlWindow::keyPressEvent(QKeyEvent* e)
 	repaint();
 }
 
+void MeGlWindow::drawTerrain()
+{
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	for (int z = 0; z < TERRAIN_SIZE - 1; ++z)
+	{
+		glBegin(GL_TRIANGLE_STRIP);
+		for (int x = 0; x < TERRAIN_SIZE; ++x)
+		{	
+			float scaledHeight = heightmap[z * TERRAIN_SIZE + x] / SCALE_FACTOR;
+			float scaledNextHeight = heightmap[(z + 1) * TERRAIN_SIZE + x] / SCALE_FACTOR;
+
+			glVertex3f((x - TERRAIN_SIZE / 2), scaledHeight, (z - TERRAIN_SIZE / 2)); //"- TERRAIN_SIZE / 2" is make the plane in the center
+			glVertex3f((x - TERRAIN_SIZE / 2), scaledNextHeight, (z + 1 - TERRAIN_SIZE / 2));
+		}
+		glEnd();
+	}
+}
 
 //run everytime you call
 void MeGlWindow::paintGL()
@@ -407,13 +436,13 @@ void MeGlWindow::paintGL()
 	glViewport(0, 0, width(), height());
 
 	mat4 modelToProjectionMatrix;
-	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 20.0f);
+	mat4 viewToProjectionMatrix = glm::perspective(60.0f, ((float)width()) / height(), 0.1f, 500.0f);
 	mat4 worldToViewMatrix = camera.getWorldToViewMatrix();
 	mat4 worldToProjectionMatrix = viewToProjectionMatrix * worldToViewMatrix;
 
 	//Ambient Light
 	GLint ambientLightUniformLocation = glGetUniformLocation(programID, "ambientLight");
-	vec4 ambientLight(0.1f, 0.1f, 0.1f, 1.0f);
+	vec4 ambientLight(0.5f, 0.5f, 0.5f, 1.0f);
 	glUniform4fv(ambientLightUniformLocation, 1, &ambientLight[0]);
 
 	//Specular Light
@@ -423,7 +452,7 @@ void MeGlWindow::paintGL()
 
 	//Light position
 	GLint lightPositionWorldUniformLocation = glGetUniformLocation(programID, "lightPositionWorld");
-	glm::vec3 lightPositionWorld(10.0f, 10.0f, 10.0f);
+	glm::vec3 lightPositionWorld(0.0f, 20.0f, 10.0f);
 	glUniform3fv(lightPositionWorldUniformLocation, 1, &lightPositionWorld[0]);
 
 	//Teapot
@@ -433,7 +462,7 @@ void MeGlWindow::paintGL()
 		glm::rotate(-90.0f, vec3(1.0f, 0.0f, 0.0f));
 	modelToProjectionMatrix = worldToProjectionMatrix * teapot1ModelToWorldMatrix;
 	glUniformMatrix4fv(fullTransformationUniformLocation, 1, GL_FALSE, &modelToProjectionMatrix[0][0]);
-	glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
+	//glDrawElements(GL_TRIANGLES, teapotNumIndices, GL_UNSIGNED_SHORT, (void*)teapotIndexDataByteOffset);
 	/*glBindVertexArray(teapotNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, teapotNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)teapotNormalsIndexDataByteOffset);*/
 
@@ -484,6 +513,8 @@ void MeGlWindow::paintGL()
 	//glDrawElements(GL_TRIANGLES, planeNumIndices, GL_UNSIGNED_SHORT, (void*)planeIndexDataByteOffset);
 	/*glBindVertexArray(planeNormalsVertexArrayObjectID);
 	glDrawElements(GL_LINES, planeNormalsNumIndices, GL_UNSIGNED_SHORT, (void*)planeNormalsIndexDataByteOffset);*/
+
+	drawTerrain();
 }
 
 
@@ -546,10 +577,10 @@ void MeGlWindow::installShaders()
 
 	//define array of character pointers
 	const GLchar* adapter[1];
-	string temp = readShaderCode("ToonVertexShaderCode.glsl");
+	string temp = readShaderCode("TextureVertexShaderCode.glsl");
 	adapter[0] = temp.c_str();
 	glShaderSource(vertexShaderID, 1, adapter, 0);
-	temp = readShaderCode("ToonFragmentShaderCode.glsl");	
+	temp = readShaderCode("TextureFragmentShaderCode.glsl");	
 	adapter[0] = temp.c_str();
 	glShaderSource(fragmentShaderID, 1, adapter, 0);
 
@@ -589,6 +620,14 @@ void MeGlWindow::installShaders()
 
 void MeGlWindow::initializeGL()
 {
+	//read heighmap file
+	FILE *pFile = fopen(heightmapFilename, "rb");
+	if (!pFile)
+		return;
+
+	//put data into heighmap after reading the file
+	fread(&heightmap, TERRAIN_SIZE * TERRAIN_SIZE, 1, pFile);
+
 	setMinimumSize(600, 600);
 	setMouseTracking(true);
 	glewInit();
@@ -608,6 +647,7 @@ void MeGlWindow::initializeGL()
 	installShaders();
 
 	fullTransformationUniformLocation = glGetUniformLocation(programID, "modelToProjectionMatrix");
+
 
 }
 
